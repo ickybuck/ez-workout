@@ -1,0 +1,71 @@
+export interface Exercise {
+  id: string;
+  name: string;
+  description: string;
+  equipment_type: { 
+    id: string; 
+    name: string;
+    emoji: string;
+  };
+  body_part: { id: string; name: string };
+  is_compound: boolean;
+  is_plate_loaded: boolean;
+  muscle_groups: Array<{
+    muscle_group: { 
+      id: string; 
+      name: string;
+      category: string;
+      description: string;
+    };
+    is_primary: boolean;
+  }>;
+  defaults?: {
+    id: string;
+    sets: number;
+    reps: number;
+    weight: number;
+    weight_increment: number;
+    rep_increment?: number;
+  };
+}
+
+export interface EquipmentType {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+export interface BodyPart {
+  id: string;
+  name: string;
+}
+
+export interface MuscleGroup {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface PlateConfiguration {
+  plates: Array<{
+    weight: number;
+    count: number;
+  }>;
+  barWeight: number;
+  totalWeight: number;
+}
+
+interface ExerciseFormData {
+  name?: string;
+  description?: string;
+  equipment_type_id?: string;
+  body_part_id?: string;
+  is_compound?: boolean;
+  is_plate_loaded?: boolean;
+  sets?: number;
+  reps?: number;
+  weight?: number;
+  weight_increment?: number;
+  rep_increment?: number;
+}

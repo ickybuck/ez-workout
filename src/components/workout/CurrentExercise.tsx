@@ -1,0 +1,68 @@
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ActiveWorkoutExercise } from '../../types/workout';
+import SetProgress from './SetProgress';
+
+interface CurrentExerciseProps {
+  exercise: ActiveWorkoutExercise;
+  onCompleteSet: (logId: string, partial?: { completedReps: number }) => void;
+  isSuperset?: boolean;
+  isActive?: boolean;
+}
+
+const CurrentExercise: React.FC<CurrentExerciseProps> = ({ 
+  exercise, 
+  onCompleteSet,
+  isSuperset,
+  isActive = true,
+}) => {
+  const [showInfo, setShowInfo] = useState(false);
+
+  return (
+    <div className={`bg-white rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-medium text-gray-900">
+            {exercise.exercise.name}
+          </h2>
+          <span className="text-lg" title={exercise.exercise.equipment_type.name}>
+            {exercise.exercise.equipment_type.emoji}
+          </span>
+          {isSuperset && (
+            <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
+              Superset
+            </span>
+          )}
+          {exercise.exercise.description && (
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              aria-label={showInfo ? "Hide exercise information" : "Show exercise information"}
+            >
+              {showInfo ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+          )}
+        </div>
+        {showInfo && exercise.exercise.description && (
+          <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
+            {exercise.exercise.description}
+          </div>
+        )}
+        <SetProgress 
+          logs={exercise.logs} 
+          onComplete={onCompleteSet}
+          disabled={!isActive}
+          exerciseId={exercise.exercise.id}
+          isPlateLoaded={exercise.exercise.is_plate_loaded}
+          exerciseName={exercise.exercise.name}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default CurrentExercise;

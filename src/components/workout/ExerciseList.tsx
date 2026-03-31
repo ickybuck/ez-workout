@@ -1,0 +1,156 @@
+import React from 'react';
+import { ExternalLink } from 'lucide-react';
+import { ActiveWorkoutExercise } from '../../types/workout';
+import { useWeightUnit } from '../../hooks/useWeightUnit';
+
+interface ExerciseListProps {
+  exercises: ActiveWorkoutExercise[];
+  currentExerciseIndex: number;
+  templateType: 'regular' | 'superset';
+  onJumpToExercise?: (index: number) => void;
+}
+
+const ExerciseList: React.FC<ExerciseListProps> = ({
+  exercises,
+  currentExerciseIndex,
+  templateType,
+  onJumpToExercise,
+}) => {
+  const { formatWeight } = useWeightUnit();
+
+  const isCurrentOrNext = (index: number) => {
+    if (templateType === 'superset') {
+      return index === currentExerciseIndex || index === currentExerciseIndex + 1;
+    }
+    return index === currentExerciseIndex;
+  };
+
+  const isFullyCompleted = (exercise: ActiveWorkoutExercise) => {
+    return exercise.logs.every(log => log.completed);
+  };
+
+  const canSwapWith = (index: number) => {
+    if (!onJumpToExercise) return false;
+    if (isCurrentOrNext(index)) return false;
+
+    if (templateType === 'superset') {
+      const pairIndex = Math.floor(index / 2) * 2;
+      const exercise1 = exercises[pairIndex];
+      const exercise2 = exercises[pairIndex + 1];
+      return !isFullyCompleted(exercise1) || !isFullyCompleted(exercise2);
+    }
+
+    return !isFullyCompleted(exercises[index]);
+  };
+
+  const handleClick = (index: number) => {
+    if (canSwapWith(index)) {
+      onJumpToExercise(index);
+    }
+  };
+
+  const shouldShowDivider = (index: number) => {
+    if (templateType === 'superset') {
+      return index % 2 === 0 && index !== 0;
+    }
+    return true;
+  };
+
+  return (
+    <div className="max-w-xl mx-auto px-4 py-4">
+      <div className="bg-white rounded shadow-sm">
+        {exercises.map((exercise, index) => {
+          const completedSets = exercise.logs.filter(log => log.completed);
+          const totalMissedReps = exercise.logs
+            .filter(log => log.completed && log.failed_reps > 0)
+            .reduce((total, log) => total + log.failed_reps, 0);
+          const incompleteSets = exercise.logs.filter(log => !log.completed);
+          const nextSet = incompleteSets[0];
+
+          const fullyCompleted = isFullyCompleted(exercise);
+          const swappable = canSwapWith(index);
+
+          const showSupersetBridge = templateType === 'superset' && index % 2 === 0 && index < exercises.length - 1;
+          const showDivider = shouldShowDivider(index);
+
+          return (
+            <div
+              key={exercise.id}
+              onClick={() => handleClick(index)}
+              className={`relative px-3 py-2 ${
+                showDivider ? 'border-t' : ''
+              } ${
+                isCurrentOrNext(index)
+                  ? 'bg-blue-50 border-l-2 border-blue-500'
+                  : ''
+              } ${
+                fullyCompleted
+                  ? 'opacity-60'
+                  : ''
+              } ${
+                swappable
+                  ? 'cursor-pointer hover:bg-gray-50 transition-colors'
+                  : isCurrentOrNext(index) ? '' : 'cursor-not-allowed'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <h3 className="font-medium text-gray-900 text-sm truncate">
+                      {exercise.exercise.name}
+                    </h3>
+                    <span className="text-base flex-shrink-0" title={exercise.exercise.equipment_type.name}>
+                      {exercise.exercise.equipment_type.emoji}
+                    </span>
+                    {templateType !== 'superset' && swappable && (
+                      <ExternalLink className="h-4.5 w-4.5 text-blue-600 flex-shrink-0" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xs font-medium text-gray-900">
+                    {completedSets.length}/{exercise.logs.length}
+                    {totalMissedReps > 0 && (
+                      <span className="ml-1 text-black" title={`${totalMissedReps} missed reps across all sets`}>
+                        | -{totalMissedReps}
+                      </span>
+                    )}
+                  </div>
+                  {nextSet && (
+                    <div className="text-xs text-gray-500">
+                      {nextSet.reps} × {formatWeight(nextSet.weight)}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {showSupersetBridge && (
+                <div className="absolute left-0 right-0 -bottom-3 flex justify-center pointer-events-none z-10">
+                  <div className="relative">
+                    <div
+                      className={`
+                        px-3 py-0.5 bg-gradient-to-r from-blue-500 to-blue-600
+                        text-white rounded-full shadow-md
+                        pointer-events-auto
+                        ${swappable ? 'cursor-pointer hover:from-blue-600 hover:to-blue-700 transition-all' : 'opacity-75'}
+                      `}
+                    >
+                      <span className="text-xs font-semibold">
+                        Superset
+                      </span>
+                    </div>
+                    {swappable && (
+                      <ExternalLink className="h-5 w-5 text-blue-600 pointer-events-auto absolute left-full ml-2 top-1/2 -translate-y-1/2" />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default ExerciseList;

@@ -1,0 +1,63 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Dashboard from '../pages/Dashboard';
+import Settings from '../pages/Settings';
+import ExerciseLibraryV2 from '../pages/ExerciseLibraryV2';
+import ExerciseAdd from '../pages/ExerciseAdd';
+import ExerciseEdit from '../pages/ExerciseEdit';
+import Templates from '../pages/Templates';
+import TemplateEdit from '../pages/TemplateEdit';
+import ActiveWorkout from '../pages/ActiveWorkout';
+import History from '../pages/History';
+import WorkoutDetail from '../pages/WorkoutDetail';
+import Admin from '../pages/Admin';
+import Insights from '../pages/Insights';
+import DashboardLayout from '../components/DashboardLayout';
+import ProtectedRoute from './ProtectedRoute';
+
+const AppRoutes: React.FC = () => {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="exercises" element={<ExerciseLibraryV2 />} />
+        <Route path="exercises/new" element={<ExerciseAdd />} />
+        <Route path="exercises/:id/edit" element={<ExerciseEdit />} />
+        <Route path="templates" element={<Templates />} />
+        <Route path="templates/new" element={<TemplateEdit />} />
+        <Route path="templates/:id/edit" element={<TemplateEdit />} />
+        <Route path="workout" element={<ActiveWorkout />} />
+        <Route path="workout/:id" element={<WorkoutDetail />} />
+        <Route path="history" element={<History />} />
+        <Route path="insights" element={<Insights />} />
+        <Route path="admin" element={<Admin />} />
+      </Route>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
