@@ -9,6 +9,7 @@ import UnitsAndPlatesSection from '../components/settings/UnitsAndPlatesSection'
 import WorkoutPreferencesSection from '../components/settings/WorkoutPreferencesSection';
 import DisplayOptionsSection from '../components/settings/DisplayOptionsSection';
 import ExportDataSection from '../components/settings/ExportDataSection';
+import TemplateAiSection from '../components/settings/TemplateAiSection';
 import AccountSecuritySection from '../components/settings/AccountSecuritySection';
 import AdminSettingsSection from '../components/settings/AdminSettingsSection';
 
@@ -68,6 +69,7 @@ const Settings: React.FC = () => {
   const [workoutExpanded, setWorkoutExpanded] = useState(false);
   const [displayExpanded, setDisplayExpanded] = useState(false);
   const [exportExpanded, setExportExpanded] = useState(false);
+  const [templateAiExpanded, setTemplateAiExpanded] = useState(false);
   const [securityExpanded, setSecurityExpanded] = useState(false);
   const [adminExpanded, setAdminExpanded] = useState(false);
 
@@ -205,6 +207,11 @@ const Settings: React.FC = () => {
             expanded={exportExpanded}
             onToggle={() => setExportExpanded(!exportExpanded)}
             weightUnit={settings.weight_unit}
+          />
+
+          <TemplateAiSection
+            expanded={templateAiExpanded}
+            onToggle={() => setTemplateAiExpanded(!templateAiExpanded)}
           />
 
           <AccountSecuritySection

@@ -35,6 +35,8 @@ export interface TemplateCollision {
 
 export interface ImportPlan {
   bundle: TemplateBundle;
+  /** Every exercise in the library, so the review screen can offer a picker. */
+  availableExercises: Array<{ id: string; name: string }>;
   /** One entry per distinct exercise name in the bundle. */
   resolutions: ResolvedExercise[];
   collisions: TemplateCollision[];
@@ -131,6 +133,7 @@ export async function planImport(userId: string, bundle: TemplateBundle): Promis
 
   return {
     bundle,
+    availableExercises: (exercises ?? []).slice().sort((a, b) => a.name.localeCompare(b.name)),
     resolutions,
     collisions,
     unresolved: resolutions.filter((r) => !r.exerciseId).map((r) => r.name),
