@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convert, parseInput, format, formatVolume, toKg, fromKg } from './weight';
+import { convert, parseInput, format, formatVolume, toKg, fromKg , type WeightUnit } from './weight';
 
 /**
  * The cases that matter here are round-trips, not conversions in isolation.
@@ -129,5 +129,31 @@ describe('formatVolume', () => {
 
   it('still reads sensibly for a small total', () => {
     expect(formatVolume(50, 'kg')).toBe('50 kg');
+  });
+});
+
+describe('stepping a weight in the unit the user sees', () => {
+  // The bug: increments are stored in kilograms while the plates are in
+  // pounds. Squats step by 9.1 kg, which is 20.06 lb, so 275 lb became 295.06.
+  const step = (kg: number, incrementKg: number, unit: WeightUnit) => {
+    const grain = unit === 'lb' ? 1 : 0.5;
+    const next = Math.round((fromKg(kg, unit) + fromKg(incrementKg, unit)) / grain) * grain;
+    return toKg(next, unit);
+  };
+
+  it('lands on a round pound rather than drifting', () => {
+    const from275 = toKg(275, 'lb');
+    expect(fromKg(step(from275, 9.1, 'lb'), 'lb')).toBeCloseTo(295, 6);
+  });
+
+  it('keeps landing on round numbers over repeated presses', () => {
+    // Drift compounds, so one press proving out is not enough.
+    let kg = toKg(165, 'lb');
+    for (let i = 0; i < 5; i++) kg = step(kg, 4.5, 'lb');
+    expect(fromKg(kg, 'lb')).toBeCloseTo(215, 6);
+  });
+
+  it('uses a half-kilo grain for metric, since 0.25 kg plates are rare', () => {
+    expect(fromKg(step(100, 2.5, 'kg'), 'kg')).toBeCloseTo(102.5, 6);
   });
 });

@@ -8,6 +8,7 @@ import { useActiveWorkout } from '../../hooks/useActiveWorkout';
 import PlateCalculator from '../exercises/PlateCalculator';
 import StopReasonChips from './StopReasonChips';
 import type { SetOutcomeInput, StopReason } from '../../lib/stopReason';
+import { fromKg, toKg } from '../../lib/weight';
 
 interface SetProgressProps {
   logs: ExerciseLog[];
@@ -26,7 +27,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
   isPlateLoaded = false,
   exerciseName,
 }) => {
-  const { formatWeight } = useWeightUnit();
+  const { formatWeight, unit } = useWeightUnit();
   const [showPartialReps, setShowPartialReps] = useState(false);
   const [showExtraReps, setShowExtraReps] = useState(false);
   // Set once a rep count is chosen, cleared once a reason is given or skipped.
@@ -115,9 +116,24 @@ const SetProgress: React.FC<SetProgressProps> = ({
     try {
       setAdjustingWeight(true);
 
-      const weightToSet = newWeight ?? (increment 
-        ? currentSet.weight + weightIncrement 
-        : currentSet.weight - weightIncrement);
+      // Step in the unit the user actually sees, then round, then convert back.
+      //
+      // Increments are stored in kilograms while the plates are in pounds:
+      // squats step by 9.1 kg, which is 20.06 lb, and bench by 4.5 kg, which is
+      // 9.92 lb. Adding those to a converted weight drifts a little further off
+      // a round number every time — 275 lb became 295.06 lb in one press. The
+      // arithmetic was never wrong, it was just being done in the wrong unit.
+      //
+      // Rounding to whole pounds matches how plates are actually loaded; half a
+      // kilo is the equivalent for metric, since 0.25 kg plates are rare.
+      const step = unit === 'lb' ? 1 : 0.5;
+      const currentDisplay = fromKg(currentSet.weight, unit);
+      const incrementDisplay = fromKg(weightIncrement, unit);
+      const steppedDisplay =
+        Math.round((currentDisplay + (increment ? incrementDisplay : -incrementDisplay)) / step) *
+        step;
+
+      const weightToSet = newWeight ?? toKg(Math.max(steppedDisplay, 0), unit);
 
       if (weightToSet < 0) {
         toast.error('Weight cannot be negative');

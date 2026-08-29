@@ -26,6 +26,14 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
   const [showInfo, setShowInfo] = useState(false);
   const { unit } = useWeightUnit();
 
+  // The nudge has done its job the moment the weight moves. Keeping it up while
+  // the next set is already loaded heavier would be telling someone to do the
+  // thing they just did — and the stall itself is computed from history, so it
+  // will not know any better until the session ends.
+  const nextSet = exercise.logs.find((log) => !log.completed);
+  const weightUnchanged =
+    !!stall && !!nextSet && Math.abs(nextSet.weight - stall.weight) < 0.01;
+
   return (
     <div className={`bg-white rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
       <div className="flex-1">
@@ -63,7 +71,7 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
         {/* Only while this exercise is the one being performed — a nudge on a
             greyed-out card is noise, and this can be true of several exercises
             in the same session. */}
-        {stall && isActive && (
+        {stall && isActive && weightUnchanged && (
           <div className="mt-2 flex items-start gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2">
             <TrendingUp className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-emerald-800">
