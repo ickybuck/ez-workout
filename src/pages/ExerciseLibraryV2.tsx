@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Edit2, Plus, Trash2, ListPlus, Check, X, Filter, Copy, Search, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Plus, ListPlus, Check, X, Filter, Search, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Exercise } from '../types/exercise';
 import { useAuth } from '../contexts/AuthContext';
@@ -160,80 +160,7 @@ const ExerciseLibraryV2: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this exercise?')) return;
 
-    try {
-      const { error } = await supabase
-        .from('exercises')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Exercise deleted successfully');
-      await loadExerciseData();
-    } catch (error) {
-      console.error('Error deleting exercise:', error);
-      toast.error('Failed to delete exercise');
-    }
-  };
-
-  const handleCopyExercise = async (exercise: Exercise) => {
-    if (!user) return;
-
-    try {
-      const { data: newExercise, error: exerciseError } = await supabase
-        .from('exercises')
-        .insert({
-          name: `${exercise.name} (Copy)`,
-          description: exercise.description,
-          equipment_type_id: exercise.equipment_type?.id,
-          body_part_id: exercise.body_part?.id,
-          is_compound: exercise.is_compound,
-          is_plate_loaded: exercise.is_plate_loaded,
-        })
-        .select()
-        .single();
-
-      if (exerciseError) throw exerciseError;
-
-      const { error: defaultsError } = await supabase
-        .from('exercise_defaults')
-        .insert({
-          exercise_id: newExercise.id,
-          user_id: user.id,
-          sets: exercise.defaults?.sets || 3,
-          reps: exercise.defaults?.reps || 10,
-          weight: exercise.defaults?.weight || 0,
-          weight_increment: exercise.defaults?.weight_increment || 2.3,
-          bar_weight: exercise.defaults?.bar_weight || 20,
-        });
-
-      if (defaultsError) throw defaultsError;
-
-      if (exercise.muscle_groups?.length > 0) {
-        const { error: muscleGroupError } = await supabase
-          .from('exercise_muscle_groups')
-          .insert(
-            exercise.muscle_groups.map(mg => ({
-              exercise_id: newExercise.id,
-              muscle_group_id: mg.muscle_group.id,
-              is_primary: mg.is_primary,
-            }))
-          );
-
-        if (muscleGroupError) throw muscleGroupError;
-      }
-
-      toast.success('Exercise copied successfully');
-      
-      navigate(`/dashboard/exercises/${newExercise.id}/edit`);
-    } catch (error) {
-      console.error('Error copying exercise:', error);
-      toast.error('Failed to copy exercise');
-    }
-  };
 
   const updateFilters = (newFilters: Partial<Filters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -499,13 +426,6 @@ const ExerciseLibraryV2: React.FC = () => {
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleCopyExercise(exercise)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
-                      title="Copy exercise"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                    <button
                       onClick={() => handleToggleHidden(exercise)}
                       className={`p-1.5 rounded-full ${
                         exercise.defaults?.hidden
@@ -520,15 +440,6 @@ const ExerciseLibraryV2: React.FC = () => {
                         <EyeOff className="h-4 w-4" />
                       )}
                     </button>
-                    {isAdmin && (
-                    <button
-                      onClick={() => handleDelete(exercise.id)}
-                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
-                      title="Delete exercise"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                    )}
                   </div>
                 </div>
               </div>

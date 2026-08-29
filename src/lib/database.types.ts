@@ -58,6 +58,7 @@ export type Database = {
           bar_weight: number | null
           created_at: string | null
           exercise_id: string | null
+          hidden: boolean
           id: string
           rep_increment: number | null
           reps: number | null
@@ -71,6 +72,7 @@ export type Database = {
           bar_weight?: number | null
           created_at?: string | null
           exercise_id?: string | null
+          hidden?: boolean
           id?: string
           rep_increment?: number | null
           reps?: number | null
@@ -84,6 +86,7 @@ export type Database = {
           bar_weight?: number | null
           created_at?: string | null
           exercise_id?: string | null
+          hidden?: boolean
           id?: string
           rep_increment?: number | null
           reps?: number | null
@@ -193,6 +196,7 @@ export type Database = {
         Row: {
           body_part_id: string | null
           created_at: string | null
+          created_by: string | null
           description: string | null
           equipment_type_id: string | null
           id: string
@@ -204,6 +208,7 @@ export type Database = {
         Insert: {
           body_part_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           equipment_type_id?: string | null
           id?: string
@@ -215,6 +220,7 @@ export type Database = {
         Update: {
           body_part_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           equipment_type_id?: string | null
           id?: string
@@ -553,6 +559,7 @@ export type Database = {
           id: string
         }[]
       }
+      is_admin: { Args: never; Returns: boolean }
       list_users: {
         Args: never
         Returns: {
