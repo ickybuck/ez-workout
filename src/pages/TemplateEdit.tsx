@@ -96,6 +96,11 @@ const TemplateEdit: React.FC = () => {
   };
 
   const loadExercises = async () => {
+    // Without this, an unresolved session sends user_id=eq.undefined as a
+    // filter on an EMBEDDED resource, where a bad value does not error — it
+    // silently stops filtering, so every user's defaults come back.
+    if (!user) return;
+
     try {
       const { data, error } = await supabase
         .from('exercises')
@@ -107,7 +112,7 @@ const TemplateEdit: React.FC = () => {
           ),
           defaults:exercise_defaults!exercise_id(*)
         `)
-        .eq('defaults.user_id', user?.id)
+        .eq('defaults.user_id', user.id)
         .order('name');
 
       if (error) throw error;

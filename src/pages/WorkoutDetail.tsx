@@ -52,6 +52,14 @@ const WorkoutDetail: React.FC = () => {
   }, [user, id]);
 
   const loadWorkoutDetail = async () => {
+    // useParams types this as possibly undefined and it is right to: a
+    // malformed route would otherwise send id=eq.undefined to PostgREST,
+    // which fails as a bad request rather than as "not found".
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('workouts')
