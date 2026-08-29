@@ -321,6 +321,7 @@ export type Database = {
           exercise_id: string | null
           id: string
           order_index: number
+          superset_group: number | null
           template_id: string | null
           updated_at: string | null
         }
@@ -332,6 +333,7 @@ export type Database = {
           exercise_id?: string | null
           id?: string
           order_index: number
+          superset_group?: number | null
           template_id?: string | null
           updated_at?: string | null
         }
@@ -343,6 +345,7 @@ export type Database = {
           exercise_id?: string | null
           id?: string
           order_index?: number
+          superset_group?: number | null
           template_id?: string | null
           updated_at?: string | null
         }
@@ -447,6 +450,7 @@ export type Database = {
           exercise_id: string | null
           id: string
           order_index: number
+          superset_group: number | null
           workout_id: string | null
         }
         Insert: {
@@ -454,6 +458,7 @@ export type Database = {
           exercise_id?: string | null
           id?: string
           order_index: number
+          superset_group?: number | null
           workout_id?: string | null
         }
         Update: {
@@ -461,6 +466,7 @@ export type Database = {
           exercise_id?: string | null
           id?: string
           order_index?: number
+          superset_group?: number | null
           workout_id?: string | null
         }
         Relationships: [

@@ -61,9 +61,17 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
       <div className="bg-white rounded shadow-sm">
         {exercises.map((exercise, index) => {
           const completedSets = exercise.logs.filter(log => log.completed);
-          const totalMissedReps = exercise.logs
-            .filter(log => log.completed && log.failed_reps > 0)
-            .reduce((total, log) => total + log.failed_reps, 0);
+          // Net reps against target across the completed sets: misses count
+          // down, reps past the target count up. Showing only the shortfall
+          // meant a set carried three reps past its target read the same as one
+          // that merely hit it, which is exactly the signal `extra_reps` was
+          // added to surface.
+          const netReps = exercise.logs
+            .filter(log => log.completed)
+            .reduce(
+              (total, log) => total + (log.extra_reps ?? 0) - (log.failed_reps ?? 0),
+              0,
+            );
           const incompleteSets = exercise.logs.filter(log => !log.completed);
           const nextSet = incompleteSets[0];
 
@@ -110,9 +118,16 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 <div className="text-right flex-shrink-0">
                   <div className="text-xs font-medium text-gray-900">
                     {completedSets.length}/{exercise.logs.length}
-                    {totalMissedReps > 0 && (
-                      <span className="ml-1 text-black" title={`${totalMissedReps} missed reps across all sets`}>
-                        | -{totalMissedReps}
+                    {netReps !== 0 && (
+                      <span
+                        className={`ml-1 ${netReps > 0 ? 'text-emerald-600' : 'text-amber-700'}`}
+                        title={
+                          netReps > 0
+                            ? `${netReps} reps past target across all sets`
+                            : `${-netReps} reps short of target across all sets`
+                        }
+                      >
+                        | {netReps > 0 ? `+${netReps}` : netReps}
                       </span>
                     )}
                   </div>

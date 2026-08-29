@@ -25,6 +25,29 @@ export type ResolvedTheme = 'light' | 'dark';
 /** Mirrors the resolved theme so it can be applied before React mounts. */
 export const THEME_STORAGE_KEY = 'workout-theme';
 
+/**
+ * Whether the components have dark styles yet. They do not.
+ *
+ * This exists because shipping the plumbing without it caused a real outage of
+ * legibility. `color-scheme: dark` changes the browser's DEFAULT text colour to
+ * white for every element that does not set one explicitly. Since not one
+ * component carries a `dark:` class, every background stayed light — so on any
+ * device set to dark mode the app rendered white text on white cards. The
+ * workout and rest timers vanished entirely, because they are bare divs with no
+ * `text-*` class to save them.
+ *
+ * The original note on this work said "half-applying it would be worse than
+ * not: dark page, white cards". That was right, and then it shipped anyway,
+ * because it was only ever checked in a light-mode browser. A device
+ * preference is not a thing you notice by reading code.
+ *
+ * So the resolution logic stays live and tested — the preference is still read,
+ * stored and followed — but nothing that changes rendering is applied until the
+ * components can survive it. Flip this to true in the same change that lands
+ * the first `dark:` styles, not before.
+ */
+export const DARK_STYLES_READY = false;
+
 /** The nullable boolean in the database maps onto the three-state preference. */
 export function preferenceFromColumn(darkMode: boolean | null | undefined): ThemePreference {
   if (darkMode === null || darkMode === undefined) return 'system';
@@ -51,11 +74,17 @@ export function resolveTheme(preference: ThemePreference, systemPrefersDark: boo
  * that is hard to attribute.
  */
 export function applyTheme(theme: ResolvedTheme, doc: Document = document): void {
-  doc.documentElement.classList.toggle('dark', theme === 'dark');
-  doc.documentElement.style.colorScheme = theme;
+  // Until the components have dark styles, everything that would actually
+  // change rendering is pinned to light. Applying only the parts that are
+  // ready produces a worse result than applying none of them: a dark
+  // color-scheme over light components means white text on white cards.
+  const effective: ResolvedTheme = DARK_STYLES_READY ? theme : 'light';
+
+  doc.documentElement.classList.toggle('dark', effective === 'dark');
+  doc.documentElement.style.colorScheme = effective;
 
   const meta = doc.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#111827' : '#4f46e5');
+  if (meta) meta.setAttribute('content', effective === 'dark' ? '#111827' : '#4f46e5');
 }
 
 export function systemPrefersDark(win: Window = window): boolean {
