@@ -180,8 +180,20 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
 
   const errors = issues.filter((i) => i.severity === 'error');
   const warnings = issues.filter((i) => i.severity === 'warning');
+
+  /**
+   * What this exercise will actually resolve to.
+   *
+   * The presence of the key decides, not its truthiness. Choosing "Skip" stores
+   * null, and `overrides[name] ?? auto` would read that null as "nothing chosen"
+   * and fall straight back to the automatic match — so the dropdown would spring
+   * back to the exercise the user just rejected, and the count would be wrong.
+   */
+  const effectiveId = (name: string, auto: string | null): string | null =>
+    name in overrides ? overrides[name] : auto;
+
   const unresolvedCount = plan
-    ? plan.resolutions.filter((r) => !(overrides[r.name] ?? r.exerciseId)).length
+    ? plan.resolutions.filter((r) => !effectiveId(r.name, r.exerciseId)).length
     : 0;
 
   return (
@@ -367,7 +379,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                     {plan.resolutions
                       .filter((r) => !r.exerciseId || r.fuzzy)
                       .map((resolution) => {
-                        const current = overrides[resolution.name] ?? resolution.exerciseId ?? '';
+                        const current = effectiveId(resolution.name, resolution.exerciseId) ?? '';
                         return (
                           <div key={resolution.name} className="flex items-center gap-2">
                             <span className="text-xs text-gray-600 flex-1 truncate" title={resolution.name}>
