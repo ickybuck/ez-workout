@@ -129,11 +129,14 @@ export type Database = {
           completed: boolean | null
           created_at: string | null
           failed_reps: number | null
+          extra_reps: number | null
           id: string
           recommend_increase: boolean | null
           reps: number | null
           set_number: number
+          set_rir: string | null
           status: string
+          stop_reason: string | null
           updated_at: string | null
           weight: number | null
           workout_exercise_id: string | null
@@ -142,11 +145,14 @@ export type Database = {
           completed?: boolean | null
           created_at?: string | null
           failed_reps?: number | null
+          extra_reps?: number | null
           id?: string
           recommend_increase?: boolean | null
           reps?: number | null
           set_number: number
+          set_rir?: string | null
           status?: string
+          stop_reason?: string | null
           updated_at?: string | null
           weight?: number | null
           workout_exercise_id?: string | null
@@ -155,11 +161,14 @@ export type Database = {
           completed?: boolean | null
           created_at?: string | null
           failed_reps?: number | null
+          extra_reps?: number | null
           id?: string
           recommend_increase?: boolean | null
           reps?: number | null
           set_number?: number
+          set_rir?: string | null
           status?: string
+          stop_reason?: string | null
           updated_at?: string | null
           weight?: number | null
           workout_exercise_id?: string | null

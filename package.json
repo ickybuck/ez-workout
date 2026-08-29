@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "ratchet": "node scripts/quality-ratchet.mjs",
     "ratchet:update": "node scripts/quality-ratchet.mjs --update",
-    "types:generate": "supabase gen types typescript --project-id uqnamigtvtzlvbytfjgl > src/lib/database.types.ts",
+    "types:generate": "node scripts/generate-types.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
