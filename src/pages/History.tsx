@@ -48,7 +48,7 @@ interface UserSettings {
 const History: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { formatWeight } = useWeightUnit();
+  const { formatVolume } = useWeightUnit();
   const [workouts, setWorkouts] = useState<WorkoutHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -318,7 +318,7 @@ const History: React.FC = () => {
                     {/* Second Row: Stats */}
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <div className="font-medium text-gray-900">
-                        {formatWeight(calculateTotalVolume(workout))}
+                        {formatVolume(calculateTotalVolume(workout))}
                       </div>
                       <span className="text-gray-400">•</span>
                       <div>

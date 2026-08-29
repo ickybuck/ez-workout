@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { convert, format, parseInput } from '../lib/weight';
+import { convert, format, formatVolume as formatVolumeIn, parseInput } from '../lib/weight';
 
 interface WeightUnitStore {
   unit: 'kg' | 'lb';
@@ -86,11 +86,19 @@ export const useWeightUnit = () => {
   const parseWeight = (input: string, _isBarWeight = false): number =>
     parseInput(input, unit);
 
+  /**
+   * Format an aggregate volume. Distinct from formatWeight: a session total
+   * runs to five figures, where formatWeight's decimals are noise.
+   */
+  const formatVolume = (kg: number, includeUnit = true): string =>
+    formatVolumeIn(kg, unit, { includeUnit });
+
   return {
     unit,
     setUnit,
     convertWeight,
     formatWeight,
+    formatVolume,
     parseWeight,
   };
 };

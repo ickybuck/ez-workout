@@ -79,3 +79,20 @@ export function format(
     .replace(/\.?0+$/, '');
   return includeUnit ? `${text} ${unit}` : text;
 }
+
+/**
+ * Format an aggregate volume (weight x reps summed over a workout).
+ *
+ * Deliberately different from `format`: volumes run to five or six figures,
+ * where the decimals `format` keeps are noise rather than precision. A single
+ * plate needs to read "2.5 lb"; a session total does not need to read
+ * "50082.85 lb". Grouping separators earn their place at this magnitude too.
+ */
+export function formatVolume(
+  kg: number,
+  unit: WeightUnit,
+  { includeUnit = true }: { includeUnit?: boolean } = {},
+): string {
+  const text = Math.round(fromKg(kg, unit)).toLocaleString();
+  return includeUnit ? `${text} ${unit}` : text;
+}

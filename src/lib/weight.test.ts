@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convert, parseInput, format, toKg, fromKg } from './weight';
+import { convert, parseInput, format, formatVolume, toKg, fromKg } from './weight';
 
 /**
  * The cases that matter here are round-trips, not conversions in isolation.
@@ -101,5 +101,33 @@ describe('parseInput', () => {
 describe('toKg / fromKg are exact inverses before rounding', () => {
   it.each([1.25, 2.5, 45, 135, 315])('for %s lb', (value) => {
     expect(fromKg(toKg(value, 'lb'), 'lb')).toBeCloseTo(value, 10);
+  });
+});
+
+describe('formatVolume', () => {
+  // Regression: after format() stopped rounding pounds to whole numbers so
+  // that 2.5 lb plates would survive, workout totals on the Dashboard and
+  // History started reading "50082.85 lb". Correct for a plate, noise for a
+  // session total.
+  it('rounds to whole units', () => {
+    // 100 kg is 220.46 lb; a volume total has no use for the .46.
+    expect(formatVolume(100, 'lb')).toBe('220 lb');
+  });
+
+  it('never shows decimals, at any magnitude', () => {
+    expect(formatVolume(22717.6, 'lb')).not.toContain('.');
+    expect(formatVolume(0.5, 'kg')).not.toContain('.');
+  });
+
+  it('groups thousands, which matters at this magnitude', () => {
+    expect(formatVolume(1000, 'kg')).toBe('1,000 kg');
+  });
+
+  it('can omit the unit', () => {
+    expect(formatVolume(1000, 'kg', { includeUnit: false })).toBe('1,000');
+  });
+
+  it('still reads sensibly for a small total', () => {
+    expect(formatVolume(50, 'kg')).toBe('50 kg');
   });
 });

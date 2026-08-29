@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { workout, setWorkout } = useActiveWorkout();
-  const { formatWeight } = useWeightUnit();
+  const { formatVolume } = useWeightUnit();
   const [favoriteTemplates, setFavoriteTemplates] = useState<WorkoutTemplate[]>([]);
   const [hasTemplates, setHasTemplates] = useState<boolean>(true);
   const [recentWorkouts, setRecentWorkouts] = useState<RecentWorkout[]>([]);
@@ -327,7 +327,7 @@ const Dashboard: React.FC = () => {
                             <span>{workout.exercises.length}</span>
                           </div>
                           <span>{calculateWorkoutDuration(workout.start_time, workout.end_time)}</span>
-                          <span>{formatWeight(calculateTotalVolume(workout.exercises))} total</span>
+                          <span>{formatVolume(calculateTotalVolume(workout.exercises))} total</span>
                         </div>
                       </div>
                       
