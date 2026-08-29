@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Check, AlertTriangle, X, Plus, Minus } from 'lucide-react';
+import { Check, AlertTriangle, X, Plus, Minus, TrendingUp } from 'lucide-react';
 import { ExerciseLog } from '../../types/workout';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import { useActiveWorkout } from '../../hooks/useActiveWorkout';
 import PlateCalculator from '../exercises/PlateCalculator';
+import StopReasonChips from './StopReasonChips';
+import type { SetOutcomeInput, StopReason } from '../../lib/stopReason';
 
 interface SetProgressProps {
   logs: ExerciseLog[];
-  onComplete: (logId: string, partial?: { completedReps: number }) => void;
+  onComplete: (logId: string, outcome?: SetOutcomeInput) => void;
   disabled?: boolean;
   exerciseId: string;
   isPlateLoaded?: boolean;
@@ -26,6 +28,12 @@ const SetProgress: React.FC<SetProgressProps> = ({
 }) => {
   const { formatWeight } = useWeightUnit();
   const [showPartialReps, setShowPartialReps] = useState(false);
+  const [showExtraReps, setShowExtraReps] = useState(false);
+  // Set once a rep count is chosen, cleared once a reason is given or skipped.
+  // Holding it here is what lets the reason chips appear inside the panel that
+  // is already open, rather than arriving as a second interruption after the
+  // set has been logged.
+  const [pendingShortfall, setPendingShortfall] = useState<number | null>(null);
   const [adjustingWeight, setAdjustingWeight] = useState(false);
   const [showPlateCalculator, setShowPlateCalculator] = useState(false);
   const [weightIncrement, setWeightIncrement] = useState(2.3); // in kg
@@ -82,8 +90,23 @@ const SetProgress: React.FC<SetProgressProps> = ({
 
   const handlePartialSet = (completedReps: number) => {
     if (!currentSet || disabled) return;
-    onComplete(currentSet.id, { completedReps });
+    setPendingShortfall(completedReps);
+  };
+
+  const commitShortfall = (stopReason: StopReason | null) => {
+    if (!currentSet || pendingShortfall === null) return;
+    onComplete(currentSet.id, { completedReps: pendingShortfall, stopReason });
+    setPendingShortfall(null);
     setShowPartialReps(false);
+  };
+
+  const handleExtraSet = (extraReps: number) => {
+    if (!currentSet || disabled) return;
+    // No reason chips here. Nothing went wrong, and the overage is itself the
+    // whole signal — counted rather than judged, which is what makes it better
+    // evidence than an estimate of what was left in reserve.
+    onComplete(currentSet.id, { extraReps });
+    setShowExtraReps(false);
   };
 
   const adjustWeight = async (increment: boolean, newWeight?: number) => {
@@ -224,7 +247,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
         </div>
       </div>
 
-      {currentSet && !showPartialReps && !disabled && (
+      {currentSet && !showPartialReps && !showExtraReps && !disabled && (
         <div className="flex gap-2">
           <button
             onClick={() => onComplete(currentSet.id)}
@@ -234,8 +257,16 @@ const SetProgress: React.FC<SetProgressProps> = ({
             <span>Complete</span>
           </button>
           <button
+            onClick={() => setShowExtraReps(true)}
+            className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors"
+            title="Did more reps than the target"
+          >
+            <TrendingUp className="h-4 w-4" />
+            <span>Did more</span>
+          </button>
+          <button
             onClick={() => setShowPartialReps(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-colors"
           >
             <AlertTriangle className="h-4 w-4" />
             <span>Partial</span>
@@ -243,38 +274,84 @@ const SetProgress: React.FC<SetProgressProps> = ({
         </div>
       )}
 
-      {currentSet && showPartialReps && !disabled && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+      {currentSet && showExtraReps && !disabled && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-yellow-800">Select completed reps</h4>
+            <h4 className="text-sm font-medium text-emerald-800">
+              How many past {currentSet.reps}?
+            </h4>
             <button
-              onClick={() => setShowPartialReps(false)}
-              className="p-1 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-full"
+              onClick={() => setShowExtraReps(false)}
+              className="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 rounded-full"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="grid grid-cols-5 gap-1.5">
-            {/* Add 0 reps option for failed sets */}
-            <button
-              onClick={() => handlePartialSet(0)}
-              className="py-1.5 px-2 bg-red-100 border border-red-200 rounded text-sm text-red-800 hover:bg-red-200 hover:border-red-300 transition-colors font-medium"
-            >
-              0
-            </button>
-            {Array.from({ length: currentSet.reps - 1 }, (_, i) => (
+            {Array.from({ length: 10 }, (_, i) => (
               <button
                 key={i}
-                onClick={() => handlePartialSet(i + 1)}
-                className="py-1.5 px-2 bg-white border border-yellow-200 rounded text-sm text-yellow-800 hover:bg-yellow-100 hover:border-yellow-300 transition-colors"
+                onClick={() => handleExtraSet(i + 1)}
+                className="py-2 px-2 bg-white border border-emerald-200 rounded text-sm font-medium text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300 transition-colors"
               >
-                {i + 1}
+                +{i + 1}
               </button>
             ))}
           </div>
-          <p className="text-xs text-yellow-700 mt-2">
-            Select 0 if you couldn't complete any reps (failed set)
+          <p className="text-xs text-emerald-700 mt-2">
+            Beating the target is how the weight gets moved up — it counts.
           </p>
+        </div>
+      )}
+
+      {currentSet && showPartialReps && !disabled && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-yellow-800">
+              {pendingShortfall === null ? 'Select completed reps' : `${pendingShortfall} of ${currentSet.reps} done`}
+            </h4>
+            <button
+              onClick={() => {
+                setShowPartialReps(false);
+                setPendingShortfall(null);
+              }}
+              className="p-1 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-full"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {pendingShortfall === null ? (
+            <>
+              <div className="grid grid-cols-5 gap-1.5">
+                {/* Add 0 reps option for failed sets */}
+                <button
+                  onClick={() => handlePartialSet(0)}
+                  className="py-1.5 px-2 bg-red-100 border border-red-200 rounded text-sm text-red-800 hover:bg-red-200 hover:border-red-300 transition-colors font-medium"
+                >
+                  0
+                </button>
+                {Array.from({ length: currentSet.reps - 1 }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handlePartialSet(i + 1)}
+                    className="py-1.5 px-2 bg-white border border-yellow-200 rounded text-sm text-yellow-800 hover:bg-yellow-100 hover:border-yellow-300 transition-colors"
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-yellow-700 mt-2">
+                Select 0 if you couldn't complete any reps (failed set)
+              </p>
+            </>
+          ) : (
+            <StopReasonChips
+              variant={pendingShortfall === 0 ? 'skipped' : 'partial'}
+              onChoose={(reason) => commitShortfall(reason)}
+              onSkip={() => commitShortfall(null)}
+            />
+          )}
         </div>
       )}
 

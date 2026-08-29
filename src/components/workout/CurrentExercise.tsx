@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ActiveWorkoutExercise } from '../../types/workout';
 import SetProgress from './SetProgress';
+import type { SetOutcomeInput } from '../../lib/stopReason';
 
 interface CurrentExerciseProps {
   exercise: ActiveWorkoutExercise;
-  onCompleteSet: (logId: string, partial?: { completedReps: number }) => void;
+  onCompleteSet: (logId: string, outcome?: SetOutcomeInput) => void;
   isSuperset?: boolean;
   isActive?: boolean;
 }

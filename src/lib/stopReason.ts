@@ -113,6 +113,19 @@ export function isRirBand(value: unknown): value is RirBand {
   return typeof value === 'string' && (RIR_BANDS as readonly string[]).includes(value);
 }
 
+/**
+ * What the set-entry screen reports when a set is closed.
+ *
+ * `completedReps` and `extraReps` are alternatives, never both — a set cannot
+ * fall short and beat its target at once, and the database enforces it.
+ */
+export interface SetOutcomeInput {
+  completedReps?: number;
+  extraReps?: number;
+  stopReason?: StopReason | null;
+  setRir?: RirBand | null;
+}
+
 /** The shape this module needs from a logged set. */
 export interface SetLike {
   /** Prescribed reps. The column is named `reps`, which reads as performed and is not. */

@@ -40,7 +40,14 @@ export interface ExerciseLog {
   weight: number;
   reps: number;
   completed: boolean;
+  /** Reps short of the target. `reps` is the prescription, not the count. */
   failed_reps: number;
+  /** Reps past the target. Mutually exclusive with failed_reps. */
+  extra_reps?: number | null;
+  /** Why the set ended. Null means not recorded — never inferred. */
+  stop_reason?: string | null;
+  /** Reps in reserve at set end, as a band. */
+  set_rir?: string | null;
   recommend_increase: boolean;
   created_at: string;
   updated_at: string;

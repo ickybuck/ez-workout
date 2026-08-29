@@ -7,6 +7,7 @@ import { workoutQueue } from '../lib/workoutSync';
 import { useAuth } from '../contexts/AuthContext';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { usePendingSync } from '../hooks/usePendingSync';
+import type { SetOutcomeInput } from '../lib/stopReason';
 import { ActiveWorkout as ActiveWorkoutType } from '../types/workout';
 import WorkoutTimer from '../components/workout/WorkoutTimer';
 import RestTimer, { RestTimerRef } from '../components/workout/RestTimer';
@@ -17,6 +18,13 @@ interface UndoState {
   logId: string;
   previousCompleted: boolean;
   previousFailedReps: number;
+  // Every field the completion writes has to be captured here, or undo
+  // restores a row that is half old and half new. Because the offline queue
+  // coalesces, a partial restore merges over the completion and leaves, say, a
+  // stop_reason attached to a set that is no longer completed.
+  previousExtraReps: number;
+  previousStopReason: string | null;
+  previousSetRir: string | null;
 }
 
 const ActiveWorkout: React.FC = () => {
@@ -260,7 +268,7 @@ const ActiveWorkout: React.FC = () => {
     }
   };
 
-  const handleCompleteSet = async (logId: string, partial?: { completedReps: number }) => {
+  const handleCompleteSet = async (logId: string, outcome?: SetOutcomeInput) => {
     if (!workout || !user) return;
 
     try {
@@ -275,9 +283,21 @@ const ActiveWorkout: React.FC = () => {
         logId: log.id,
         previousCompleted: log.completed,
         previousFailedReps: log.failed_reps || 0,
+        previousExtraReps: log.extra_reps ?? 0,
+        previousStopReason: log.stop_reason ?? null,
+        previousSetRir: log.set_rir ?? null,
       });
 
-      const failedReps = partial ? log.reps - partial.completedReps : 0;
+      const failedReps =
+        outcome?.completedReps !== undefined ? log.reps - outcome.completedReps : 0;
+      const extraReps = outcome?.extraReps ?? 0;
+
+      // A null is written as null, never as a zero or a guess. "Not recorded"
+      // has to stay distinguishable from "recorded as none", because the whole
+      // point of these columns is that the seventeen months behind them cannot
+      // be interpreted and must not be imitated.
+      const stopReason = outcome?.stopReason ?? null;
+      const setRir = outcome?.setRir ?? null;
 
       // Queue the write instead of awaiting it, then update local state
       // unconditionally. Logging a set has to work on gym wifi, and the old
@@ -290,6 +310,9 @@ const ActiveWorkout: React.FC = () => {
         values: {
           completed: true,
           failed_reps: failedReps,
+          extra_reps: extraReps,
+          stop_reason: stopReason,
+          set_rir: setRir,
           updated_at: new Date().toISOString(),
         },
       });
@@ -298,9 +321,16 @@ const ActiveWorkout: React.FC = () => {
         ...workout,
         exercises: workout.exercises.map(ex => ({
           ...ex,
-          logs: ex.logs.map(log => 
-            log.id === logId 
-              ? { ...log, completed: true, failed_reps: failedReps }
+          logs: ex.logs.map(log =>
+            log.id === logId
+              ? {
+                  ...log,
+                  completed: true,
+                  failed_reps: failedReps,
+                  extra_reps: extraReps,
+                  stop_reason: stopReason,
+                  set_rir: setRir,
+                }
               : log
           ),
         })),
@@ -358,7 +388,13 @@ const ActiveWorkout: React.FC = () => {
         }
       }
 
-      toast.success(partial ? 'Partial set recorded' : 'Set completed!');
+      toast.success(
+        extraReps > 0
+          ? `Set completed, +${extraReps} past target`
+          : failedReps > 0
+            ? 'Partial set recorded'
+            : 'Set completed!',
+      );
     } catch (error) {
       console.error('Error completing set:', error);
       toast.error('Failed to complete set');
@@ -410,6 +446,9 @@ const ActiveWorkout: React.FC = () => {
         values: {
           completed: undoState.previousCompleted,
           failed_reps: undoState.previousFailedReps,
+          extra_reps: undoState.previousExtraReps,
+          stop_reason: undoState.previousStopReason,
+          set_rir: undoState.previousSetRir,
           updated_at: new Date().toISOString(),
         },
       });
@@ -420,7 +459,14 @@ const ActiveWorkout: React.FC = () => {
           ...ex,
           logs: ex.logs.map(log =>
             log.id === undoState.logId
-              ? { ...log, completed: undoState.previousCompleted, failed_reps: undoState.previousFailedReps }
+              ? {
+                  ...log,
+                  completed: undoState.previousCompleted,
+                  failed_reps: undoState.previousFailedReps,
+                  extra_reps: undoState.previousExtraReps,
+                  stop_reason: undoState.previousStopReason,
+                  set_rir: undoState.previousSetRir,
+                }
               : log
           ),
         })),
