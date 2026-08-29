@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { calculateLogVolume } from '../../lib/volumeUtils';
+import MuscleBalance from '../../components/insights/MuscleBalance';
 
 interface OverviewMetrics {
   totalWorkouts: number;
@@ -230,6 +231,8 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
           </div>
         </div>
       )}
+
+      <MuscleBalance timeRange={timeRange} />
     </div>
   );
 };
