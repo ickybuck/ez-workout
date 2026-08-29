@@ -17,9 +17,12 @@ interface VolumeGraphProps {
 
 const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
   const { convertWeight, unit } = useWeightUnit();
-  
-  if (data.length < 2) return null;
 
+  // Every hook must run before the early return below. When this guard sat
+  // above them, crossing the two-point boundary — logging a second workout,
+  // or switching the Insights time range — changed the hook count between
+  // renders and React threw "Rendered more hooks than during the previous
+  // render", unmounting the tree.
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState(0);
 
@@ -34,6 +37,8 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
+
+  if (data.length < 2) return null;
 
   const height = 260;
   const padding = { top: 20, right: 10, bottom: 20, left: 10 };
