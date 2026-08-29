@@ -1,0 +1,117 @@
+/**
+ * Semantic colour tokens.
+ *
+ * The point of these is that dark mode becomes one block of overrides rather
+ * than four hundred separate `dark:` decisions scattered across the components.
+ * A component says `bg-surface` and never learns what colour that is; the two
+ * blocks below are the only places that decide.
+ *
+ * That matters here beyond tidiness. The first attempt at dark mode turned on
+ * `color-scheme: dark` while every component still hardcoded `bg-white` and
+ * `text-gray-900`, so the browser's default text colour went white on cards
+ * that stayed white — the workout timers vanished entirely. Tokens make the
+ * half-applied state impossible: a converted component is correct in both
+ * themes by construction, because it never names a colour.
+ *
+ * Named by ROLE, not by appearance. `surface-raised` is the colour a card sits
+ * at; in light mode that is lighter than the page and in dark mode it is
+ * lighter too, but "lighter" is the implementation, not the name. Naming these
+ * `gray-50` and `gray-800` would put us straight back where we started.
+ *
+ * Values are raw channels rather than hex so Tailwind's opacity modifiers keep
+ * working: `bg-surface/50` needs `rgb(var(--surface) / 0.5)`.
+ */
+
+:root {
+  /* Page and card backgrounds, from furthest back to nearest front. */
+  --surface-sunken: 243 244 246; /* gray-100  — wells, track backgrounds */
+  --surface: 249 250 251; /* gray-50   — the page itself */
+  --surface-raised: 255 255 255; /* white     — cards */
+  --surface-overlay: 255 255 255; /* white     — modals, sheets */
+
+  /* Text, from most to least prominent. */
+  --content: 17 24 39; /* gray-900 */
+  --content-muted: 75 85 99; /* gray-600 */
+  --content-subtle: 156 163 175; /* gray-400  — captions, placeholders */
+  --content-inverse: 255 255 255; /* on a filled accent */
+
+  --border: 229 231 235; /* gray-200 */
+  --border-strong: 209 213 219; /* gray-300  — inputs */
+
+  /* The one brand colour, and what reads on top of it. */
+  --accent: 79 70 229; /* indigo-600 */
+  --accent-hover: 67 56 202; /* indigo-700 */
+  --accent-soft: 238 242 255; /* indigo-50  — tinted backgrounds */
+  --accent-content: 67 56 202; /* indigo-700 — text on accent-soft */
+
+  /* Status. Kept semantic: "positive" not "green", because the whole point is
+     that a component should not be asserting a colour. */
+  --positive: 5 150 105; /* emerald-600 */
+  --positive-soft: 236 253 245; /* emerald-50 */
+  --positive-content: 6 95 70; /* emerald-800 */
+
+  --caution: 180 83 9; /* amber-700 */
+  --caution-soft: 255 251 235; /* amber-50 */
+  --caution-content: 146 64 14; /* amber-800 */
+
+  --critical: 220 38 38; /* red-600 */
+  --critical-soft: 254 242 242; /* red-50 */
+  --critical-content: 153 27 27; /* red-800 */
+}
+
+/**
+ * Dark.
+ *
+ * Deliberately not a straight inversion. Backgrounds get *lighter* as they come
+ * forward in both themes — a card is nearer the reader than the page — so the
+ * ramp reverses direction while the role of each token stays identical. That is
+ * exactly why the tokens are named by role.
+ *
+ * Text is a soft near-white rather than pure white: full-contrast white on a
+ * dark background produces halation, and this app is read one-handed under gym
+ * lighting.
+ */
+.dark {
+  --surface-sunken: 3 7 18; /* gray-950 */
+  --surface: 17 24 39; /* gray-900  — the page */
+  --surface-raised: 31 41 55; /* gray-800  — cards */
+  --surface-overlay: 55 65 81; /* gray-700  — modals */
+
+  --content: 243 244 246; /* gray-100, not white */
+  --content-muted: 209 213 219; /* gray-300 */
+  --content-subtle: 156 163 175; /* gray-400 */
+  --content-inverse: 255 255 255;
+
+  --border: 55 65 81; /* gray-700 */
+  --border-strong: 75 85 99; /* gray-600 */
+
+  /* Lifted, because indigo-600 does not hold up against a dark ground. */
+  --accent: 129 140 248; /* indigo-400 */
+  --accent-hover: 165 180 252; /* indigo-300 */
+  --accent-soft: 49 46 129; /* indigo-900 */
+  --accent-content: 199 210 254; /* indigo-200 */
+
+  --positive: 52 211 153; /* emerald-400 */
+  --positive-soft: 6 78 59; /* emerald-900 */
+  --positive-content: 167 243 208; /* emerald-200 */
+
+  --caution: 251 191 36; /* amber-400 */
+  --caution-soft: 120 53 15; /* amber-900 */
+  --caution-content: 253 230 138; /* amber-200 */
+
+  --critical: 248 113 113; /* red-400 */
+  --critical-soft: 127 29 29; /* red-900 */
+  --critical-content: 254 202 202; /* red-200 */
+}
+
+/**
+ * The page itself.
+ *
+ * Set here rather than left to a component, so an unconverted screen still sits
+ * on the right ground and the transition never shows a white flash between
+ * routes.
+ */
+body {
+  background-color: rgb(var(--surface));
+  color: rgb(var(--content));
+}

@@ -18,7 +18,7 @@ const DashboardLayout: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-surface">
       {/* Main content area with bottom padding to account for navigation */}
       <main className="flex-1 pb-16">
         <div className="max-w-7xl mx-auto px-1">
@@ -27,7 +27,7 @@ const DashboardLayout: React.FC = () => {
       </main>
 
       {/* Fixed bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface-raised border-t border-edge safe-area-bottom z-50">
         <div className="max-w-7xl mx-auto px-1">
           <div className="flex justify-around">
             {navItems.map(({ icon: Icon, label, path }) => {
@@ -37,7 +37,7 @@ const DashboardLayout: React.FC = () => {
                   key={path}
                   to={path}
                   className={`flex flex-col items-center py-2 px-2 ${
-                    isActive ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                    isActive ? 'text-accent' : 'text-content-muted hover:text-content'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
