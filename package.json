@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "typecheck": "tsc -b --force",
     "lint": "eslint .",
+    "ratchet": "node scripts/quality-ratchet.mjs",
+    "ratchet:update": "node scripts/quality-ratchet.mjs --update",
+    "types:generate": "supabase gen types typescript --project-id uqnamigtvtzlvbytfjgl > src/lib/database.types.ts",
     "preview": "vite preview"
   },
   "dependencies": {
