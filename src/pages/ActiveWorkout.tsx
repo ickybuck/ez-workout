@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { X, Undo2 } from 'lucide-react';
+import { X, Undo2, CloudOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { workoutQueue } from '../lib/workoutSync';
 import { useAuth } from '../contexts/AuthContext';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
+import { usePendingSync } from '../hooks/usePendingSync';
 import { ActiveWorkout as ActiveWorkoutType } from '../types/workout';
 import WorkoutTimer from '../components/workout/WorkoutTimer';
 import RestTimer, { RestTimerRef } from '../components/workout/RestTimer';
@@ -43,6 +45,7 @@ const ActiveWorkout: React.FC = () => {
     auto_start_timer: true,
   });
   const restTimerRef = useRef<RestTimerRef>(null);
+  const pendingSync = usePendingSync();
 
   useEffect(() => {
     if (user) {
@@ -276,16 +279,20 @@ const ActiveWorkout: React.FC = () => {
 
       const failedReps = partial ? log.reps - partial.completedReps : 0;
 
-      const { error } = await supabase
-        .from('exercise_logs')
-        .update({
+      // Queue the write instead of awaiting it, then update local state
+      // unconditionally. Logging a set has to work on gym wifi, and the old
+      // order — await, then update — dropped the set entirely when the
+      // request failed. The queue is durable across reloads and retries on
+      // reconnect; exercise_logs.id is the idempotency key.
+      workoutQueue.enqueue({
+        table: 'exercise_logs',
+        rowId: logId,
+        values: {
           completed: true,
           failed_reps: failedReps,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', logId);
-
-      if (error) throw error;
+        },
+      });
 
       const updatedWorkout = {
         ...workout,
@@ -363,15 +370,17 @@ const ActiveWorkout: React.FC = () => {
 
     try {
       const endTime = new Date().toISOString();
-      const { error } = await supabase
-        .from('workouts')
-        .update({
+
+      // Queued like the set writes. Finishing a workout in a basement with no
+      // signal should still end it; the write goes out on reconnect.
+      workoutQueue.enqueue({
+        table: 'workouts',
+        rowId: workout.id,
+        values: {
           end_time: endTime,
           updated_at: endTime,
-        })
-        .eq('id', workout.id);
-
-      if (error) throw error;
+        },
+      });
 
       // Update workout state with end_time so Dashboard doesn't redirect back
       setWorkout({
@@ -392,16 +401,18 @@ const ActiveWorkout: React.FC = () => {
     if (!workout || !user || !undoState) return;
 
     try {
-      const { error } = await supabase
-        .from('exercise_logs')
-        .update({
+      // Coalesces with the completion this is undoing, so a complete/undo
+      // pair while offline sends one write carrying the final state rather
+      // than replaying both and depending on flush order.
+      workoutQueue.enqueue({
+        table: 'exercise_logs',
+        rowId: undoState.logId,
+        values: {
           completed: undoState.previousCompleted,
           failed_reps: undoState.previousFailedReps,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', undoState.logId);
-
-      if (error) throw error;
+        },
+      });
 
       const updatedWorkout = {
         ...workout,
@@ -579,7 +590,18 @@ const ActiveWorkout: React.FC = () => {
       <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
         <div className="max-w-xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">{workout.name}</h1>
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-xl font-semibold text-gray-900 truncate">{workout.name}</h1>
+              {pendingSync > 0 && (
+                <span
+                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
+                  title={`${pendingSync} change${pendingSync === 1 ? '' : 's'} will sync when you're back online. Nothing is lost.`}
+                >
+                  <CloudOff className="h-3 w-3" />
+                  {pendingSync}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-end gap-1">
                 {settings.show_workout_timer && (
