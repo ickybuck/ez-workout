@@ -395,15 +395,6 @@ const Templates: React.FC = () => {
                         >
                           {template.name}
                         </button>
-                        {template.description && (
-                          <button
-                            onClick={() => toggleTemplate(template.id)}
-                            className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex-shrink-0"
-                            title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
-                          >
-                            <Info className="h-4 w-4" />
-                          </button>
-                        )}
                       </div>
                       <div className="flex-shrink-0">
                         <span className="px-2 py-0.5 text-sm bg-gray-100 text-gray-600 rounded-full">
@@ -424,13 +415,40 @@ const Templates: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Order: info, export, delete, copy, favourite, edit.
+                          Info moved down off the title row so every control
+                          lives in one place, and it still only appears when
+                          there is a description to show. */}
                       <div className="flex items-center gap-2">
+                        {template.description && (
+                          <button
+                            onClick={() => toggleTemplate(template.id)}
+                            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                            title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
+                          >
+                            <Info className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => setExportTarget({ templates: [template], label: template.name })}
                           className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                           title="Export template"
                         >
                           <Download className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTemplate(template.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
+                          title="Delete template"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleCopyTemplate(template)}
+                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                          title="Copy template"
+                        >
+                          <Copy className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => toggleFavorite(template)}
@@ -444,25 +462,11 @@ const Templates: React.FC = () => {
                           <Star className="h-4 w-4" fill={template.is_favorite ? 'currentColor' : 'none'} />
                         </button>
                         <button
-                          onClick={() => handleCopyTemplate(template)}
-                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
-                          title="Copy template"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                        <button
                           onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
                           className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
                           title="Edit template"
                         >
                           <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTemplate(template.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
-                          title="Delete template"
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
