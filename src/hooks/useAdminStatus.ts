@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { useState, useEffect } from 'react';
-import { supabase, checkSupabaseConnection } from '../lib/supabase';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { createQueryCache } from '../lib/queryCache';
 
 interface AdminStatusStore {
   showAdminTools: boolean;
@@ -17,12 +18,39 @@ const useAdminStatusStore = create<AdminStatusStore>()(
     }),
     {
       name: 'admin-tools-storage',
-    }
-  )
+    },
+  ),
 );
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 3000; // 3 seconds
+/**
+ * Shared across every consumer of this hook.
+ *
+ * Four components use it — DashboardLayout, ExerciseLibraryV2, Settings and
+ * Admin — and several are mounted together. Each previously ran its own
+ * connection probe and its own query, with a three-attempt retry loop on top,
+ * which is why the console filled with repeated "Successfully connected to
+ * Supabase" lines on an ordinary page load.
+ *
+ * Whether someone is an admin changes about never, so a shared cache with
+ * in-flight de-duplication is the whole fix: one query per session.
+ */
+const adminCache = createQueryCache<boolean>({ ttlMs: 10 * 60_000 });
+
+async function fetchIsAdmin(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('is_admin')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.is_admin ?? false;
+}
+
+/** Call after granting or revoking admin, so the next read is fresh. */
+export function invalidateAdminStatus(): void {
+  adminCache.invalidate();
+}
 
 export const useAdminStatus = () => {
   const { user } = useAuth();
@@ -32,65 +60,43 @@ export const useAdminStatus = () => {
   const { showAdminTools, setShowAdminTools } = useAdminStatusStore();
 
   useEffect(() => {
-    let retryCount = 0;
-    let retryTimeout: number;
+    if (!user) {
+      setIsAdmin(false);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
-    const checkAdminStatus = async () => {
-      if (!user) {
+    let cancelled = false;
+    setLoading(true);
+
+    adminCache
+      .get(user.id, () => fetchIsAdmin(user.id))
+      .then((result) => {
+        if (cancelled) return;
+        setIsAdmin(result);
+        setError(null);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        // Failing closed is the safe direction: a network error must not
+        // surface admin controls, and the cache drops the failed entry so the
+        // next mount retries rather than inheriting the rejection.
+        console.error('Error checking admin status:', e);
         setIsAdmin(false);
-        setLoading(false);
-        setError(null);
-        return;
-      }
-
-      try {
-        // First check if Supabase is accessible
-        const isConnected = await checkSupabaseConnection();
-        if (!isConnected) {
-          throw new Error('Unable to connect to Supabase');
-        }
-
-        const { data, error: supabaseError } = await supabase
-          .from('user_settings')
-          .select('is_admin')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (supabaseError) throw supabaseError;
-        
-        setIsAdmin(data?.is_admin || false);
-        setError(null);
-        retryCount = 0; // Reset retry count on success
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        
-        if (retryCount < MAX_RETRIES) {
-          retryCount++;
-          console.log(`Retrying admin status check (attempt ${retryCount}/${MAX_RETRIES})...`);
-          retryTimeout = window.setTimeout(checkAdminStatus, RETRY_DELAY);
-          setError(`Connection error. Retrying... (${retryCount}/${MAX_RETRIES})`);
-        } else {
-          setError('Failed to check admin status after multiple attempts');
-          setIsAdmin(false);
-        }
-      } finally {
-        if (retryCount >= MAX_RETRIES || !error) {
-          setLoading(false);
-        }
-      }
-    };
-
-    checkAdminStatus();
+        setError('Could not check admin status');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
+      cancelled = true;
     };
   }, [user]);
 
-  return { 
-    isAdmin, 
+  return {
+    isAdmin,
     loading,
     error,
     showAdminTools,

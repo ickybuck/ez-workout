@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Play, Plus, Star, Dumbbell } from 'lucide-react';
 import { format } from 'date-fns';
-import { supabase, checkSupabaseConnection } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { WorkoutTemplate } from '../types/template';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { useWeightUnit } from '../hooks/useWeightUnit';
@@ -50,12 +50,6 @@ const Dashboard: React.FC = () => {
       if (!user) return;
 
       try {
-        // Check Supabase connection first
-        const isConnected = await checkSupabaseConnection();
-        if (!isConnected) {
-          throw new Error('Unable to connect to the database. Please check your connection.');
-        }
-
         // First load user settings
         const settings = await loadUserSettings();
         setUserSettings(settings);

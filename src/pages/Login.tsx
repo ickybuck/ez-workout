@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase, checkSupabaseConnection } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { LogIn } from 'lucide-react';
 import { SIGNUPS_ENABLED } from '../config';
 
@@ -19,13 +19,6 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // Check connection before attempting login
-      const isConnected = await checkSupabaseConnection();
-      if (!isConnected) {
-        toast.error('Unable to connect to the server. Please check your internet connection and try again.');
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
