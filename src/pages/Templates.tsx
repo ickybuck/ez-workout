@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Copy, CreditCard as Edit, Plus, Star, Trash2, ArrowDownUp, ArrowRight, Info, Dumbbell, Upload, Download, HelpCircle } from 'lucide-react';
+// Edit was aliased to CreditCard, so the edit button showed a credit card and
+// read as nothing at all — the one control people look for was the one icon
+// that could not be guessed. Almost certainly an auto-import picking the wrong
+// symbol; corrected to a pencil.
+import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, ArrowDownUp, ArrowRight, Info, Dumbbell, Upload, Download, HelpCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
@@ -377,9 +381,15 @@ const Templates: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center">
                       <div className="flex-1 flex items-center gap-2 min-w-0 mr-4">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                        {/* Tapping the name is what everyone tries first, so it
+                            opens the editor rather than doing nothing. */}
+                        <button
+                          onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
+                          className="text-lg font-medium text-gray-900 truncate hover:text-indigo-600 transition-colors text-left"
+                          title="Edit template"
+                        >
                           {template.name}
-                        </h3>
+                        </button>
                         {template.description && (
                           <button
                             onClick={() => toggleTemplate(template.id)}
@@ -450,7 +460,7 @@ const Templates: React.FC = () => {
                           className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
                           title="Edit template"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteTemplate(template.id)}
