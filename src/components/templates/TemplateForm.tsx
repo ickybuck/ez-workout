@@ -29,38 +29,12 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ template, onChange }) => {
           rows={2}
         />
       </div>
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Template Type</label>
-          <div className="space-y-2">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                value="regular"
-                checked={template.template_type === 'regular'}
-                onChange={e => onChange({ ...template, template_type: e.target.value as 'regular' | 'superset' })}
-                className="form-radio h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-              />
-              <span className="ml-2 text-gray-700">Linear</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                value="superset"
-                checked={template.template_type === 'superset'}
-                onChange={e => onChange({ ...template, template_type: e.target.value as 'regular' | 'superset' })}
-                className="form-radio h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-              />
-              <span className="ml-2 text-gray-700">Superset</span>
-            </label>
-          </div>
-          <p className="mt-1 text-sm text-gray-500">
-            {template.template_type === 'superset' 
-              ? 'Perform two exercises back-to-back with minimal rest between them'
-              : 'Move through exercises one at a time, with rest between each set'}
-          </p>
-        </div>
-
+      {/* The Linear/Superset radio has gone. It set a template-wide flag that
+          nothing reads any more: pairing is chosen per exercise, on the link
+          between two of them, so a template can be part one and part the
+          other. A control that no longer controls anything is worse than a
+          missing one — it invites a decision that will be silently ignored. */}
+      <div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
           <select

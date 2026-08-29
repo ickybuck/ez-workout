@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 // read as nothing at all — the one control people look for was the one icon
 // that could not be guessed. Almost certainly an auto-import picking the wrong
 // symbol; corrected to a pencil.
-import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, ArrowDownUp, ArrowRight, Info, Dumbbell, Upload, Download, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, Info, Dumbbell, Upload, Download, HelpCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
@@ -60,6 +60,7 @@ const Templates: React.FC = () => {
           exercises:template_exercises(
             id,
             order_index,
+            superset_group,
             default_sets,
             default_reps,
             default_weight,
@@ -120,10 +121,14 @@ const Templates: React.FC = () => {
         ex => ex?.exercise && ex.exercise?.equipment_type
       );
 
+      // Pairing has to travel with the copy. Without it a copied template comes
+      // back as every exercise a straight set — silently, since the copy looks
+      // right until it is started.
       const exercisesToCopy = validExercises.map(exercise => ({
         template_id: newTemplate.id,
         exercise_id: exercise.exercise_id,
         order_index: exercise.order_index,
+        superset_group: exercise.superset_group ?? null,
         default_sets: exercise.default_sets,
         default_reps: exercise.default_reps,
         default_weight: exercise.default_weight,
@@ -409,20 +414,10 @@ const Templates: React.FC = () => {
 
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          {template.template_type === 'superset' ? (
-                            <>
-                              <ArrowDownUp className="h-4 w-4 text-gray-500" />
-                              <span className="text-gray-500">Superset</span>
-                            </>
-                          ) : (
-                            <>
-                              <ArrowRight className="h-4 w-4 text-blue-600" />
-                              <span className="text-blue-600">Linear</span>
-                            </>
-                          )}
-                        </div>
-                        <span>•</span>
+                        {/* The template-wide Linear/Superset label is gone. A
+                            template can now be both at once, so labelling the
+                            whole thing one or the other was not just useless —
+                            it was wrong for any template that mixes them. */}
                         <div className="flex items-center gap-1" title={`${template.exercises.length} exercises`}>
                           <Dumbbell className="h-4 w-4 text-gray-500" />
                           <span>{template.exercises.length}</span>
