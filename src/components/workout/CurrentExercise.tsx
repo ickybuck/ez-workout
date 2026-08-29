@@ -5,6 +5,7 @@ import SetProgress from './SetProgress';
 import type { SetOutcomeInput } from '../../lib/stopReason';
 import { describeCleanStall, type CleanStall } from '../../lib/cleanStall';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { formatVolume } from '../../lib/weight';
 
 interface CurrentExerciseProps {
   exercise: ActiveWorkoutExercise;
@@ -23,7 +24,7 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
   stall,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
-  const { formatWeight } = useWeightUnit();
+  const { unit } = useWeightUnit();
 
   return (
     <div className={`bg-white rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
@@ -66,7 +67,13 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
           <div className="mt-2 flex items-start gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2">
             <TrendingUp className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-emerald-800">
-              {describeCleanStall(stall, formatWeight)}
+              {/* Whole units, not formatWeight. The stall's weight is the
+                  heaviest set of the run, and converting a stored kilogram
+                  value back to pounds produced "275.14 lb" directly above a
+                  set line reading "275 lb". A headline number carrying more
+                  precision than the thing it describes reads as a different
+                  weight entirely. */}
+              {describeCleanStall(stall, (kg) => formatVolume(kg, unit))}
             </p>
           </div>
         )}
