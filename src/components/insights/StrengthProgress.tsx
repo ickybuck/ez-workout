@@ -43,19 +43,21 @@ const StrengthProgress: React.FC<Props> = ({ timeRange }) => {
   return (
     <div className="bg-white rounded-lg p-4">
       <div className="flex items-baseline justify-between mb-1">
-        <h3 className="text-sm font-medium text-gray-900">Estimated one-rep max</h3>
-        <span className="text-xs text-gray-400">strength, not volume</span>
+        <h3 className="text-sm font-medium text-gray-900">Strength by exercise</h3>
+        <span className="text-xs text-gray-400">load, not volume</span>
       </div>
 
       <p className="text-xs text-gray-400 mb-3">
-        Estimated from your heaviest clean set each session. Sets above 15 reps
-        are left out — the estimate stops being meaningful there.
+        Heaviest set lifted, with an estimated one-rep max beside it. The
+        estimate assumes an unbroken set — if you break a heavy set into clusters
+        it will read high, so the measured load leads.
       </p>
 
       <div className="space-y-2">
         {shown.map((row) => {
-          const current = roundForDisplay(row.current.value, unit);
+          const estimate = roundForDisplay(row.current.value, unit);
           const best = roundForDisplay(row.best.value, unit);
+          const topSet = roundForDisplay(row.currentTopSet, unit);
 
           return (
             <div key={row.exerciseId} className="flex items-center gap-2">
@@ -64,13 +66,23 @@ const StrengthProgress: React.FC<Props> = ({ timeRange }) => {
               {/* Only when meaningfully below peak: within the noise band it is
                   the same number measured twice, not a decline. */}
               {row.belowBest && (
-                <span className="text-xs text-gray-400 tabular-nums" title={`Best ${best} ${unit} on ${row.bestDate}`}>
+                <span className="text-xs text-gray-400 tabular-nums" title={`Best estimate ${best} ${unit} on ${row.bestDate}`}>
                   best {best}
                 </span>
               )}
 
+              {/* Measured load first, estimate second and visibly lesser. The
+                  estimate assumes an unbroken set and this athlete clusters
+                  heavy ones, so it should never be the number that reads as
+                  the fact. */}
               <span className="text-xs font-medium text-gray-900 tabular-nums w-16 text-right">
-                {current} {unit}
+                {topSet} {unit}
+              </span>
+              <span
+                className="text-xs text-gray-400 tabular-nums w-16 text-right"
+                title="Estimated one-rep max — assumes an unbroken set"
+              >
+                ~{estimate}
               </span>
 
               <span className="w-14 text-right">

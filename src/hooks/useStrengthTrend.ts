@@ -23,6 +23,16 @@ interface Row {
 export interface StrengthSeries {
   exerciseId: string;
   exerciseName: string;
+  /**
+   * Heaviest load actually lifted in the most recent session.
+   *
+   * A measured fact, and the reason it leads the display. Estimated 1RM assumes
+   * a continuous set taken near failure, and this athlete deliberately clusters
+   * heavy sets — squats as six, thirty seconds, then four. Ten clustered reps
+   * are easier than ten straight, so the formula reads them as more strength
+   * than they represent. Top-set load has no such assumption in it.
+   */
+  currentTopSet: number;
   /** Best estimate from the most recent session that produced one. */
   current: OneRepMax;
   /** Best across the whole window. */
@@ -110,8 +120,17 @@ export function useStrengthTrend(timeRange: '30' | '90' | '180' | 'all') {
 
       for (const [exerciseId, entry] of byExercise) {
         const points: TrendPoint[] = [];
+        const topSetByDate = new Map<string, number>();
 
         for (const [date, rows] of entry.sessions) {
+          // Heaviest completed set of the session, whatever its reps. Recorded
+          // separately from the estimate because it survives clustering.
+          const topSet = rows.reduce((max, r) => {
+            const performed = (r.reps ?? 0) - (r.failed_reps ?? 0) + (r.extra_reps ?? 0);
+            return performed > 0 ? Math.max(max, r.weight ?? 0) : max;
+          }, 0);
+          if (topSet > 0) topSetByDate.set(date, topSet);
+
           const estimate = bestOneRepMax(
             rows.map((r) => ({
               reps: r.reps,
@@ -132,6 +151,7 @@ export function useStrengthTrend(timeRange: '30' | '90' | '180' | 'all') {
         result.push({
           exerciseId,
           exerciseName: entry.name,
+          currentTopSet: topSetByDate.get(ordered[ordered.length - 1].date) ?? current.weight,
           current,
           best: peak.estimate,
           bestDate: peak.date,
