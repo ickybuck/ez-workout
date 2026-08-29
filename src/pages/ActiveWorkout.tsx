@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { usePendingSync } from '../hooks/usePendingSync';
 import type { SetOutcomeInput } from '../lib/stopReason';
+import { runIndexes, normalise } from '../lib/supersets';
 import { ActiveWorkout as ActiveWorkoutType } from '../types/workout';
 import WorkoutTimer from '../components/workout/WorkoutTimer';
 import RestTimer, { RestTimerRef } from '../components/workout/RestTimer';
@@ -125,6 +126,7 @@ const ActiveWorkout: React.FC = () => {
           exercises:template_exercises(
             id,
             order_index,
+            superset_group,
             default_sets,
             default_reps,
             default_weight,
@@ -187,6 +189,9 @@ const ActiveWorkout: React.FC = () => {
           workout_id: newWorkout.id,
           exercise_id: te.exercise.id,
           order_index: te.order_index || 0,
+          // Snapshot the pairing, so revising a template later cannot change
+          // the shape of a session already recorded against the old one.
+          superset_group: te.superset_group ?? null,
         }));
 
       const { data: exercises, error: exercisesError } = await supabase
@@ -342,43 +347,31 @@ const ActiveWorkout: React.FC = () => {
         restTimerRef.current.resetTimer();
       }
 
-      const currentExercise = updatedWorkout.exercises[currentExerciseIndex];
-      const nextExercise = workout.template_type === 'superset' 
-        ? updatedWorkout.exercises[currentExerciseIndex + 1] 
-        : null;
+      // Advance by block rather than by pair. A block is a run of exercises
+      // sharing a superset group, or a single exercise on its own — so the same
+      // code drives a straight set, a pair and a triple, where the old version
+      // could only ever step one or two.
+      const runs = runIndexes(updatedWorkout.exercises);
+      const currentRun = runs[currentExerciseIndex];
+      const blockPositions = runs.reduce<number[]>(
+        (acc, run, i) => (run === currentRun ? [...acc, i] : acc),
+        [],
+      );
 
-      const currentComplete = currentExercise.logs.every(log => log.completed);
-      const nextComplete = nextExercise 
-        ? nextExercise.logs.every(log => log.completed)
-        : true;
+      const isDone = (i: number) => updatedWorkout.exercises[i].logs.every(log => log.completed);
+      const blockComplete = blockPositions.every(isDone);
 
-      if (workout.template_type === 'superset' && nextExercise) {
-        const currentHasIncomplete = currentExercise.logs.some(log => !log.completed);
-        const nextHasIncomplete = nextExercise.logs.some(log => !log.completed);
-        
-        if (currentHasIncomplete || nextHasIncomplete) {
-          if (!currentHasIncomplete && nextHasIncomplete) {
-            setActiveExerciseIndex(currentExerciseIndex + 1);
-          }
-          else if (currentHasIncomplete && !nextHasIncomplete) {
-            setActiveExerciseIndex(currentExerciseIndex);
-          }
-          else {
-            setActiveExerciseIndex(
-              activeExerciseIndex === currentExerciseIndex 
-                ? currentExerciseIndex + 1 
-                : currentExerciseIndex
-            );
-          }
-        }
-      }
+      if (!blockComplete) {
+        // Hand over to the next exercise in the block that still has work,
+        // wrapping around so a pair alternates exactly as it always has.
+        const from = blockPositions.indexOf(activeExerciseIndex);
+        const ordered = [...blockPositions.slice(from + 1), ...blockPositions.slice(0, from + 1)];
+        const nextActive = ordered.find((i) => !isDone(i));
+        if (nextActive !== undefined) setActiveExerciseIndex(nextActive);
+      } else {
+        const nextIndex = blockPositions[blockPositions.length - 1] + 1;
 
-      if (currentComplete && nextComplete) {
-        const nextIndex = workout.template_type === 'superset'
-          ? currentExerciseIndex + 2
-          : currentExerciseIndex + 1;
-
-        if (nextIndex >= workout.exercises.length) {
+        if (nextIndex >= updatedWorkout.exercises.length) {
           await endWorkout();
         } else {
           setCurrentExerciseIndex(nextIndex);
@@ -507,108 +500,79 @@ const ActiveWorkout: React.FC = () => {
     if (targetIndex === currentExerciseIndex) return;
 
     try {
-      const isSuperset = workout.template_type === 'superset';
+      // Swap two blocks, whatever size they are. The old version had a
+      // pair-shaped branch and a single-exercise branch and could express
+      // nothing else, so a template mixing the two had no correct path through
+      // it. One block swap covers a straight set, a pair and a triple.
+      const runs = runIndexes(workout.exercises);
+      const currentRun = runs[currentExerciseIndex];
+      const targetRun = runs[targetIndex];
+      if (currentRun === targetRun) return;
 
-      if (isSuperset) {
-        const currentPairIndex = Math.floor(currentExerciseIndex / 2);
-        const targetPairIndex = Math.floor(targetIndex / 2);
+      const positionsOf = (run: number) =>
+        runs.reduce<number[]>((acc, r, i) => (r === run ? [...acc, i] : acc), []);
 
-        if (currentPairIndex === targetPairIndex) return;
+      // Rebuild the list run by run, substituting one block for the other.
+      // Blocks can differ in length, so everything after the earlier of the two
+      // shifts — which is why order_index is reassigned wholesale below rather
+      // than patched at the four positions that used to be involved.
+      const runOrder = [...new Set(runs)];
+      const reordered = runOrder.flatMap((run) => {
+        const source =
+          run === currentRun ? targetRun : run === targetRun ? currentRun : run;
+        return positionsOf(source).map((i) => workout.exercises[i]);
+      });
 
-        const exercises = [...workout.exercises];
-        const currentPairStartIndex = currentPairIndex * 2;
-        const targetPairStartIndex = targetPairIndex * 2;
+      // Groups travel with their exercises; normalise renumbers them so they
+      // stay contiguous and ascending after the move.
+      const exercises = normalise(reordered).map((exercise, index) => ({
+        ...exercise,
+        order_index: index,
+      }));
 
-        const currentExercise1 = exercises[currentPairStartIndex];
-        const currentExercise2 = exercises[currentPairStartIndex + 1];
-        const targetExercise1 = exercises[targetPairStartIndex];
-        const targetExercise2 = exercises[targetPairStartIndex + 1];
-
-        exercises[currentPairStartIndex] = targetExercise1;
-        exercises[currentPairStartIndex + 1] = targetExercise2;
-        exercises[targetPairStartIndex] = currentExercise1;
-        exercises[targetPairStartIndex + 1] = currentExercise2;
-
-        const updates = [
-          { id: currentExercise1.id, order_index: targetPairStartIndex },
-          { id: currentExercise2.id, order_index: targetPairStartIndex + 1 },
-          { id: targetExercise1.id, order_index: currentPairStartIndex },
-          { id: targetExercise2.id, order_index: currentPairStartIndex + 1 },
-        ];
-
-        for (const update of updates) {
-          const { error } = await supabase
-            .from('workout_exercises')
-            .update({ order_index: update.order_index })
-            .eq('id', update.id);
-
-          if (error) throw error;
+      for (const exercise of exercises) {
+        const previous = workout.exercises.find((e) => e.id === exercise.id);
+        if (
+          previous &&
+          previous.order_index === exercise.order_index &&
+          (previous.superset_group ?? null) === (exercise.superset_group ?? null)
+        ) {
+          continue;
         }
 
-        const updatedWorkout = {
-          ...workout,
-          exercises: exercises,
-        };
-        setWorkout(updatedWorkout);
+        const { error } = await supabase
+          .from('workout_exercises')
+          .update({
+            order_index: exercise.order_index,
+            superset_group: exercise.superset_group ?? null,
+          })
+          .eq('id', exercise.id);
 
-        // Determine which exercise in the newly swapped-in pair should be active
-        const newExercise1 = exercises[currentPairStartIndex];
-        const newExercise2 = exercises[currentPairStartIndex + 1];
-
-        const ex1CompletedCount = newExercise1.logs.filter(log => log.completed).length;
-        const ex2CompletedCount = newExercise2.logs.filter(log => log.completed).length;
-
-        // If neither exercise has any completed sets, start at the first exercise
-        if (ex1CompletedCount === 0 && ex2CompletedCount === 0) {
-          setActiveExerciseIndex(currentPairStartIndex);
-        }
-        // If exercise 1 has completed sets but exercise 2 doesn't, start at exercise 2
-        else if (ex1CompletedCount > 0 && ex2CompletedCount === 0) {
-          setActiveExerciseIndex(currentPairStartIndex + 1);
-        }
-        // Otherwise, determine based on which has fewer completed sets
-        else {
-          setActiveExerciseIndex(
-            ex1CompletedCount <= ex2CompletedCount
-              ? currentPairStartIndex
-              : currentPairStartIndex + 1
-          );
-        }
-
-        setExerciseTime(0);
-        toast.success('Exercises swapped');
-
-      } else {
-        const exercises = [...workout.exercises];
-
-        const currentExercise = exercises[currentExerciseIndex];
-        const targetExercise = exercises[targetIndex];
-
-        exercises[currentExerciseIndex] = targetExercise;
-        exercises[targetIndex] = currentExercise;
-
-        const updates = [
-          { id: currentExercise.id, order_index: targetIndex },
-          { id: targetExercise.id, order_index: currentExerciseIndex },
-        ];
-
-        for (const update of updates) {
-          const { error } = await supabase
-            .from('workout_exercises')
-            .update({ order_index: update.order_index })
-            .eq('id', update.id);
-
-          if (error) throw error;
-        }
-
-        const updatedWorkout = {
-          ...workout,
-          exercises: exercises,
-        };
-        setWorkout(updatedWorkout);
-        setExerciseTime(0);
-        toast.success('Exercises swapped');
+        if (error) throw error;
       }
+
+      setWorkout({ ...workout, exercises });
+
+      // The block that was jumped to now occupies the slot the current one had.
+      const newRuns = runIndexes(exercises);
+      const landedAt = positionsOf(currentRun)[0];
+      const blockPositions = newRuns.reduce<number[]>(
+        (acc, r, i) => (r === newRuns[landedAt] ? [...acc, i] : acc),
+        [],
+      );
+
+      // Resume at whichever exercise in the block has the least done, so a
+      // half-finished block picks up where it was left rather than restarting.
+      const leastDone = [...blockPositions].sort(
+        (a, b) =>
+          exercises[a].logs.filter((l) => l.completed).length -
+          exercises[b].logs.filter((l) => l.completed).length,
+      )[0];
+
+      setCurrentExerciseIndex(blockPositions[0]);
+      setActiveExerciseIndex(leastDone ?? blockPositions[0]);
+      setExerciseTime(0);
+      toast.success('Exercises swapped');
     } catch (error) {
       console.error('Error swapping exercises:', error);
       toast.error('Failed to swap exercises');
@@ -616,7 +580,14 @@ const ActiveWorkout: React.FC = () => {
   };
 
   const currentExercise = getCurrentExercise();
-  const nextExercise = workout?.template_type === 'superset' && workout.exercises[currentExerciseIndex + 1];
+  // The positions making up the block being performed right now — one exercise
+  // for a straight set, several for a superset.
+  const currentBlock = (() => {
+    if (!workout) return [];
+    const runs = runIndexes(workout.exercises);
+    const run = runs[currentExerciseIndex];
+    return runs.reduce<number[]>((acc, r, i) => (r === run ? [...acc, i] : acc), []);
+  })();
 
   if (loading) {
     return (
@@ -698,20 +669,18 @@ const ActiveWorkout: React.FC = () => {
       <div className="max-w-xl mx-auto px-4 py-6">
         {currentExercise && (
           <div className="space-y-6">
-            <CurrentExercise 
-              exercise={currentExercise} 
-              onCompleteSet={handleCompleteSet}
-              isSuperset={workout.template_type === 'superset'}
-              isActive={workout.template_type !== 'superset' || activeExerciseIndex === currentExerciseIndex}
-            />
-            {workout.template_type === 'superset' && nextExercise && (
-              <CurrentExercise 
-                exercise={nextExercise}
+            {/* Render the whole current block. Previously this was hardcoded to
+                one exercise plus an optional partner, which is why a template
+                could only ever be all pairs or all singles. */}
+            {currentBlock.map((index) => (
+              <CurrentExercise
+                key={workout.exercises[index].id}
+                exercise={workout.exercises[index]}
                 onCompleteSet={handleCompleteSet}
-                isSuperset={true}
-                isActive={activeExerciseIndex === currentExerciseIndex + 1}
+                isSuperset={currentBlock.length > 1}
+                isActive={currentBlock.length === 1 || activeExerciseIndex === index}
               />
-            )}
+            ))}
           </div>
         )}
       </div>
@@ -719,7 +688,6 @@ const ActiveWorkout: React.FC = () => {
       <ExerciseList
         exercises={workout.exercises}
         currentExerciseIndex={currentExerciseIndex}
-        templateType={workout.template_type}
         onJumpToExercise={handleJumpToExercise}
       />
 

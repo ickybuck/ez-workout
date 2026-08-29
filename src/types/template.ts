@@ -17,6 +17,8 @@ export interface TemplateExercise {
   template_id: string;
   exercise_id: string;
   order_index: number;
+  /** Exercises sharing a group are performed together. Null is a straight set. */
+  superset_group?: number | null;
   default_sets: number;
   default_reps: number;
   default_weight: number;

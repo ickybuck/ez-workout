@@ -2,28 +2,30 @@ import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { ActiveWorkoutExercise } from '../../types/workout';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { runIndexes, isPairedWithNext, isInSuperset } from '../../lib/supersets';
 
 interface ExerciseListProps {
   exercises: ActiveWorkoutExercise[];
   currentExerciseIndex: number;
-  templateType: 'regular' | 'superset';
   onJumpToExercise?: (index: number) => void;
 }
 
 const ExerciseList: React.FC<ExerciseListProps> = ({
   exercises,
   currentExerciseIndex,
-  templateType,
   onJumpToExercise,
 }) => {
   const { formatWeight } = useWeightUnit();
 
-  const isCurrentOrNext = (index: number) => {
-    if (templateType === 'superset') {
-      return index === currentExerciseIndex || index === currentExerciseIndex + 1;
-    }
-    return index === currentExerciseIndex;
-  };
+  // Pairing is data now, not an ordering convention. Every question below is
+  // really "which block is this in", so it is answered once here rather than
+  // by four separate index-parity guesses.
+  const runs = runIndexes(exercises);
+  const positionsInRun = (run: number) =>
+    runs.reduce<number[]>((acc, r, i) => (r === run ? [...acc, i] : acc), []);
+
+  const isCurrentOrNext = (index: number) =>
+    runs[index] !== undefined && runs[index] === runs[currentExerciseIndex];
 
   const isFullyCompleted = (exercise: ActiveWorkoutExercise) => {
     return exercise.logs.every(log => log.completed);
@@ -33,28 +35,20 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
     if (!onJumpToExercise) return false;
     if (isCurrentOrNext(index)) return false;
 
-    if (templateType === 'superset') {
-      const pairIndex = Math.floor(index / 2) * 2;
-      const exercise1 = exercises[pairIndex];
-      const exercise2 = exercises[pairIndex + 1];
-      return !isFullyCompleted(exercise1) || !isFullyCompleted(exercise2);
-    }
-
-    return !isFullyCompleted(exercises[index]);
+    // A block is available while any exercise in it still has work left.
+    return positionsInRun(runs[index]).some((i) => !isFullyCompleted(exercises[i]));
   };
 
   const handleClick = (index: number) => {
     if (canSwapWith(index)) {
-      onJumpToExercise(index);
+      onJumpToExercise?.(index);
     }
   };
 
-  const shouldShowDivider = (index: number) => {
-    if (templateType === 'superset') {
-      return index % 2 === 0 && index !== 0;
-    }
-    return true;
-  };
+  // A divider separates blocks, not exercises, so it goes wherever a new run
+  // starts — which for a template of straight sets is every row, and for a
+  // fully paired one is every other row, exactly as before.
+  const shouldShowDivider = (index: number) => index !== 0 && runs[index] !== runs[index - 1];
 
   return (
     <div className="max-w-xl mx-auto px-4 py-4">
@@ -78,7 +72,9 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
           const fullyCompleted = isFullyCompleted(exercise);
           const swappable = canSwapWith(index);
 
-          const showSupersetBridge = templateType === 'superset' && index % 2 === 0 && index < exercises.length - 1;
+          // The bracket is drawn between two exercises that are actually paired,
+          // rather than at every even index.
+          const showSupersetBridge = isPairedWithNext(exercises, index);
           const showDivider = shouldShowDivider(index);
 
           return (
@@ -110,7 +106,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                     <span className="text-base flex-shrink-0" title={exercise.exercise.equipment_type.name}>
                       {exercise.exercise.equipment_type.emoji}
                     </span>
-                    {templateType !== 'superset' && swappable && (
+                    {!isInSuperset(exercises, index) && swappable && (
                       <ExternalLink className="h-4.5 w-4.5 text-blue-600 flex-shrink-0" />
                     )}
                   </div>
