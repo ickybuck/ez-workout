@@ -37,8 +37,15 @@ jobs:
         with:
           context: .
           push: true
+          # Two tags on purpose. The sha- tag is immutable and is what makes
+          # rollback trustworthy — it always means exactly one commit. The
+          # :main tag moves, so the NAS app can point at it once and pick up
+          # each new build on redeploy instead of needing its image tag
+          # edited by hand every release. Which commit is actually running
+          # stays knowable either way, via the revision label below.
           tags: |
             ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:main
           build-args: |
             VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
