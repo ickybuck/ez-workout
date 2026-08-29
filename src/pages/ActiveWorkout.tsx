@@ -9,6 +9,7 @@ import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { usePendingSync } from '../hooks/usePendingSync';
 import type { SetOutcomeInput } from '../lib/stopReason';
 import { runIndexes, normalise } from '../lib/supersets';
+import { useCleanStalls } from '../hooks/useCleanStalls';
 import { ActiveWorkout as ActiveWorkoutType } from '../types/workout';
 import WorkoutTimer from '../components/workout/WorkoutTimer';
 import RestTimer, { RestTimerRef } from '../components/workout/RestTimer';
@@ -55,6 +56,14 @@ const ActiveWorkout: React.FC = () => {
   });
   const restTimerRef = useRef<RestTimerRef>(null);
   const pendingSync = usePendingSync();
+
+  // Scoped to this workout's exercises. Across the whole library this fires on
+  // fourteen lifts at once, several with runs past twenty sessions — useful as
+  // a list, useless as fourteen simultaneous nudges.
+  const cleanStalls = useCleanStalls(
+    workout?.exercises.map((exercise) => exercise.exercise.id) ?? [],
+    user?.id,
+  );
 
   useEffect(() => {
     if (user) {
@@ -679,6 +688,7 @@ const ActiveWorkout: React.FC = () => {
                 onCompleteSet={handleCompleteSet}
                 isSuperset={currentBlock.length > 1}
                 isActive={currentBlock.length === 1 || activeExerciseIndex === index}
+                stall={cleanStalls[workout.exercises[index].exercise.id]}
               />
             ))}
           </div>

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { ActiveWorkoutExercise } from '../../types/workout';
 import SetProgress from './SetProgress';
 import type { SetOutcomeInput } from '../../lib/stopReason';
+import { describeCleanStall, type CleanStall } from '../../lib/cleanStall';
+import { useWeightUnit } from '../../hooks/useWeightUnit';
 
 interface CurrentExerciseProps {
   exercise: ActiveWorkoutExercise;
   onCompleteSet: (logId: string, outcome?: SetOutcomeInput) => void;
   isSuperset?: boolean;
   isActive?: boolean;
+  /** Present when this load has been completed cleanly for several sessions. */
+  stall?: CleanStall;
 }
 
 const CurrentExercise: React.FC<CurrentExerciseProps> = ({ 
@@ -16,8 +20,10 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
   onCompleteSet,
   isSuperset,
   isActive = true,
+  stall,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
+  const { formatWeight } = useWeightUnit();
 
   return (
     <div className={`bg-white rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
@@ -53,8 +59,20 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
             {exercise.exercise.description}
           </div>
         )}
-        <SetProgress 
-          logs={exercise.logs} 
+        {/* Only while this exercise is the one being performed — a nudge on a
+            greyed-out card is noise, and this can be true of several exercises
+            in the same session. */}
+        {stall && isActive && (
+          <div className="mt-2 flex items-start gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2">
+            <TrendingUp className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-emerald-800">
+              {describeCleanStall(stall, formatWeight)}
+            </p>
+          </div>
+        )}
+
+        <SetProgress
+          logs={exercise.logs}
           onComplete={onCompleteSet}
           disabled={!isActive}
           exerciseId={exercise.exercise.id}
