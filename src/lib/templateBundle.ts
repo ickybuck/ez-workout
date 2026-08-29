@@ -151,8 +151,42 @@ export function extractJson(text: string): string | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
 
-  const fence = /```(?:json)?\s*\n([\s\S]*?)```/i.exec(trimmed);
-  if (fence?.[1]?.trim()) return fence[1].trim();
+  // Every fenced block, not just the first. The first one is often an example:
+  // the instruction document this app hands out shows the format before it
+  // shows the data, so taking the first fence would import the sample template
+  // instead of the user's own — quietly, and with a plausible-looking result.
+  // A model explaining its changes before restating the file does the same.
+  //
+  // So: among the blocks that parse, prefer the ones that actually look like a
+  // bundle, and take the largest. Largest rather than last, because a reply
+  // that ends with a short excerpt after the full file is just as likely as one
+  // that builds up to it.
+  const fences = [...trimmed.matchAll(/```(?:json)?\s*\n([\s\S]*?)```/gi)]
+    .map((match) => match[1]?.trim())
+    .filter((block): block is string => !!block);
+
+  const parseable = fences.filter((block) => {
+    try {
+      JSON.parse(block);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  const looksLikeBundle = parseable.filter((block) => {
+    const parsed = JSON.parse(block) as unknown;
+    return isRecord(parsed) && Array.isArray(parsed.templates);
+  });
+
+  const candidates = looksLikeBundle.length > 0 ? looksLikeBundle : parseable;
+  if (candidates.length > 0) {
+    return candidates.reduce((longest, block) => (block.length > longest.length ? block : longest));
+  }
+
+  // A fence that does not parse is still the best guess at intent — hand it
+  // over so the JSON error names the real problem.
+  if (fences.length > 0) return fences[fences.length - 1];
 
   // If the whole paste is already valid JSON, take it whole. This matters for
   // the shape a model reaches for first — a bare array of templates with no

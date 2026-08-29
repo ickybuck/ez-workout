@@ -297,3 +297,40 @@ describe('formatIssueReport', () => {
     expect(formatIssueReport([])).toContain('proposed_exercises');
   });
 });
+
+describe('the instruction document round trip', () => {
+  it('picks the real data out of a document that shows an example first', async () => {
+    // The document this app hands out contains TWO json blocks: the format
+    // example, then the user's actual data. Taking the first fence would import
+    // the sample template — quietly, and with a plausible-looking result.
+    const { buildInstructionDocument } = await import('./templateInstructions');
+    const { bundle } = parseBundle(validBundle());
+    const doc = buildInstructionDocument(bundle!);
+
+    const reparsed = parseBundle(doc);
+    expect(reparsed.bundle?.templates).toHaveLength(1);
+    expect(reparsed.bundle?.templates[0].name).toBe('Push Upper Focused');
+    expect(reparsed.bundle?.weight_unit).toBe('lb');
+    expect(reparsed.issues.filter((i) => i.severity === 'error')).toHaveLength(0);
+  });
+
+  it('survives a reply that restates a short excerpt after the full file', () => {
+    const full = validBundle();
+    const excerpt = JSON.stringify({ templates: [{ name: 'just the one I changed' }] });
+    const reply = `Updated:\n\n\`\`\`json\n${full}\n\`\`\`\n\nThe change:\n\n\`\`\`json\n${excerpt}\n\`\`\``;
+
+    expect(parseBundle(reply).bundle?.templates[0].name).toBe('Push Upper Focused');
+  });
+
+  it('prefers a bundle-shaped block over a larger unrelated one', () => {
+    const noise = JSON.stringify({ notes: 'x'.repeat(5000) });
+    const reply = `\`\`\`json\n${noise}\n\`\`\`\n\n\`\`\`json\n${validBundle()}\n\`\`\``;
+
+    expect(parseBundle(reply).bundle?.templates[0].name).toBe('Push Upper Focused');
+  });
+
+  it('reports the JSON error when the only fence is malformed', () => {
+    const reply = 'Here:\n\n```json\n{"schema_version": "2.0",\n```';
+    expect(errorsOf(reply)[0].message).toContain('Not valid JSON');
+  });
+});
