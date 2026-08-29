@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       body_parts: {
         Row: {
           created_at: string | null
@@ -547,6 +565,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant: { Args: { target_email: string }; Returns: number }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          is_admin: boolean
+        }[]
+      }
+      admin_revoke: { Args: { target_user_id: string }; Returns: number }
       copy_user_defaults: {
         Args: { source_user_id: string; target_user_id: string }
         Returns: undefined
@@ -568,10 +597,7 @@ export type Database = {
           id: string
         }[]
       }
-      set_user_data_as_default: {
-        Args: { admin_user_id: string }
-        Returns: undefined
-      }
+      set_user_data_as_default: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

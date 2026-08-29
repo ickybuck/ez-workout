@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Shield, Trash2, Plus, Download, Upload } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { useAdminStatus } from '../hooks/useAdminStatus';
+import { useAdminStatus, invalidateAdminStatus } from '../hooks/useAdminStatus';
 import { Navigate } from 'react-router-dom';
 import { exportExercises } from '../lib/exerciseExport';
 import { importExercises } from '../lib/exerciseImport';
@@ -12,6 +12,7 @@ interface AdminUser {
   id: string;
   email: string;
   created_at: string;
+  is_admin: boolean;
 }
 
 const Admin: React.FC = () => {
@@ -34,28 +35,16 @@ const Admin: React.FC = () => {
 
   const loadAdminUsers = async () => {
     try {
-      // First get all users
-      const { data: allUsers, error: usersError } = await supabase
-        .rpc('list_users');
-
-      if (usersError) throw usersError;
-
-      // Then get admin settings
-      const { data: adminSettings, error: settingsError } = await supabase
-        .from('user_settings')
-        .select('user_id')
-        .eq('is_admin', true);
-
-      if (settingsError) throw settingsError;
-
-      // Filter users to only include admins
-      const adminIds = new Set(adminSettings.map(setting => setting.user_id));
-      const adminUsers = allUsers.filter(user => adminIds.has(user.id));
-
-      setAdminUsers(adminUsers);
+      // One call, and it returns every account with its admin state. The
+      // previous version joined list_users against user_settings under a
+      // SELECT policy scoped to the caller's own row, so the list could only
+      // ever contain you (EZ-02).
+      const { data, error } = await supabase.rpc('admin_list_users');
+      if (error) throw error;
+      setAdminUsers(data ?? []);
     } catch (error) {
-      console.error('Error loading admin users:', error);
-      toast.error('Failed to load admin users');
+      console.error('Error loading users:', error);
+      toast.error('Failed to load users');
     } finally {
       setLoadingAdmins(false);
     }
@@ -67,57 +56,43 @@ const Admin: React.FC = () => {
 
     setAddingAdmin(true);
     try {
-      // Get user details by email
-      const { data: users, error: usersError } = await supabase
-        .rpc('get_user_details', { user_email: newAdminEmail.trim() });
+      // Returns the number of rows changed, so "already an admin" is
+      // distinguishable from "granted". The old version updated another
+      // user's row, matched zero under RLS, and reported success regardless.
+      const { data: granted, error } = await supabase.rpc('admin_grant', {
+        target_email: newAdminEmail.trim(),
+      });
 
-      if (usersError) throw usersError;
-      if (!users?.length) {
-        toast.error('User not found');
-        return;
-      }
+      if (error) throw error;
 
-      // Update user settings to make them an admin
-      const { error: updateError } = await supabase
-        .from('user_settings')
-        .update({ is_admin: true })
-        .eq('user_id', users[0].id);
-
-      if (updateError) throw updateError;
-
-      toast.success('Admin user added successfully');
+      toast.success(granted ? 'Admin access granted' : 'That account is already an admin');
       setNewAdminEmail('');
-      loadAdminUsers();
+      invalidateAdminStatus();
+      await loadAdminUsers();
     } catch (error) {
-      console.error('Error adding admin:', error);
-      toast.error('Failed to add admin user');
+      console.error('Error granting admin:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to grant admin access');
     } finally {
       setAddingAdmin(false);
     }
   };
 
   const removeAdmin = async (adminId: string) => {
-    if (!confirm('Are you sure you want to remove this admin?')) return;
-
-    // Don't allow removing yourself
-    if (adminId === user?.id) {
-      toast.error('You cannot remove yourself as an admin');
-      return;
-    }
+    if (!confirm('Remove admin access for this user?')) return;
 
     try {
-      const { error } = await supabase
-        .from('user_settings')
-        .update({ is_admin: false })
-        .eq('user_id', adminId);
-
+      // Refusing to remove yourself, and refusing to remove the last admin,
+      // are both enforced in the function as well as here — an app with no
+      // administrator has no way back short of direct database access.
+      const { error } = await supabase.rpc('admin_revoke', { target_user_id: adminId });
       if (error) throw error;
 
-      toast.success('Admin removed successfully');
-      setAdminUsers(adminUsers.filter(admin => admin.id !== adminId));
+      toast.success('Admin access removed');
+      invalidateAdminStatus();
+      await loadAdminUsers();
     } catch (error) {
-      console.error('Error removing admin:', error);
-      toast.error('Failed to remove admin');
+      console.error('Error revoking admin:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to remove admin access');
     }
   };
 
@@ -126,9 +101,10 @@ const Admin: React.FC = () => {
     setSettingAsDefault(true);
 
     try {
-      const { error } = await supabase.rpc('set_user_data_as_default', {
-        admin_user_id: user.id,
-      });
+      // No argument any more: the function acts on its caller. It used to
+      // take a uuid and check whether THAT id was an admin, never the caller
+      // (EZ-27).
+      const { error } = await supabase.rpc('set_user_data_as_default');
 
       if (error) throw error;
 
@@ -225,7 +201,7 @@ const Admin: React.FC = () => {
 
           {/* Admin Users Section */}
           <div className="border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Admin Users</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Accounts</h3>
             
             {/* Add Admin Form */}
             <form onSubmit={addAdmin} className="mb-6">
@@ -255,27 +231,36 @@ const Admin: React.FC = () => {
                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
                 </div>
               ) : adminUsers.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No admin users found</p>
+                <p className="text-gray-500 text-center py-4">No accounts found</p>
               ) : (
-                adminUsers.map(admin => (
+                adminUsers.map(account => (
                   <div
-                    key={admin.id}
+                    key={account.id}
                     className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-gray-900">{admin.email}</div>
+                      <div className="font-medium text-gray-900 flex items-center gap-2">
+                        {account.email}
+                        {account.is_admin && (
+                          <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded">
+                            Admin
+                          </span>
+                        )}
+                      </div>
                       <div className="text-sm text-gray-500">
-                        Added {new Date(admin.created_at).toLocaleDateString()}
+                        Joined {new Date(account.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <button
-                      onClick={() => removeAdmin(admin.id)}
-                      disabled={admin.id === user?.id}
-                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={admin.id === user?.id ? "You can't remove yourself" : "Remove admin"}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {account.is_admin && (
+                      <button
+                        onClick={() => removeAdmin(account.id)}
+                        disabled={account.id === user?.id}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={account.id === user?.id ? "You can't remove yourself" : 'Remove admin access'}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 ))
               )}

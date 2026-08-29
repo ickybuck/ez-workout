@@ -36,15 +36,14 @@ const useAdminStatusStore = create<AdminStatusStore>()(
  */
 const adminCache = createQueryCache<boolean>({ ttlMs: 10 * 60_000 });
 
-async function fetchIsAdmin(userId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user_settings')
-    .select('is_admin')
-    .eq('user_id', userId)
-    .maybeSingle();
-
+async function fetchIsAdmin(): Promise<boolean> {
+  // Asks the database rather than reading a column. is_admin() is the same
+  // predicate every RLS policy uses, so the client and the database can never
+  // disagree about who is an admin — which they did while this read
+  // user_settings.is_admin and the policies read something else.
+  const { data, error } = await supabase.rpc('is_admin');
   if (error) throw error;
-  return data?.is_admin ?? false;
+  return data ?? false;
 }
 
 /** Call after granting or revoking admin, so the next read is fresh. */
@@ -71,7 +70,7 @@ export const useAdminStatus = () => {
     setLoading(true);
 
     adminCache
-      .get(user.id, () => fetchIsAdmin(user.id))
+      .get(user.id, () => fetchIsAdmin())
       .then((result) => {
         if (cancelled) return;
         setIsAdmin(result);
