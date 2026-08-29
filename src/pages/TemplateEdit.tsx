@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
+import { normalise } from '../lib/supersets';
 import { Exercise } from '../types/exercise';
 import TemplateForm from '../components/templates/TemplateForm';
 import ExerciseList from '../components/templates/ExerciseList';
@@ -55,6 +56,7 @@ const TemplateEdit: React.FC = () => {
           exercises:template_exercises(
             id,
             order_index,
+            superset_group,
             default_sets,
             default_reps,
             default_weight,
@@ -227,12 +229,20 @@ const TemplateEdit: React.FC = () => {
         setTemplate(prev => ({ ...prev, id: templateId }));
       }
 
-      // Update exercise order
-      for (const exercise of template.exercises) {
+      // Update exercise order and pairing. Both are positional, so they are
+      // written together — a reorder that left superset_group behind would
+      // leave a group whose members are no longer adjacent, which normalise
+      // would then dissolve on the next read.
+      const ordered = normalise(
+        [...template.exercises].sort((a, b) => a.order_index - b.order_index),
+      );
+
+      for (const [index, exercise] of ordered.entries()) {
         const { error: exerciseError } = await supabase
           .from('template_exercises')
           .update({
-            order_index: exercise.order_index,
+            order_index: index,
+            superset_group: exercise.superset_group ?? null,
           })
           .eq('id', exercise.id);
 

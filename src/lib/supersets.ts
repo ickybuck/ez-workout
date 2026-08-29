@@ -174,6 +174,30 @@ export function unlinkAt<T extends Groupable>(items: T[], index: number): T[] {
   );
 }
 
+/**
+ * Break the link between an exercise and the one below it.
+ *
+ * The operation a connector control needs, and not the same as unlinking one
+ * exercise. Breaking the join between the first and second of a triple should
+ * leave the second and third still together — `unlinkAt` on the first happens
+ * to do that, but on the *second* it would strand the third as well. Splitting
+ * at a boundary says what is meant regardless of where in the run it falls.
+ */
+export function splitAfter<T extends Groupable>(items: T[], index: number): T[] {
+  if (!isPairedWithNext(items, index)) return items;
+
+  const group = items[index].superset_group;
+  const fresh = freeGroup(items);
+
+  return normalise(
+    items.map((item, i) =>
+      i > index && (item.superset_group ?? null) === group
+        ? { ...item, superset_group: fresh }
+        : item,
+    ),
+  );
+}
+
 /** Every exercise on its own. */
 export function unlinkAll<T extends Groupable>(items: T[]): T[] {
   return items.map((item) => ({ ...item, superset_group: null }));

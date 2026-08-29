@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2, Scale } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, Scale, Link2, Unlink } from 'lucide-react';
 import { WorkoutTemplate } from '../../types/template';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { isPairedWithNext, isInSuperset, linkWithNext, splitAfter } from '../../lib/supersets';
 
 interface ExerciseListProps {
   template: WorkoutTemplate;
@@ -14,7 +15,7 @@ interface ExerciseListProps {
 
 const ExerciseList: React.FC<ExerciseListProps> = ({
   template,
-  onTemplateChange: _onTemplateChange,
+  onTemplateChange,
   onAddClick,
   onRemoveExercise,
   onMoveExercise,
@@ -26,6 +27,18 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
   const validExercises = template.exercises.filter(
     exercise => exercise?.exercise && exercise.exercise?.equipment_type
   );
+
+  // Pairing is edited between rows rather than on them, because a superset is
+  // a relationship, not a property of one exercise. The control sits on the
+  // join it affects, so there is never a question of which of the two a toggle
+  // belongs to.
+  const toggleJoin = (index: number) => {
+    const next = isPairedWithNext(validExercises, index)
+      ? splitAfter(validExercises, index)
+      : linkWithNext(validExercises, index);
+
+    onTemplateChange({ ...template, exercises: next });
+  };
 
   const handleWeightChange = (exerciseId: string, value: string) => {
     const kgWeight = parseWeight(value);
@@ -50,11 +63,21 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
         </button>
       </div>
 
+      <p className="text-xs text-gray-500 -mt-2">
+        Use the link between two exercises to superset them — they’re performed
+        together with one rest after the pair. Unlinked exercises are straight
+        sets with their own rest.
+      </p>
+
       <div className="space-y-2">
         {validExercises.map((exercise, index) => (
+          <React.Fragment key={exercise.id}>
           <div
-            key={exercise.id}
-            className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg"
+            className={`flex items-start gap-4 p-3 rounded-lg ${
+              isInSuperset(validExercises, index)
+                ? 'bg-blue-50 border border-blue-200'
+                : 'bg-gray-50'
+            }`}
           >
             {/* Move Buttons */}
             <div className="flex flex-col gap-1 mt-1">
@@ -141,6 +164,38 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               </div>
             </div>
           </div>
+
+          {index < validExercises.length - 1 && (
+            <div className="flex justify-center py-0.5">
+              <button
+                type="button"
+                onClick={() => toggleJoin(index)}
+                title={
+                  isPairedWithNext(validExercises, index)
+                    ? 'Split — perform these separately, with a rest between'
+                    : 'Superset — perform these together, one rest after the pair'
+                }
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  isPairedWithNext(validExercises, index)
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-600'
+                }`}
+              >
+                {isPairedWithNext(validExercises, index) ? (
+                  <>
+                    <Link2 className="h-3.5 w-3.5" />
+                    Superset
+                  </>
+                ) : (
+                  <>
+                    <Unlink className="h-3.5 w-3.5" />
+                    Link
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+          </React.Fragment>
         ))}
       </div>
     </div>

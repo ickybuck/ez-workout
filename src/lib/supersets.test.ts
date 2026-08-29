@@ -9,6 +9,7 @@ import {
   unlinkAll,
   pairAllConsecutive,
   hasAnySuperset,
+  splitAfter,
 } from './supersets';
 
 /** A list written the way it reads: 'a0' is exercise a in group 0, 'b-' is solo. */
@@ -172,5 +173,30 @@ describe('the mixed template this was built for', () => {
     // heavy compound with core, and the compound should come out.
     const items = unlinkAt(list('a0 b0 c1 d1 e2 f2'), 0);
     expect(shape(items)).toBe('a- b- c0 d0 e1 f1');
+  });
+});
+
+describe('splitAfter', () => {
+  it('breaks a pair', () => {
+    expect(shape(splitAfter(list('a0 b0'), 0))).toBe('a- b-');
+  });
+
+  it('splits a triple at the first join, keeping the rest together', () => {
+    expect(shape(splitAfter(list('a0 b0 c0'), 0))).toBe('a- b0 c0');
+  });
+
+  it('splits a triple at the second join, keeping the front together', () => {
+    // The case unlinkAt gets wrong: unlinking b would strand c as well.
+    expect(shape(splitAfter(list('a0 b0 c0'), 1))).toBe('a0 b0 c-');
+  });
+
+  it('does nothing where there is no link to break', () => {
+    const input = list('a- b-');
+    expect(splitAfter(input, 0)).toBe(input);
+    expect(splitAfter(list('a0 b0'), 1)).toEqual(list('a0 b0'));
+  });
+
+  it('leaves later groups renumbered but intact', () => {
+    expect(shape(splitAfter(list('a0 b0 c1 d1'), 0))).toBe('a- b- c0 d0');
   });
 });
