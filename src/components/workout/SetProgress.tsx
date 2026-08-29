@@ -251,22 +251,22 @@ const SetProgress: React.FC<SetProgressProps> = ({
         <div className="flex gap-2">
           <button
             onClick={() => onComplete(currentSet.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors whitespace-nowrap"
           >
             <Check className="h-4 w-4" />
             <span>Complete</span>
           </button>
           <button
             onClick={() => setShowExtraReps(true)}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors whitespace-nowrap"
             title="Did more reps than the target"
           >
             <TrendingUp className="h-4 w-4" />
-            <span>Did more</span>
+            <span>More</span>
           </button>
           <button
             onClick={() => setShowPartialReps(true)}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-colors whitespace-nowrap"
           >
             <AlertTriangle className="h-4 w-4" />
             <span>Partial</span>
