@@ -365,7 +365,6 @@ export type Database = {
           goal_weekday_start: number | null
           height: number | null
           id: string
-          is_admin: boolean | null
           last_name: string | null
           recent_workouts_count: number | null
           rest_timer_duration: number | null
@@ -391,7 +390,6 @@ export type Database = {
           goal_weekday_start?: number | null
           height?: number | null
           id?: string
-          is_admin?: boolean | null
           last_name?: string | null
           recent_workouts_count?: number | null
           rest_timer_duration?: number | null
@@ -417,7 +415,6 @@ export type Database = {
           goal_weekday_start?: number | null
           height?: number | null
           id?: string
-          is_admin?: boolean | null
           last_name?: string | null
           recent_workouts_count?: number | null
           rest_timer_duration?: number | null
