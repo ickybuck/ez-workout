@@ -62,17 +62,3 @@ export interface PlateConfiguration {
   barWeight: number;
   totalWeight: number;
 }
-
-interface ExerciseFormData {
-  name?: string;
-  description?: string;
-  equipment_type_id?: string;
-  body_part_id?: string;
-  is_compound?: boolean;
-  is_plate_loaded?: boolean;
-  sets?: number;
-  reps?: number;
-  weight?: number;
-  weight_increment?: number;
-  rep_increment?: number;
-}

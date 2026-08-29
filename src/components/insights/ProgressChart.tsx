@@ -101,7 +101,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
 
       <div className="overflow-x-auto pb-8">
         <div className="flex items-end gap-2" style={{ minWidth: `${data.length * 32}px`, height: '240px' }}>
-          {data.map((point, index) => {
+          {data.map((point) => {
             const heightPx = Math.max((point.volume / maxVolume) * 220, 8);
             return (
               <div key={point.date} className="flex flex-col items-center justify-end group relative" style={{ width: '28px', minWidth: '28px', height: '240px' }}>

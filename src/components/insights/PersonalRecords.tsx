@@ -18,7 +18,7 @@ interface PersonalRecord {
 }
 
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
-  const { unit, formatWeight } = useWeightUnit();
+  const { formatWeight } = useWeightUnit();
   const { data: workouts, loading } = useWorkoutHistory(timeRange);
 
   const records = useMemo<PersonalRecord[]>(() => {

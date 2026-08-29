@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Info, X, Plus, Minus, Scale } from 'lucide-react';
+import { X, Plus, Minus } from 'lucide-react';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { PlateConfiguration } from '../../types/exercise';
 import { supabase } from '../../lib/supabase';
@@ -28,7 +28,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
   availablePlatesKg = [25, 20, 15, 10, 5, 2.5, 1.25],
   availablePlatesLb = [45, 35, 25, 10, 5, 2.5],
 }) => {
-  const { unit, convertWeight, parseWeight, formatWeight } = useWeightUnit();
+  const { unit, convertWeight, parseWeight } = useWeightUnit();
   const [localWeight, setLocalWeight] = useState(convertWeight(weight));
   const [localWeightIncrement, setLocalWeightIncrement] = useState(convertWeight(weightIncrement));
   const [plateConfig, setPlateConfig] = useState<PlateConfiguration | null>(null);
@@ -38,9 +38,6 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // Convert weight increment to display unit
-  const displayIncrement = convertWeight(weightIncrement);
 
   // Available plate weights in current unit (sorted in descending order)
   const AVAILABLE_PLATES = unit === 'kg'

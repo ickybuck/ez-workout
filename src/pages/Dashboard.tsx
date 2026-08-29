@@ -328,7 +328,6 @@ const Dashboard: React.FC = () => {
                       <div className="p-2 grid grid-cols-2 gap-1">
                         {workout.exercises.map((exercise) => {
                           const completedLogs = exercise.logs.filter(log => log.completed);
-                          const failedLogs = exercise.logs.filter(log => !log.completed);
                           const partialLogs = exercise.logs.filter(log => log.completed && log.failed_reps > 0);
                           
                           const completed = exercise.logs.every(log => 

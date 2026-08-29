@@ -2,13 +2,6 @@ import React from 'react';
 import { Info } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachWeekOfInterval, subWeeks, isWithinInterval } from 'date-fns';
 
-interface WorkoutWeek {
-  startDate: Date;
-  endDate: Date;
-  workouts: number;
-  goal: number;
-}
-
 interface ConsistencyTrackerProps {
   workouts: Array<{ end_time: string }>;
   weeklyGoal: number;
@@ -74,7 +67,7 @@ const ConsistencyTracker: React.FC<ConsistencyTrackerProps> = ({
       </div>
 
       <div className="grid grid-cols-12 gap-2">
-        {weekIntervals.reverse().map((week, index) => (
+        {weekIntervals.reverse().map((week) => (
           <div
             key={week.startDate.toISOString()}
             className={`aspect-square rounded border flex items-center justify-center text-sm font-medium ${getStatusColor(

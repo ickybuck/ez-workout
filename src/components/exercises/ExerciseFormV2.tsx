@@ -45,10 +45,10 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
   muscleGroups,
   onCancel,
   onSave,
-  isEditing,
+  isEditing: _isEditing,
   exerciseId,
 }) => {
-  const { unit, convertWeight, parseWeight, formatWeight } = useWeightUnit();
+  const { unit, convertWeight, parseWeight } = useWeightUnit();
   const [saving, setSaving] = useState(false);
   const [showPlateCalculator, setShowPlateCalculator] = useState(false);
   const [displayWeight, setDisplayWeight] = useState(convertWeight(editForm.defaults?.weight || 0));

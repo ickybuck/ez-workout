@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Plus, Trash2, Scale } from 'lucide-react';
-import { WorkoutTemplate, TemplateExercise } from '../../types/template';
+import { WorkoutTemplate } from '../../types/template';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 
 interface ExerciseListProps {
@@ -14,7 +14,7 @@ interface ExerciseListProps {
 
 const ExerciseList: React.FC<ExerciseListProps> = ({
   template,
-  onTemplateChange,
+  onTemplateChange: _onTemplateChange,
   onAddClick,
   onRemoveExercise,
   onMoveExercise,

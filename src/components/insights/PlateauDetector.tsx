@@ -34,7 +34,7 @@ interface BodyweightPlateauExercise {
 
 const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
   const { user } = useAuth();
-  const { formatWeight, unit } = useWeightUnit();
+  const { formatWeight } = useWeightUnit();
   const { data: workouts, loading: historyLoading } = useWorkoutHistory(timeRange);
   const [plateaus, setPlateaus] = useState<PlateauExercise[]>([]);
   const [bodyweightPlateaus, setBodyweightPlateaus] = useState<BodyweightPlateauExercise[]>([]);

@@ -143,7 +143,7 @@ export const importExercises = async (file: File) => {
 
       if (!equipmentType) {
         // Create new equipment type
-        const { data: newEquipmentType, error: createEquipmentError } = await supabase
+        const { error: createEquipmentError } = await supabase
           .from('equipment_types')
           .insert({
             name: exercise.equipmentType,
@@ -166,7 +166,7 @@ export const importExercises = async (file: File) => {
 
       if (!bodyPart) {
         // Create new body part
-        const { data: newBodyPart, error: createBodyPartError } = await supabase
+        const { error: createBodyPartError } = await supabase
           .from('body_parts')
           .insert({
             name: exercise.bodyPart,

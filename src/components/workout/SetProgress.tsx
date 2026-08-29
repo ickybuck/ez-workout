@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, AlertTriangle, X, Plus, Minus, Info, Scale } from 'lucide-react';
+import { Check, AlertTriangle, X, Plus, Minus } from 'lucide-react';
 import { ExerciseLog } from '../../types/workout';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { supabase } from '../../lib/supabase';
@@ -24,7 +24,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
   isPlateLoaded = false,
   exerciseName,
 }) => {
-  const { unit, convertWeight, parseWeight, formatWeight } = useWeightUnit();
+  const { formatWeight } = useWeightUnit();
   const [showPartialReps, setShowPartialReps] = useState(false);
   const [adjustingWeight, setAdjustingWeight] = useState(false);
   const [showPlateCalculator, setShowPlateCalculator] = useState(false);

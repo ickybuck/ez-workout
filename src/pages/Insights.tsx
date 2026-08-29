@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, AlertCircle, Award, Layout, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertCircle, Award, Layout } from 'lucide-react';
 import Overview from './insights/Overview';
 import Progress from './insights/Progress';
 import Plateaus from './insights/Plateaus';
@@ -18,13 +18,6 @@ const Insights: React.FC = () => {
     { id: 'plateaus' as InsightView, icon: AlertCircle, label: 'Plateaus' },
     { id: 'records' as InsightView, icon: Award, label: 'Records' },
     { id: 'templates' as InsightView, icon: Layout, label: 'Templates' },
-  ];
-
-  const timeRangeOptions = [
-    { value: '30' as const, label: '30D' },
-    { value: '90' as const, label: '90D' },
-    { value: '180' as const, label: '6M' },
-    { value: 'all' as const, label: 'All' },
   ];
 
   const renderContent = () => {

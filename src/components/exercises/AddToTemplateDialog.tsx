@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Minus, Plus } from 'lucide-react';
+import { X, Check, Plus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Exercise } from '../../types/exercise';
 import { toast } from 'sonner';

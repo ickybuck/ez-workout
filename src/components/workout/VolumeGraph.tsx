@@ -1,5 +1,4 @@
 import React from 'react';
-import { format } from 'date-fns';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 
 export interface VolumePoint {
@@ -120,7 +119,7 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
       <div ref={containerRef} className="relative">
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
           {/* Grid lines */}
-          {dates.map((date, i) => {
+          {dates.map((_date, i) => {
             const x = padding.left + i * xScale;
             return (
               <line

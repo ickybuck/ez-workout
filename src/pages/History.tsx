@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Clock, Trash2, ArrowDownUp, ArrowRight, ChevronDown, ChevronUp, Info, Dumbbell } from 'lucide-react';
+import { Clock, Trash2, ArrowDownUp, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -352,7 +352,6 @@ const History: React.FC = () => {
                       <div className="mt-3 grid grid-cols-2 gap-1">
                         {workout.exercises.map((exercise) => {
                           const completedLogs = exercise.logs.filter(log => log.completed);
-                          const failedLogs = exercise.logs.filter(log => !log.completed);
                           const partialLogs = exercise.logs.filter(log => log.completed && log.failed_reps > 0);
                           
                           const completed = exercise.logs.every(log => 
