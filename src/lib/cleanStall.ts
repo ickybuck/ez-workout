@@ -72,6 +72,21 @@ const SAME_WEIGHT_TOLERANCE_KG = 0.01;
 /** Three occurrences before saying anything, so one easy day is not a verdict. */
 export const MIN_SESSIONS = 3;
 
+/**
+ * Below this the exercise carries no external load, and the advice would be
+ * nonsense: "0 lb for 4 sessions, time to try more?" on hanging leg raises.
+ *
+ * Caught by looking at the running app, not by the tests — the query used to
+ * sanity-check the detector filtered `weight > 0`, so the one case that breaks
+ * it was excluded from the evidence before it could be seen.
+ *
+ * Bodyweight work does progress, by reps rather than load, but that is a
+ * different suggestion with a different threshold, and the movements it applies
+ * to here are the conditioning block the research says not to chase. Silence is
+ * the honest output until there is something specific to say.
+ */
+const MIN_LOADED_KG = 0.5;
+
 function sameWeight(a: number, b: number): boolean {
   return Math.abs(a - b) < SAME_WEIGHT_TOLERANCE_KG;
 }
@@ -112,6 +127,7 @@ export function detectCleanStall(sessions: ExerciseSession[]): CleanStall | null
   if (sessions.length < MIN_SESSIONS) return null;
 
   const latest = sessions[0];
+  if (latest.topSetWeight < MIN_LOADED_KG) return null;
   if (!isCleanSession(latest)) return null;
 
   let count = 0;

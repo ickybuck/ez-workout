@@ -140,3 +140,18 @@ describe('the squat that started this', () => {
     expect(stall?.evidence).toBe('inferred');
   });
 });
+
+describe('unloaded exercises', () => {
+  it('says nothing about a bodyweight movement', () => {
+    // "0 lb for 4 sessions, time to try more?" appeared on hanging leg raises
+    // in the running app. There is no weight to add, and the query used to
+    // sanity-check the detector had filtered weight > 0 — so the one case that
+    // breaks it was excluded from the evidence before it could be seen.
+    expect(detectCleanStall(runOf(6, 0))).toBeNull();
+  });
+
+  it('still reports a lightly loaded exercise', () => {
+    // 5 lb crunches are loaded, however lightly, so the advice is meaningful.
+    expect(detectCleanStall(runOf(6, 2.27))?.sessions).toBe(6);
+  });
+});
