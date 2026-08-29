@@ -23,6 +23,14 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Match tsconfig's noUnusedParameters, which already exempts a leading
+      // underscore. Without this the two linters disagree about the standard
+      // way to mark an argument as deliberately unused — which matters for
+      // parameters kept only so existing call sites still compile.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   }
 );

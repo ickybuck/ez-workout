@@ -31,6 +31,11 @@ jobs:
       - name: Quality ratchet
         run: npm run ratchet
 
+      # Unlike the ratchet, this is a hard gate: tests must pass, not merely
+      # not-get-worse. There is no backlog of failing tests to work down.
+      - name: Tests
+        run: npm test
+
       # Vite does not typecheck, so this catches a genuinely different class
       # of failure to the step above: anything that breaks the actual bundle.
       - name: Build

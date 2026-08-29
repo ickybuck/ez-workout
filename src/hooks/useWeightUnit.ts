@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { convert, format, parseInput } from '../lib/weight';
 
 interface WeightUnitStore {
   unit: 'kg' | 'lb';
@@ -49,82 +50,41 @@ export const useWeightUnit = () => {
   }, [user, setUnit]);
 
   /**
-   * Convert weight between kg and lb
+   * Convert weight between kg and lb.
+   *
+   * The two-mode signature is preserved because ~18 components depend on it:
+   * with no targetUnit it converts a stored kilogram value into the display
+   * unit; with one, it converts from the display unit into that unit.
+   *
    * @param weight - Weight value to convert
    * @param targetUnit - Optional target unit. If not provided, converts to display unit
-   * @param isBarWeight - Whether this is a bar weight conversion (uses different rounding)
+   * @param _isBarWeight - Unused. Bar weights no longer round differently now
+   *   that storage carries 1 gram resolution; kept so call sites still compile.
    * @returns Converted weight value
    */
-  const convertWeight = (weight: number, targetUnit?: 'kg' | 'lb', isBarWeight: boolean = false): number => {
-    const from = targetUnit ? unit : 'kg';
-    const to = targetUnit || unit;
-
-    if (from === to) return weight;
-
-    // Always convert using the exact conversion factor
-    const CONVERSION_FACTOR = 2.20462262185;
-    
-    // First convert to kg if we're not already in kg
-    const weightInKg = from === 'kg' ? weight : weight / CONVERSION_FACTOR;
-    
-    // Then convert to target unit if needed
-    const converted = to === 'kg' ? weightInKg : weightInKg * CONVERSION_FACTOR;
-
-    if (isBarWeight) {
-      // For bar weights, use higher precision but don't force to standard weights
-      return to === 'kg' 
-        ? Math.round(converted * 100) / 100  // 2 decimal places for kg
-        : Math.round(converted * 10) / 10;   // 1 decimal place for lb
-    }
-    
-    // Regular weight rounding:
-    // - kg: 1 decimal place (0.1 kg precision)
-    // - lb: 0 decimal places (1 lb precision)
-    return to === 'kg' 
-      ? Math.round(converted * 10) / 10
-      : Math.round(converted);
-  };
+  const convertWeight = (
+    weight: number,
+    targetUnit?: 'kg' | 'lb',
+    _isBarWeight: boolean = false,
+  ): number => convert(weight, targetUnit ? unit : 'kg', targetUnit || unit);
 
   /**
-   * Format weight value with unit
+   * Format a stored kilogram value for display in the user's unit.
    * @param weight - Weight in kg (database value)
    * @param includeUnit - Whether to include the unit in the output
-   * @param isBarWeight - Whether this is a bar weight
-   * @returns Formatted weight string
+   * @param _isBarWeight - Unused; see convertWeight
    */
-  const formatWeight = (weight: number, includeUnit = true, isBarWeight = false): string => {
-    const converted = convertWeight(weight, undefined, isBarWeight);
-    const formatted = isBarWeight
-      ? (unit === 'kg' ? converted.toFixed(2) : converted.toFixed(1))
-      : (unit === 'kg' ? converted.toFixed(1) : converted.toString());
-    return includeUnit ? `${formatted} ${unit}` : formatted;
-  };
+  const formatWeight = (weight: number, includeUnit = true, _isBarWeight = false): string =>
+    format(weight, unit, { includeUnit });
 
   /**
-   * Parse weight input and convert to kg for storage
+   * Parse weight input in the user's unit and convert to kg for storage.
    * @param input - Weight input string
-   * @param isBarWeight - Whether this is a bar weight
+   * @param _isBarWeight - Unused; see convertWeight
    * @returns Weight in kg for database storage
    */
-  const parseWeight = (input: string, isBarWeight = false): number => {
-    const value = parseFloat(input);
-    if (isNaN(value)) return 0;
-    
-    // If we're already in kg, just return the value with appropriate precision
-    if (unit === 'kg') {
-      return isBarWeight 
-        ? Math.round(value * 100) / 100  // 2 decimal places for bar weights
-        : Math.round(value * 10) / 10;   // 1 decimal place for regular weights
-    }
-    
-    // Convert from lb to kg using exact conversion
-    const kgValue = value / 2.20462262185;
-    
-    // Round appropriately for storage
-    return isBarWeight
-      ? Math.round(kgValue * 100) / 100  // 2 decimal places for bar weights
-      : Math.round(kgValue * 10) / 10;   // 1 decimal place for regular weights
-  };
+  const parseWeight = (input: string, _isBarWeight = false): number =>
+    parseInput(input, unit);
 
   return {
     unit,
