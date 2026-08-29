@@ -38,7 +38,8 @@ export const useExerciseData = () => {
               weight,
               weight_increment,
               rep_increment,
-              bar_weight
+              bar_weight,
+              hidden
             )
           `)
           .eq('defaults.user_id', user.id)

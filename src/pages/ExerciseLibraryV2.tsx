@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Edit2, Plus, Trash2, ListPlus, Check, X, Filter, Copy, Search } from 'lucide-react';
+import { Edit2, Plus, Trash2, ListPlus, Check, X, Filter, Copy, Search, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Exercise } from '../types/exercise';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +18,7 @@ interface Filters {
   equipment: string;
   inTemplates: 'all' | 'used' | 'unused';
   compound: 'all' | 'compound' | 'isolated';
+  showHidden: boolean;
 }
 
 interface ExerciseWithTemplateCount extends Exercise {
@@ -53,6 +54,7 @@ const ExerciseLibraryV2: React.FC = () => {
     equipment: searchParams.get('equipment') || '',
     inTemplates: (searchParams.get('inTemplates') as 'all' | 'used' | 'unused') || 'all',
     compound: (searchParams.get('compound') as 'all' | 'compound' | 'isolated') || 'all',
+    showHidden: searchParams.get('showHidden') === 'true',
   }));
   
   const [sortConfig, setSortConfig] = useState<{field: SortField; order: SortOrder}>(() => ({
@@ -70,6 +72,7 @@ const ExerciseLibraryV2: React.FC = () => {
     if (filters.equipment) params.set('equipment', filters.equipment);
     if (filters.inTemplates !== 'all') params.set('inTemplates', filters.inTemplates);
     if (filters.compound !== 'all') params.set('compound', filters.compound);
+    if (filters.showHidden) params.set('showHidden', 'true');
     if (sortConfig.field !== 'name') params.set('sortField', sortConfig.field);
     if (sortConfig.order !== 'asc') params.set('sortOrder', sortConfig.order);
     
@@ -104,6 +107,56 @@ const ExerciseLibraryV2: React.FC = () => {
       setExercisesWithTemplates(exercisesWithCounts);
     } catch (error) {
       console.error('Error loading template usage:', error);
+    }
+  };
+
+  const handleToggleHidden = async (exercise: ExerciseWithTemplateCount) => {
+    if (!user) return;
+    const nowHidden = !exercise.defaults?.hidden;
+
+    try {
+      // Update first, insert only if nothing matched.
+      //
+      // An upsert would be shorter but wrong: Supabase writes every column it
+      // is given on conflict, so a row created here would carry null sets and
+      // reps, and passing real defaults to avoid that would clobber the user's
+      // existing configuration whenever they un-hid something.
+      //
+      // Note the explicit row count. An update matching zero rows succeeds
+      // silently — that is the whole substance of EZ-02, and it is exactly
+      // what would happen here for an exercise the user has never configured.
+      const { data: updated, error: updateError } = await supabase
+        .from('exercise_defaults')
+        .update({ hidden: nowHidden })
+        .eq('exercise_id', exercise.id)
+        .eq('user_id', user.id)
+        .select('id');
+
+      if (updateError) throw updateError;
+
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await supabase
+          .from('exercise_defaults')
+          .insert({
+            exercise_id: exercise.id,
+            user_id: user.id,
+            hidden: nowHidden,
+            // Match what ExerciseAdd seeds, so a row created purely by hiding
+            // is not distinguishable from one created deliberately.
+            sets: 3,
+            reps: 10,
+            weight: 0,
+            weight_increment: 2.3,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast.success(nowHidden ? `${exercise.name} hidden` : `${exercise.name} restored`);
+      await loadExerciseData();
+    } catch (error) {
+      console.error('Error toggling exercise visibility:', error);
+      toast.error('Failed to update visibility');
     }
   };
 
@@ -198,12 +251,18 @@ const ExerciseLibraryV2: React.FC = () => {
     return sortConfig.order === 'asc' ? '↑' : '↓';
   };
 
+  const hiddenCount = exercisesWithTemplates.filter((e) => e.defaults?.hidden).length;
+
   const filteredAndSortedExercises = exercisesWithTemplates
     .filter(exercise => {
       // Substring rather than fuzzy, deliberately. "Incline Bench Press" and
       // "Bench Press" are different exercises, as are "Hack Squats" and
       // "Squats" — all four are in the catalogue, and a fuzzy match would
       // flag them as duplicates of each other on day one.
+      // Hidden exercises stay out of the way unless asked for. Searching
+      // still finds them, so someone cannot hide something and then be unable
+      // to work out why it will not come back.
+      if (!filters.showHidden && exercise.defaults?.hidden && !search.trim()) return false;
       const query = search.trim().toLowerCase();
       if (query && !exercise.name.toLowerCase().includes(query)) return false;
       if (filters.bodyPart && exercise.body_part?.id !== filters.bodyPart) return false;
@@ -327,6 +386,21 @@ const ExerciseLibraryV2: React.FC = () => {
               </div>
             </div>
 
+            <div className="pt-2 border-t">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={filters.showHidden}
+                  onChange={(e) => updateFilters({ showHidden: e.target.checked })}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                Show hidden exercises
+                {hiddenCount > 0 && (
+                  <span className="text-gray-400">({hiddenCount})</span>
+                )}
+              </label>
+            </div>
+
             <div className="flex items-center gap-4 pt-2 border-t">
               <span className="text-sm font-medium text-gray-700">Sort by:</span>
               <div className="flex flex-wrap gap-2">
@@ -365,7 +439,9 @@ const ExerciseLibraryV2: React.FC = () => {
             filteredAndSortedExercises.map((exercise) => (
               <div
                 key={exercise.id}
-                className="border rounded-lg p-3 hover:shadow-md transition-shadow duration-200"
+                className={`border rounded-lg p-3 hover:shadow-md transition-shadow duration-200 ${
+                  exercise.defaults?.hidden ? 'opacity-60 bg-gray-50' : ''
+                }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="text-lg font-medium text-gray-900">
@@ -428,6 +504,21 @@ const ExerciseLibraryV2: React.FC = () => {
                       title="Copy exercise"
                     >
                       <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleHidden(exercise)}
+                      className={`p-1.5 rounded-full ${
+                        exercise.defaults?.hidden
+                          ? 'text-indigo-600 hover:bg-indigo-50'
+                          : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                      title={exercise.defaults?.hidden ? 'Show in my library' : 'Hide from my library'}
+                    >
+                      {exercise.defaults?.hidden ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
                     </button>
                     {isAdmin && (
                     <button

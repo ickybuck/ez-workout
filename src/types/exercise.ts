@@ -26,6 +26,13 @@ export interface Exercise {
     weight: number;
     weight_increment: number;
     rep_increment?: number;
+    bar_weight?: number;
+    /**
+     * Per-user, so hiding an exercise never affects anyone else's library.
+     * Exercises are a shared catalogue and users cannot delete from it
+     * (EZ-04); hiding is how someone tidies their own view of it.
+     */
+    hidden?: boolean;
   };
 }
 
