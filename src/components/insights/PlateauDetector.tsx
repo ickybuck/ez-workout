@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { AlertCircle, TrendingUp, ArrowUp, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { toast } from 'sonner';
-import { calculateLogVolume } from '../../lib/volumeUtils';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
+import { detectPlateaus } from '../../lib/plateau';
 
 interface PlateauDetectorProps {
   timeRange: '30' | '90' | '180' | 'all';
@@ -34,221 +35,86 @@ interface BodyweightPlateauExercise {
 const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
   const { user } = useAuth();
   const { formatWeight, unit } = useWeightUnit();
+  const { data: workouts, loading: historyLoading } = useWorkoutHistory(timeRange);
   const [plateaus, setPlateaus] = useState<PlateauExercise[]>([]);
   const [bodyweightPlateaus, setBodyweightPlateaus] = useState<BodyweightPlateauExercise[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingDefaults, setLoadingDefaults] = useState(false);
   const [updatingExercises, setUpdatingExercises] = useState<Set<string>>(new Set());
   const [updatedExercises, setUpdatedExercises] = useState<Set<string>>(new Set());
 
+  const loading = historyLoading || loadingDefaults;
+
+  // Detection itself is pure and tested in src/lib/plateau.ts.
+  const candidates = useMemo(() => detectPlateaus(workouts), [workouts]);
+
+  // The per-user increments live in exercise_defaults, so they need a second
+  // query once we know which exercises stalled. Kept as an effect rather than
+  // folded into the fetch, so detection stays independent of the network.
   useEffect(() => {
-    if (user) {
-      detectPlateaus();
+    const ids = [...candidates.weighted, ...candidates.bodyweight].map((c) => c.id);
+
+    if (!user || ids.length === 0) {
+      setPlateaus([]);
+      setBodyweightPlateaus([]);
+      return;
     }
-  }, [user, timeRange]);
 
-  const detectPlateaus = async () => {
-    if (!user) return;
+    let cancelled = false;
+    setLoadingDefaults(true);
 
-    try {
-      setLoading(true);
+    supabase
+      .from('exercise_defaults')
+      .select('exercise_id, weight, weight_increment, reps, rep_increment')
+      .eq('user_id', user.id)
+      .in('exercise_id', ids)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) console.error('Error fetching exercise defaults:', error);
 
-      const now = new Date();
-      let startDate = new Date();
-
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
-      }
-
-      const { data: workouts, error } = await supabase
-        .from('workouts')
-        .select(`
-          start_time,
-          workout_exercises (
-            exercise:exercises (
-              id,
-              name
-            ),
-            exercise_logs (
-              weight,
-              reps,
-              failed_reps,
-              completed,
-              created_at
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_time', startDate.toISOString())
-        .not('end_time', 'is', null)
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-
-      const exerciseData: Record<string, {
-        name: string;
-        sessions: Array<{ date: string; maxWeight: number; maxReps: number; volume: number }>;
-      }> = {};
-
-      (workouts || []).forEach((workout: any) => {
-        workout.workout_exercises?.forEach((we: any) => {
-          if (!we.exercise) return;
-
-          const completedLogs = we.exercise_logs?.filter((log: any) => log.completed) || [];
-          if (completedLogs.length === 0) return;
-
-          const maxWeight = Math.max(...completedLogs.map((log: any) => log.weight));
-          const maxReps = Math.max(...completedLogs.map((log: any) => log.reps));
-          const volume = completedLogs.reduce((sum: number, log: any) => sum + calculateLogVolume(log), 0);
-
-          if (!exerciseData[we.exercise.id]) {
-            exerciseData[we.exercise.id] = {
-              name: we.exercise.name,
-              sessions: [],
-            };
-          }
-
-          exerciseData[we.exercise.id].sessions.push({
-            date: workout.start_time,
-            maxWeight,
-            maxReps,
-            volume,
-          });
-        });
-      });
-
-      const plateauExercises: PlateauExercise[] = [];
-      const bodyweightPlateauExercises: BodyweightPlateauExercise[] = [];
-
-      Object.entries(exerciseData).forEach(([id, data]) => {
-        if (data.sessions.length >= 3) {
-          // Check last 3 sessions to see if there's a plateau pattern
-          const recentSessions = data.sessions.slice(-3);
-          const weights = recentSessions.map(s => s.maxWeight);
-          const reps = recentSessions.map(s => s.maxReps);
-          const volumes = recentSessions.map(s => s.volume);
-
-          const weightStagnant = weights.every(w => w === weights[0]);
-          const repsStagnant = reps.every(r => r === reps[0]);
-          const volumeChange = ((volumes[volumes.length - 1] - volumes[0]) / volumes[0]) * 100;
-
-          if ((weightStagnant && repsStagnant) || Math.abs(volumeChange) < 5) {
-            // Count consecutive plateau sessions from the end
-            const lastWeight = data.sessions[data.sessions.length - 1].maxWeight;
-            const lastReps = data.sessions[data.sessions.length - 1].maxReps;
-            let plateauCount = 1;
-
-            for (let i = data.sessions.length - 2; i >= 0; i--) {
-              const session = data.sessions[i];
-              if (session.maxWeight === lastWeight && session.maxReps === lastReps) {
-                plateauCount++;
-              } else {
-                break;
-              }
-            }
-
-            // Separate bodyweight (zero weight) exercises from weighted exercises
-            if (lastWeight === 0) {
-              bodyweightPlateauExercises.push({
-                id,
-                name: data.name,
-                lastReps,
-                sessions: data.sessions.length,
-                plateauWorkouts: plateauCount,
-                defaultReps: 0, // Will be populated below
-                repIncrement: 1, // Will be populated below
-              });
-            } else {
-              plateauExercises.push({
-                id,
-                name: data.name,
-                lastWeight,
-                lastReps,
-                sessions: data.sessions.length,
-                plateauWorkouts: plateauCount,
-                weightIncrement: 0, // Will be populated below
-                defaultWeight: 0, // Will be populated below
-              });
-            }
-          }
-        }
-      });
-
-      // Sort by longest plateau first
-      plateauExercises.sort((a, b) => b.plateauWorkouts - a.plateauWorkouts);
-      bodyweightPlateauExercises.sort((a, b) => b.plateauWorkouts - a.plateauWorkouts);
-
-      // Fetch exercise_defaults data for all plateaued exercises
-      const allPlateauIds = [
-        ...plateauExercises.map(ex => ex.id),
-        ...bodyweightPlateauExercises.map(ex => ex.id)
-      ];
-
-      if (allPlateauIds.length > 0) {
-        const { data: exerciseDefaults, error: defaultsError } = await supabase
-          .from('exercise_defaults')
-          .select('exercise_id, weight, weight_increment, reps, rep_increment')
-          .eq('user_id', user.id)
-          .in('exercise_id', allPlateauIds);
-
-        if (defaultsError) {
-          console.error('Error fetching exercise defaults:', defaultsError);
-        }
-
-        console.log('Plateau IDs:', allPlateauIds);
-        console.log('Exercise Defaults from DB:', exerciseDefaults);
-
-        // Map exercise defaults to plateau exercises
-        const defaultsMap = new Map(
-          (exerciseDefaults || []).map(def => [
-            def.exercise_id,
+        const defaults = new Map(
+          (data ?? []).map((d) => [
+            d.exercise_id,
             {
-              weight: Number(def.weight),
-              weightIncrement: Number(def.weight_increment),
-              reps: Number(def.reps),
-              repIncrement: Number(def.rep_increment)
-            }
-          ])
+              weight: Number(d.weight),
+              weightIncrement: Number(d.weight_increment),
+              reps: Number(d.reps),
+              repIncrement: Number(d.rep_increment),
+            },
+          ]),
         );
 
-        console.log('Defaults Map:', Array.from(defaultsMap.entries()));
+        // Stored in kg; formatWeight converts for display.
+        const FALLBACK_WEIGHT_INCREMENT = 2.5;
 
-        // Default increment is always in kg (database stores in kg)
-        const defaultWeightIncrement = 2.5; // kg - will be converted by formatWeight when displayed
+        setPlateaus(
+          candidates.weighted.map((c) => ({
+            ...c,
+            defaultWeight: defaults.get(c.id)?.weight || c.lastWeight,
+            weightIncrement: defaults.get(c.id)?.weightIncrement || FALLBACK_WEIGHT_INCREMENT,
+          })),
+        );
 
-        // Update weighted plateau exercises with defaults data
-        plateauExercises.forEach(plateau => {
-          const defaults = defaultsMap.get(plateau.id);
-          plateau.defaultWeight = defaults?.weight || plateau.lastWeight;
-          plateau.weightIncrement = defaults?.weightIncrement || defaultWeightIncrement;
-          console.log(`Exercise ${plateau.name} (${plateau.id}):`, {
-            defaults,
-            weightIncrement: plateau.weightIncrement,
-            defaultWeight: plateau.defaultWeight
-          });
-        });
+        setBodyweightPlateaus(
+          candidates.bodyweight.map((c) => ({
+            ...c,
+            defaultReps: defaults.get(c.id)?.reps || c.lastReps,
+            repIncrement: defaults.get(c.id)?.repIncrement || 1,
+          })),
+        );
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) console.error('Error resolving plateau defaults:', e);
+      })
+      .finally(() => {
+        // finally, not then: a throw above must still clear the spinner.
+        if (!cancelled) setLoadingDefaults(false);
+      });
 
-        // Update bodyweight plateau exercises with defaults data
-        bodyweightPlateauExercises.forEach(plateau => {
-          const defaults = defaultsMap.get(plateau.id);
-          plateau.defaultReps = defaults?.reps || plateau.lastReps;
-          plateau.repIncrement = defaults?.repIncrement || 1;
-        });
-      }
+    return () => {
+      cancelled = true;
+    };
+  }, [user, candidates]);
 
-      setPlateaus(plateauExercises);
-      setBodyweightPlateaus(bodyweightPlateauExercises);
-    } catch (error) {
-      console.error('Error detecting plateaus:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleIncrement = async (plateau: PlateauExercise) => {
     if (!user || updatingExercises.has(plateau.id)) return;

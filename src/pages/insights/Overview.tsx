@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Activity, Target, Calendar, TrendingUp, TrendingDown, Award } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
-import { toast } from 'sonner';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { calculateLogVolume } from '../../lib/volumeUtils';
 
 interface OverviewMetrics {
@@ -26,165 +26,119 @@ interface OverviewProps {
 const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
   const { user } = useAuth();
   const { unit, convertWeight } = useWeightUnit();
-  const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState<OverviewMetrics>({
-    totalWorkouts: 0,
-    totalVolume: 0,
-    avgWorkoutDuration: 0,
-    mostImprovedExercise: null,
-    workoutsThisWeek: 0,
-    workoutsLastWeek: 0,
-    weeklyGoal: 3,
-  });
+  const { data: workouts, loading } = useWorkoutHistory(timeRange);
+  const [weeklyGoal, setWeeklyGoal] = useState(3);
 
   useEffect(() => {
-    if (user) {
-      fetchMetrics();
-    }
-  }, [user, timeRange]);
-
-  const fetchMetrics = async () => {
     if (!user) return;
+    let cancelled = false;
 
-    try {
-      setLoading(true);
+    supabase
+      .from('user_settings')
+      .select('weekly_workout_goal')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error('Error loading weekly goal:', error);
+          return;
+        }
+        if (data?.weekly_workout_goal) setWeeklyGoal(data.weekly_workout_goal);
+      });
 
-      const now = new Date();
-      let startDate = new Date();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
+  const metrics = useMemo<OverviewMetrics>(() => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    const twoWeeksAgo = new Date(now);
+    twoWeeksAgo.setDate(now.getDate() - 14);
+
+    const startedAt = (w: { start_time: string | null }) =>
+      w.start_time ? new Date(w.start_time) : null;
+
+    const workoutsThisWeek = workouts.filter((w) => {
+      const d = startedAt(w);
+      return d !== null && d >= oneWeekAgo;
+    }).length;
+
+    const workoutsLastWeek = workouts.filter((w) => {
+      const d = startedAt(w);
+      return d !== null && d >= twoWeeksAgo && d < oneWeekAgo;
+    }).length;
+
+    let totalVolume = 0;
+    let totalDuration = 0;
+    let validWorkoutCount = 0;
+    const exerciseProgress: Record<string, { name: string; volumes: number[] }> = {};
+
+    workouts.forEach((workout) => {
+      if (workout.start_time && workout.end_time) {
+        const durationMinutes =
+          (new Date(workout.end_time).getTime() - new Date(workout.start_time).getTime()) / 60000;
+
+        // Ignore implausible durations: a workout left open overnight would
+        // otherwise dominate the average.
+        if (durationMinutes <= 300) {
+          totalDuration += durationMinutes;
+          validWorkoutCount++;
+        }
       }
 
-      const { data: workouts, error: workoutsError } = await supabase
-        .from('workouts')
-        .select(`
-          id,
-          start_time,
-          end_time,
-          workout_exercises (
-            id,
-            exercise:exercises (
-              id,
-              name
-            ),
-            exercise_logs (
-              weight,
-              reps,
-              failed_reps,
-              completed
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_time', startDate.toISOString())
-        .not('end_time', 'is', null)
-        .order('start_time', { ascending: false });
+      workout.workout_exercises?.forEach((we) => {
+        const exerciseVolume =
+          we.exercise_logs?.reduce((sum, log) => sum + calculateLogVolume(log), 0) ?? 0;
 
-      if (workoutsError) throw workoutsError;
+        totalVolume += exerciseVolume;
 
-      const { data: settings } = await supabase
-        .from('user_settings')
-        .select('weekly_workout_goal')
-        .eq('user_id', user.id)
-        .single();
-
-      const weeklyGoal = settings?.weekly_workout_goal || 3;
-
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(now.getDate() - 7);
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(now.getDate() - 14);
-
-      const workoutsThisWeek = (workouts || []).filter(
-        w => new Date(w.start_time) >= oneWeekAgo
-      ).length;
-
-      const workoutsLastWeek = (workouts || []).filter(
-        w => new Date(w.start_time) >= twoWeeksAgo && new Date(w.start_time) < oneWeekAgo
-      ).length;
-
-      let totalVolume = 0;
-      let totalDuration = 0;
-      let validWorkoutCount = 0;
-      const exerciseProgress: Record<string, { name: string; volumes: number[] }> = {};
-
-      (workouts || []).forEach((workout: any) => {
-        if (workout.start_time && workout.end_time) {
-          const duration = new Date(workout.end_time).getTime() - new Date(workout.start_time).getTime();
-          const durationMinutes = duration / 60000;
-
-          // Only include workouts with realistic durations (under 5 hours)
-          if (durationMinutes <= 300) {
-            totalDuration += durationMinutes;
-            validWorkoutCount++;
+        if (we.exercise) {
+          if (!exerciseProgress[we.exercise.id]) {
+            exerciseProgress[we.exercise.id] = { name: we.exercise.name, volumes: [] };
           }
-        }
-
-        workout.workout_exercises?.forEach((we: any) => {
-          const exerciseVolume = we.exercise_logs
-            ?.reduce((sum: number, log: any) => sum + calculateLogVolume(log), 0) || 0;
-
-          totalVolume += exerciseVolume;
-
-          if (we.exercise) {
-            if (!exerciseProgress[we.exercise.id]) {
-              exerciseProgress[we.exercise.id] = {
-                name: we.exercise.name,
-                volumes: [],
-              };
-            }
-            exerciseProgress[we.exercise.id].volumes.push(exerciseVolume);
-          }
-        });
-      });
-
-      let mostImproved = null;
-      let maxImprovement = 0;
-
-      Object.entries(exerciseProgress).forEach(([id, data]) => {
-        if (data.volumes.length >= 2) {
-          const recent = data.volumes.slice(0, Math.ceil(data.volumes.length / 2));
-          const older = data.volumes.slice(Math.ceil(data.volumes.length / 2));
-
-          const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-          const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
-
-          if (olderAvg > 0) {
-            const improvement = ((recentAvg - olderAvg) / olderAvg) * 100;
-            if (improvement > maxImprovement) {
-              maxImprovement = improvement;
-              mostImproved = {
-                name: data.name,
-                improvement: Math.round(improvement),
-              };
-            }
-          }
+          exerciseProgress[we.exercise.id].volumes.push(exerciseVolume);
         }
       });
+    });
 
-      setMetrics({
-        totalWorkouts: workouts?.length || 0,
-        totalVolume: Math.round(totalVolume),
-        avgWorkoutDuration: validWorkoutCount ? Math.round(totalDuration / validWorkoutCount) : 0,
-        mostImprovedExercise: mostImproved,
-        workoutsThisWeek,
-        workoutsLastWeek,
-        weeklyGoal,
-      });
-    } catch (error: any) {
-      console.error('Error fetching metrics:', error);
-      toast.error('Failed to load metrics');
-    } finally {
-      setLoading(false);
-    }
-  };
+    let mostImproved: OverviewMetrics['mostImprovedExercise'] = null;
+    let maxImprovement = 0;
+
+    Object.values(exerciseProgress).forEach((data) => {
+      if (data.volumes.length < 2) return;
+
+      // The shared history is ordered OLDEST first. The previous version
+      // fetched newest-first and took the leading slice as "recent"; keeping
+      // that slice order here would silently invert this metric.
+      const midpoint = Math.ceil(data.volumes.length / 2);
+      const older = data.volumes.slice(0, midpoint);
+      const recent = data.volumes.slice(midpoint);
+
+      const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+      const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+      if (olderAvg <= 0) return;
+
+      const improvement = ((recentAvg - olderAvg) / olderAvg) * 100;
+      if (improvement > maxImprovement) {
+        maxImprovement = improvement;
+        mostImproved = { name: data.name, improvement: Math.round(improvement) };
+      }
+    });
+
+    return {
+      totalWorkouts: workouts.length,
+      totalVolume: Math.round(totalVolume),
+      avgWorkoutDuration: validWorkoutCount ? Math.round(totalDuration / validWorkoutCount) : 0,
+      mostImprovedExercise: mostImproved,
+      workoutsThisWeek,
+      workoutsLastWeek,
+      weeklyGoal,
+    };
+  }, [workouts, weeklyGoal]);
 
   if (loading) {
     return (
