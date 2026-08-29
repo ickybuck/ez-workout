@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { LayoutGrid as Layout, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { calculateWorkoutVolume } from '../../lib/volumeUtils';
 
 interface TemplateProgressProps {
@@ -19,94 +18,43 @@ interface TemplateStats {
 }
 
 const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
-  const { user } = useAuth();
-  const [templates, setTemplates] = useState<TemplateStats[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: workouts, loading } = useWorkoutHistory(timeRange);
 
-  useEffect(() => {
-    if (user) {
-      fetchTemplateProgress();
-    }
-  }, [user, timeRange]);
+  const templates = useMemo<TemplateStats[]>(() => {
+    const templateData: Record<string, { name: string; volumes: number[]; dates: string[] }> = {};
 
-  const fetchTemplateProgress = async () => {
-    if (!user) return;
+    workouts.forEach((workout) => {
+      // Template-less workouts are excluded here rather than in the query,
+      // because the fetch is now shared with tabs that do want them.
+      if (!workout.template_id || !workout.workout_templates || !workout.start_time) return;
 
-    try {
-      setLoading(true);
-
-      const now = new Date();
-      let startDate = new Date();
-
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
+      if (!templateData[workout.template_id]) {
+        templateData[workout.template_id] = {
+          name: workout.workout_templates.name,
+          volumes: [],
+          dates: [],
+        };
       }
 
-      const { data: workouts, error } = await supabase
-        .from('workouts')
-        .select(`
-          id,
-          template_id,
-          start_time,
-          workout_templates (
-            id,
-            name
-          ),
-          workout_exercises (
-            exercise_logs (
-              weight,
-              reps,
-              failed_reps,
-              completed
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .not('template_id', 'is', null)
-        .not('end_time', 'is', null)
-        .gte('start_time', startDate.toISOString())
-        .order('start_time', { ascending: true });
+      templateData[workout.template_id].volumes.push(
+        calculateWorkoutVolume(workout.workout_exercises ?? []),
+      );
+      templateData[workout.template_id].dates.push(workout.start_time);
+    });
 
-      if (error) throw error;
-
-      const templateData: Record<string, {
-        name: string;
-        volumes: number[];
-        dates: string[];
-      }> = {};
-
-      (workouts || []).forEach((workout: any) => {
-        if (!workout.template_id || !workout.workout_templates) return;
-
-        const volume = calculateWorkoutVolume(workout.workout_exercises || []);
-
-        if (!templateData[workout.template_id]) {
-          templateData[workout.template_id] = {
-            name: workout.workout_templates.name,
-            volumes: [],
-            dates: [],
-          };
-        }
-
-        templateData[workout.template_id].volumes.push(volume);
-        templateData[workout.template_id].dates.push(workout.start_time);
-      });
-
-      const templateStats: TemplateStats[] = Object.entries(templateData).map(([id, data]) => {
+    return Object.entries(templateData)
+      .map(([id, data]) => {
         const avgVolume = Math.round(data.volumes.reduce((a, b) => a + b, 0) / data.volumes.length);
 
         let volumeTrend: 'up' | 'down' | 'stable' = 'stable';
         let trendPercent = 0;
 
+        // Split the range in half and compare averages, so a template with a
+        // handful of sessions still reports a direction.
         if (data.volumes.length >= 2) {
           const midpoint = Math.ceil(data.volumes.length / 2);
-          const recentAvg = data.volumes.slice(midpoint).reduce((a, b) => a + b, 0) / (data.volumes.length - midpoint);
+          const recentAvg =
+            data.volumes.slice(midpoint).reduce((a, b) => a + b, 0) / (data.volumes.length - midpoint);
           const olderAvg = data.volumes.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
 
           if (olderAvg > 0) {
@@ -125,15 +73,9 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
           trendPercent,
           lastWorkout: data.dates[data.dates.length - 1],
         };
-      }).sort((a, b) => b.workoutCount - a.workoutCount);
-
-      setTemplates(templateStats);
-    } catch (error) {
-      console.error('Error fetching template progress:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      })
+      .sort((a, b) => b.workoutCount - a.workoutCount);
+  }, [workouts]);
 
   if (loading) {
     return (

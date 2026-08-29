@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Award, Trophy } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PersonalRecordsProps {
@@ -19,105 +18,44 @@ interface PersonalRecord {
 }
 
 const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
-  const { user } = useAuth();
   const { unit, formatWeight } = useWeightUnit();
-  const [records, setRecords] = useState<PersonalRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: workouts, loading } = useWorkoutHistory(timeRange);
 
-  useEffect(() => {
-    if (user) {
-      fetchPersonalRecords();
-    }
-  }, [user, timeRange]);
+  const records = useMemo<PersonalRecord[]>(() => {
+    const exerciseRecords: Record<string, PersonalRecord> = {};
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const fetchPersonalRecords = async () => {
-    if (!user) return;
+    // Epley one-rep max, so a heavy single and a lighter set of ten compare.
+    const oneRepMax = (weight: number, reps: number) => weight * (1 + reps / 30);
 
-    try {
-      setLoading(true);
+    workouts.forEach((workout) => {
+      workout.workout_exercises?.forEach((we) => {
+        if (!we.exercise) return;
+        const exercise = we.exercise;
 
-      const now = new Date();
-      let startDate = new Date();
+        we.exercise_logs
+          ?.filter((log) => log.completed)
+          .forEach((log) => {
+            const best = exerciseRecords[exercise.id];
+            if (best && oneRepMax(log.weight, log.reps) <= oneRepMax(best.weight, best.reps)) return;
 
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
-      }
-
-      const { data: workouts, error } = await supabase
-        .from('workouts')
-        .select(`
-          start_time,
-          workout_exercises (
-            exercise:exercises (
-              id,
-              name
-            ),
-            exercise_logs (
-              weight,
-              reps,
-              completed,
-              created_at
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_time', startDate.toISOString())
-        .not('end_time', 'is', null)
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-
-      const exerciseRecords: Record<string, PersonalRecord> = {};
-
-      (workouts || []).forEach((workout: any) => {
-        workout.workout_exercises?.forEach((we: any) => {
-          if (!we.exercise) return;
-
-          const completedLogs = we.exercise_logs?.filter((log: any) => log.completed) || [];
-
-          completedLogs.forEach((log: any) => {
-            const oneRepMax = log.weight * (1 + log.reps / 30);
-
-            if (
-              !exerciseRecords[we.exercise.id] ||
-              oneRepMax > (exerciseRecords[we.exercise.id].weight * (1 + exerciseRecords[we.exercise.id].reps / 30))
-            ) {
-              const thirtyDaysAgo = new Date();
-              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-              const isNew = new Date(log.created_at) >= thirtyDaysAgo;
-
-              exerciseRecords[we.exercise.id] = {
-                exerciseId: we.exercise.id,
-                exerciseName: we.exercise.name,
-                weight: log.weight,
-                reps: log.reps,
-                date: log.created_at,
-                isNew,
-              };
-            }
+            exerciseRecords[exercise.id] = {
+              exerciseId: exercise.id,
+              exerciseName: exercise.name,
+              weight: log.weight,
+              reps: log.reps,
+              date: log.created_at ?? '',
+              isNew: log.created_at ? new Date(log.created_at) >= thirtyDaysAgo : false,
+            };
           });
-        });
       });
+    });
 
-      const recordsList = Object.values(exerciseRecords).sort((a, b) => {
-        const aScore = a.weight * (1 + a.reps / 30);
-        const bScore = b.weight * (1 + b.reps / 30);
-        return bScore - aScore;
-      });
-
-      setRecords(recordsList.slice(0, 10));
-    } catch (error) {
-      console.error('Error fetching personal records:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return Object.values(exerciseRecords)
+      .sort((a, b) => oneRepMax(b.weight, b.reps) - oneRepMax(a.weight, a.reps))
+      .slice(0, 10);
+  }, [workouts]);
 
   if (loading) {
     return (

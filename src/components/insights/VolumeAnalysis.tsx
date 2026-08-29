@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { BarChart3, Calendar } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { calculateWorkoutVolume } from '../../lib/volumeUtils';
 
 interface VolumeAnalysisProps {
@@ -15,85 +14,31 @@ interface DayVolume {
   count: number;
 }
 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 const VolumeAnalysis: React.FC<VolumeAnalysisProps> = ({ timeRange }) => {
-  const { user } = useAuth();
   const { unit, convertWeight } = useWeightUnit();
-  const [dayVolumes, setDayVolumes] = useState<DayVolume[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: workouts, loading } = useWorkoutHistory(timeRange);
 
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-  useEffect(() => {
-    if (user) {
-      fetchVolumeAnalysis();
+  const dayVolumes = useMemo<DayVolume[]>(() => {
+    const dayData: Record<number, { volume: number; count: number }> = {};
+    for (let i = 0; i < 7; i++) {
+      dayData[i] = { volume: 0, count: 0 };
     }
-  }, [user, timeRange]);
 
-  const fetchVolumeAnalysis = async () => {
-    if (!user) return;
+    workouts.forEach((workout) => {
+      if (!workout.start_time) return;
+      const dayOfWeek = new Date(workout.start_time).getDay();
+      dayData[dayOfWeek].volume += calculateWorkoutVolume(workout.workout_exercises ?? []);
+      dayData[dayOfWeek].count += 1;
+    });
 
-    try {
-      setLoading(true);
-
-      const now = new Date();
-      let startDate = new Date();
-
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
-      }
-
-      const { data: workouts, error } = await supabase
-        .from('workouts')
-        .select(`
-          start_time,
-          workout_exercises (
-            exercise_logs (
-              weight,
-              reps,
-              failed_reps,
-              completed
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_time', startDate.toISOString())
-        .not('end_time', 'is', null);
-
-      if (error) throw error;
-
-      const dayData: Record<number, { volume: number; count: number }> = {};
-
-      for (let i = 0; i < 7; i++) {
-        dayData[i] = { volume: 0, count: 0 };
-      }
-
-      (workouts || []).forEach((workout: any) => {
-        const dayOfWeek = new Date(workout.start_time).getDay();
-        const volume = calculateWorkoutVolume(workout.workout_exercises || []);
-
-        dayData[dayOfWeek].volume += volume;
-        dayData[dayOfWeek].count += 1;
-      });
-
-      const volumes = Object.entries(dayData).map(([day, data]) => ({
-        day: dayNames[parseInt(day)],
-        volume: data.count > 0 ? Math.round(data.volume / data.count) : 0,
-        count: data.count,
-      }));
-
-      setDayVolumes(volumes);
-    } catch (error) {
-      console.error('Error fetching volume analysis:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return Object.entries(dayData).map(([day, data]) => ({
+      day: DAY_NAMES[parseInt(day)],
+      volume: data.count > 0 ? Math.round(data.volume / data.count) : 0,
+      count: data.count,
+    }));
+  }, [workouts]);
 
   if (loading) {
     return (

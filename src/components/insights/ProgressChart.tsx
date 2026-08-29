@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { LineChart, TrendingUp } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
 import { calculateWorkoutVolume } from '../../lib/volumeUtils';
 
 interface ProgressChartProps {
@@ -16,87 +15,33 @@ interface DataPoint {
 }
 
 const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
-  const { user } = useAuth();
   const { unit, convertWeight } = useWeightUnit();
-  const [data, setData] = useState<DataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: workouts, loading } = useWorkoutHistory(timeRange);
 
-  useEffect(() => {
-    if (user) {
-      fetchProgressData();
-    }
-  }, [user, timeRange]);
+  const data = useMemo<DataPoint[]>(() => {
+    const groupedData: Record<string, { volume: number; count: number }> = {};
 
-  const fetchProgressData = async () => {
-    if (!user) return;
+    workouts.forEach((workout) => {
+      if (!workout.start_time) return;
+      const date = new Date(workout.start_time).toISOString().split('T')[0];
 
-    try {
-      setLoading(true);
-
-      const now = new Date();
-      let startDate = new Date();
-
-      if (timeRange === '30') {
-        startDate.setDate(now.getDate() - 30);
-      } else if (timeRange === '90') {
-        startDate.setDate(now.getDate() - 90);
-      } else if (timeRange === '180') {
-        startDate.setDate(now.getDate() - 180);
-      } else {
-        startDate = new Date(0);
+      if (!groupedData[date]) {
+        groupedData[date] = { volume: 0, count: 0 };
       }
+      groupedData[date].volume += calculateWorkoutVolume(workout.workout_exercises ?? []);
+      groupedData[date].count += 1;
+    });
 
-      const { data: workouts, error } = await supabase
-        .from('workouts')
-        .select(`
-          start_time,
-          workout_exercises (
-            exercise_logs (
-              weight,
-              reps,
-              failed_reps,
-              completed
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_time', startDate.toISOString())
-        .not('end_time', 'is', null)
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-
-      const groupedData: Record<string, { volume: number; count: number }> = {};
-
-      (workouts || []).forEach((workout: any) => {
-        const date = new Date(workout.start_time).toISOString().split('T')[0];
-        const volume = calculateWorkoutVolume(workout.workout_exercises || []);
-
-        if (!groupedData[date]) {
-          groupedData[date] = { volume: 0, count: 0 };
-        }
-        groupedData[date].volume += volume;
-        groupedData[date].count += 1;
-      });
-
-      const chartData = Object.entries(groupedData)
-        .map(([date, stats]) => ({
-          date,
-          volume: Math.round(stats.volume),
-          workouts: stats.count,
-        }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      // Limit to most recent 30 data points for better visibility
-      const limitedData = chartData.slice(-30);
-
-      setData(limitedData);
-    } catch (error) {
-      console.error('Error fetching progress data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return Object.entries(groupedData)
+      .map(([date, stats]) => ({
+        date,
+        volume: Math.round(stats.volume),
+        workouts: stats.count,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      // Most recent 30 points, for readability on a phone.
+      .slice(-30);
+  }, [workouts]);
 
   if (loading) {
     return (
