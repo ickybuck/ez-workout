@@ -20,7 +20,13 @@ const Register: React.FC = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if ((error as { code?: string }).code === 'signup_disabled') {
+          toast.error('Registration is closed. Ask Eric for an account.');
+          return;
+        }
+        throw error;
+      }
 
       toast.success('Registration successful! You can now sign in.');
       navigate('/login');

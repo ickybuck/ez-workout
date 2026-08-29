@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase, checkSupabaseConnection } from '../lib/supabase';
 import { LogIn } from 'lucide-react';
+import { SIGNUPS_ENABLED } from '../config';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -135,14 +136,16 @@ const Login: React.FC = () => {
               </div>
             </form>
 
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                  Sign up
-                </Link>
-              </p>
-            </div>
+            {SIGNUPS_ENABLED && (
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            )}
           </>
         ) : (
           <>

@@ -17,6 +17,7 @@ import Admin from '../pages/Admin';
 import Insights from '../pages/Insights';
 import DashboardLayout from '../components/DashboardLayout';
 import ProtectedRoute from './ProtectedRoute';
+import { SIGNUPS_ENABLED } from '../config';
 
 const AppRoutes: React.FC = () => {
   const { loading } = useAuth();
@@ -32,7 +33,12 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* Registration is closed (see src/config.ts). Redirecting rather
+          than rendering a form the API will refuse — EZ-29. */}
+      <Route
+        path="/register"
+        element={SIGNUPS_ENABLED ? <Register /> : <Navigate to="/login" replace />}
+      />
       <Route
         path="/dashboard"
         element={
