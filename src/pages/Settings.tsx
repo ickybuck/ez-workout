@@ -24,7 +24,6 @@ interface UserSettings {
   weekly_workout_goal: number;
   goal_weekday_start: number;
   recent_workouts_count: number;
-  is_admin: boolean;
   username: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -46,7 +45,6 @@ const DEFAULT_SETTINGS: UserSettings = {
   weekly_workout_goal: 3,
   goal_weekday_start: 0,
   recent_workouts_count: 3,
-  is_admin: false,
   username: null,
   first_name: null,
   last_name: null,
