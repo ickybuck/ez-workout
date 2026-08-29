@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
@@ -11,6 +11,7 @@ import ExerciseFormV2 from '../components/exercises/ExerciseFormV2';
 const ExerciseAdd: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const {
     equipmentTypes,
     bodyParts,
@@ -20,7 +21,9 @@ const ExerciseAdd: React.FC = () => {
   } = useExerciseData();
 
   const [editForm, setEditForm] = useState<Partial<Exercise>>({
-    name: '',
+    // Carried from the library's search box, so someone who searched, scrolled
+    // the results and still could not find it does not retype the name.
+    name: searchParams.get('name') ?? '',
     description: '',
     equipment_type: equipmentTypes[0],
     body_part: bodyParts[0],
@@ -70,7 +73,13 @@ const ExerciseAdd: React.FC = () => {
         .select()
         .single();
 
-      if (exerciseError) throw exerciseError;
+      if (exerciseError) {
+        if (exerciseError.code === '23505') {
+          toast.error(`"${editForm.name}" already exists in the library.`);
+          return;
+        }
+        throw exerciseError;
+      }
 
       const { error: defaultsError } = await supabase
         .from('exercise_defaults')

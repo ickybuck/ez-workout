@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Edit2, Plus, Trash2, ListPlus, Check, X, Filter, Copy } from 'lucide-react';
+import { Edit2, Plus, Trash2, ListPlus, Check, X, Filter, Copy, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Exercise } from '../types/exercise';
 import { useAuth } from '../contexts/AuthContext';
+import { useAdminStatus } from '../hooks/useAdminStatus';
 import { useWeightUnit } from '../hooks/useWeightUnit';
 import { useExerciseData } from '../hooks/useExerciseData';
 import AddToTemplateDialog from '../components/exercises/AddToTemplateDialog';
@@ -26,6 +27,7 @@ interface ExerciseWithTemplateCount extends Exercise {
 const ExerciseLibraryV2: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useAdminStatus();
   const [searchParams, setSearchParams] = useSearchParams();
   const { formatWeight } = useWeightUnit();
   const {
@@ -40,6 +42,8 @@ const ExerciseLibraryV2: React.FC = () => {
   const [exercisesWithTemplates, setExercisesWithTemplates] = useState<ExerciseWithTemplateCount[]>([]);
   
   // Initialize filters from URL params
+  const [search, setSearch] = useState(() => searchParams.get('q') || '');
+
   const [showFilters, setShowFilters] = useState(() => {
     return searchParams.get('showFilters') === 'true';
   });
@@ -61,6 +65,7 @@ const ExerciseLibraryV2: React.FC = () => {
     const params = new URLSearchParams();
     
     if (showFilters) params.set('showFilters', 'true');
+    if (search.trim()) params.set('q', search.trim());
     if (filters.bodyPart) params.set('bodyPart', filters.bodyPart);
     if (filters.equipment) params.set('equipment', filters.equipment);
     if (filters.inTemplates !== 'all') params.set('inTemplates', filters.inTemplates);
@@ -69,7 +74,7 @@ const ExerciseLibraryV2: React.FC = () => {
     if (sortConfig.order !== 'asc') params.set('sortOrder', sortConfig.order);
     
     setSearchParams(params, { replace: true });
-  }, [showFilters, filters, sortConfig, setSearchParams]);
+  }, [showFilters, filters, sortConfig, search, setSearchParams]);
 
   useEffect(() => {
     if (exercises.length > 0) {
@@ -195,6 +200,12 @@ const ExerciseLibraryV2: React.FC = () => {
 
   const filteredAndSortedExercises = exercisesWithTemplates
     .filter(exercise => {
+      // Substring rather than fuzzy, deliberately. "Incline Bench Press" and
+      // "Bench Press" are different exercises, as are "Hack Squats" and
+      // "Squats" — all four are in the catalogue, and a fuzzy match would
+      // flag them as duplicates of each other on day one.
+      const query = search.trim().toLowerCase();
+      if (query && !exercise.name.toLowerCase().includes(query)) return false;
       if (filters.bodyPart && exercise.body_part?.id !== filters.bodyPart) return false;
       if (filters.equipment && exercise.equipment_type?.id !== filters.equipment) return false;
       if (filters.inTemplates === 'used' && exercise.templateCount === 0) return false;
@@ -245,13 +256,17 @@ const ExerciseLibraryV2: React.FC = () => {
               <Filter className="h-5 w-5" />
             </button>
           </div>
-          <button
-            onClick={() => navigate('/dashboard/exercises/new')}
-            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add
-          </button>
+          <div className="relative flex-1 max-w-xs ml-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search exercises"
+              aria-label="Search exercises"
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
         </div>
 
         {showFilters && (
@@ -342,7 +357,9 @@ const ExerciseLibraryV2: React.FC = () => {
         <div className="space-y-4">
           {filteredAndSortedExercises.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No exercises found matching your filters
+              {search.trim()
+                ? `No exercises match "${search.trim()}"`
+                : 'No exercises found matching your filters'}
             </div>
           ) : (
             filteredAndSortedExercises.map((exercise) => (
@@ -412,6 +429,7 @@ const ExerciseLibraryV2: React.FC = () => {
                     >
                       <Copy className="h-4 w-4" />
                     </button>
+                    {isAdmin && (
                     <button
                       onClick={() => handleDelete(exercise.id)}
                       className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
@@ -419,10 +437,34 @@ const ExerciseLibraryV2: React.FC = () => {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))
+          )}
+
+          {isAdmin && (
+            <div className="pt-4 mt-2 border-t border-gray-200 text-center">
+              <p className="text-sm text-gray-500 mb-2">
+                {search.trim()
+                  ? `Not what you were looking for?`
+                  : 'Searched and it is genuinely not here?'}
+              </p>
+              <button
+                onClick={() =>
+                  navigate(
+                    search.trim()
+                      ? `/dashboard/exercises/new?name=${encodeURIComponent(search.trim())}`
+                      : '/dashboard/exercises/new',
+                  )
+                }
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {search.trim() ? `Create "${search.trim()}"` : 'Create a new exercise'}
+              </button>
+            </div>
           )}
         </div>
       </div>
