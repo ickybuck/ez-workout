@@ -27,6 +27,12 @@ interface UndoState {
   previousExtraReps: number;
   previousStopReason: string | null;
   previousSetRir: string | null;
+  // Where the screen was looking. Completing a set moves focus — to the other
+  // half of a superset, or on to the next block — so restoring only the row
+  // leaves you staring at a different exercise while the set you just took
+  // back sits behind you. Undo has to put the view back too.
+  previousActiveExerciseIndex: number;
+  previousCurrentExerciseIndex: number;
 }
 
 const ActiveWorkout: React.FC = () => {
@@ -94,9 +100,26 @@ const ActiveWorkout: React.FC = () => {
     }
   };
 
+  /**
+   * Guards against creating the same workout twice.
+   *
+   * `!workout` is state, and `startWorkout` is async, so the guard cannot see
+   * its own effect: anything that re-runs this before the insert resolves finds
+   * `workout` still null and inserts again. React StrictMode does exactly that
+   * in development, and it produced two workout rows 268ms apart — both real,
+   * one orphaned, the UI bound to whichever won.
+   *
+   * A ref is set synchronously, so the second pass sees it. Keyed by template
+   * id rather than a plain boolean so starting a different workout later still
+   * works.
+   */
+  const startingTemplateRef = useRef<string | null>(null);
+
   useEffect(() => {
     const templateId = searchParams.get('template');
     if (!workout && templateId) {
+      if (startingTemplateRef.current === templateId) return;
+      startingTemplateRef.current = templateId;
       startWorkout(templateId);
     } else {
       setLoading(false);
@@ -116,7 +139,12 @@ const ActiveWorkout: React.FC = () => {
 
   useEffect(() => {
     setExerciseTime(0);
-    setUndoState(null); // Clear undo history when switching exercises
+    // Undo is deliberately NOT cleared here. This effect fires on the automatic
+    // advance too, so clearing meant the set that finished a block could never
+    // be taken back — the index moved, the effect ran, and the undo captured a
+    // moment earlier was gone before the button could be pressed. Stale undo is
+    // only a risk when the user jumps somewhere themselves, so it is cleared in
+    // handleJumpToExercise instead, which is where that intent actually lives.
   }, [currentExerciseIndex]);
 
   const startWorkout = async (templateId: string) => {
@@ -300,6 +328,8 @@ const ActiveWorkout: React.FC = () => {
         previousExtraReps: log.extra_reps ?? 0,
         previousStopReason: log.stop_reason ?? null,
         previousSetRir: log.set_rir ?? null,
+        previousActiveExerciseIndex: activeExerciseIndex,
+        previousCurrentExerciseIndex: currentExerciseIndex,
       });
 
       const failedReps =
@@ -474,6 +504,14 @@ const ActiveWorkout: React.FC = () => {
         })),
       };
       setWorkout(updatedWorkout);
+
+      // Put the view back where the set was logged from. Without this the pair
+      // drifts out of step: the count goes back down but focus stays on the
+      // partner, so the next Complete lands on the wrong exercise and the two
+      // halves of the superset end up an set apart.
+      setActiveExerciseIndex(undoState.previousActiveExerciseIndex);
+      setCurrentExerciseIndex(undoState.previousCurrentExerciseIndex);
+
       setUndoState(null);
 
       toast.success('Set undone');
@@ -507,6 +545,10 @@ const ActiveWorkout: React.FC = () => {
     if (!workout || !user) return;
 
     if (targetIndex === currentExerciseIndex) return;
+
+    // Jumping by hand is what makes a pending undo stale: it captured a focus
+    // that no longer means anything once the blocks have been reordered.
+    setUndoState(null);
 
     try {
       // Swap two blocks, whatever size they are. The old version had a
