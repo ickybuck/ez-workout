@@ -115,3 +115,32 @@ body {
   background-color: rgb(var(--surface));
   color: rgb(var(--content));
 }
+
+/**
+ * Form controls.
+ *
+ * These need a base rule rather than a class on each element, because the
+ * problem is not a colour that was written wrongly — it is a colour that was
+ * never written at all. Inputs across this app carry a border class and no
+ * background, relying on the browser default, which is white. Converting the
+ * classes could not fix that: the tokenise script reports what was written, and
+ * an omission leaves nothing to report.
+ *
+ * Found by walking the deployed screens with the theme forced on, which is the
+ * only way it could have been found. Every automated check said the conversion
+ * was complete, and by its own definition it was.
+ *
+ * Checkboxes and radios are excluded: they paint their own control, and giving
+ * them a surface background flattens them into squares.
+ */
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  background-color: rgb(var(--surface-raised));
+  color: rgb(var(--content));
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgb(var(--content-subtle));
+}

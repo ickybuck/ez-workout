@@ -65,44 +65,36 @@ describe('applyTheme', () => {
     } as unknown as Document & { _classes: Set<string>; _meta: { content: string } };
   };
 
-  // These assert the CURRENT behaviour, which is that nothing dark is applied
-  // to the document while DARK_STYLES_READY is false. Applying a dark
-  // color-scheme over components that have no dark styles renders white text
-  // on white cards — it shipped that way once and made the timers invisible on
-  // any device set to dark mode. When the first dark: styles land, flip the
-  // flag and invert these three expectations in the same change.
-  it('does not add the dark class while the components have no dark styles', () => {
+  // These asserted the gated behaviour while the components were being
+  // converted. Now that every one reads semantic tokens the gate passes, so
+  // they assert the real thing: the theme reaches the document.
+  it('adds the dark class so the token overrides take effect', () => {
     const doc = makeDoc();
+    expect(DARK_STYLES_READY).toBe(true);
+
     applyTheme('dark', doc);
-    expect(DARK_STYLES_READY).toBe(false);
-    expect(doc._classes.has('dark')).toBe(false);
+    expect(doc._classes.has('dark')).toBe(true);
 
     applyTheme('light', doc);
     expect(doc._classes.has('dark')).toBe(false);
   });
 
-  it('pins colorScheme to light, which is what keeps default text readable', () => {
+  it('sets colorScheme so native controls and scrollbars follow', () => {
     const doc = makeDoc();
     applyTheme('dark', doc);
-    // The whole bug in one assertion: colorScheme dark makes every element
-    // without an explicit text colour render white.
+    expect(doc.documentElement.style.colorScheme).toBe('dark');
+
+    applyTheme('light', doc);
     expect(doc.documentElement.style.colorScheme).toBe('light');
   });
 
-  it('keeps theme-color light, so the status bar matches the light app', () => {
+  it('updates theme-color, so an installed app has a matching status bar', () => {
     const doc = makeDoc();
     applyTheme('dark', doc);
-    expect(doc._meta.content).toBe('#4f46e5');
+    expect(doc._meta.content).toBe('#111827');
 
     applyTheme('light', doc);
     expect(doc._meta.content).toBe('#4f46e5');
-  });
-
-  it('still resolves and stores the preference, so nothing is lost meanwhile', () => {
-    // The preference plumbing stays live and correct; only its application to
-    // the document is held back.
-    expect(resolveTheme('system', true)).toBe('dark');
-    expect(preferenceFromColumn(true)).toBe('dark');
   });
 });
 

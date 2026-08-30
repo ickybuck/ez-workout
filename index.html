@@ -20,13 +20,13 @@
       // Runs before first paint. Without it a dark-mode user sees a white
       // flash on every load, which no amount of React can fix afterwards.
       try {
-        // Kept in step with DARK_STYLES_READY in src/lib/theme.ts, which is
-        // false: the components have no dark styles yet, and applying a dark
-        // color-scheme over light components turns every element without an
-        // explicit text colour white — on a white card. Both places have to
-        // agree, or this script paints the broken state before React can
-        // correct it. Flip both together when the first dark: styles land.
-        var DARK_STYLES_READY = false;
+        // Kept in step with DARK_STYLES_READY in src/lib/theme.ts. Both places
+        // have to agree, or this script paints one theme before React applies
+        // the other — and it once painted a broken one, when a dark
+        // color-scheme met components that had no dark styles and every
+        // element without an explicit text colour turned white on a white
+        // card. Now that every component reads semantic tokens, both are true.
+        var DARK_STYLES_READY = true;
         var stored = localStorage.getItem('workout-theme');
         var dark = stored === 'dark' || (stored !== 'light' &&
           window.matchMedia('(prefers-color-scheme: dark)').matches);

@@ -26,7 +26,7 @@ export type ResolvedTheme = 'light' | 'dark';
 export const THEME_STORAGE_KEY = 'workout-theme';
 
 /**
- * Whether the components have dark styles yet. They do not.
+ * Whether the components have dark styles yet. They now do.
  *
  * This exists because shipping the plumbing without it caused a real outage of
  * legibility. `color-scheme: dark` changes the browser's DEFAULT text colour to
@@ -41,12 +41,13 @@ export const THEME_STORAGE_KEY = 'workout-theme';
  * because it was only ever checked in a light-mode browser. A device
  * preference is not a thing you notice by reading code.
  *
- * So the resolution logic stays live and tested — the preference is still read,
- * stored and followed — but nothing that changes rendering is applied until the
- * components can survive it. Flip this to true in the same change that lands
- * the first `dark:` styles, not before.
+ * Flipped true once every component was converted to semantic tokens and the
+ * deployed build had been walked screen by screen with the theme forced on.
+ * The kept flag is why the half-converted state was never shipped, and it is
+ * left in place: it is the switch to reach for if a regression ever needs the
+ * theme turned off in one line rather than reverted across forty files.
  */
-export const DARK_STYLES_READY = false;
+export const DARK_STYLES_READY = true;
 
 /** The nullable boolean in the database maps onto the three-state preference. */
 export function preferenceFromColumn(darkMode: boolean | null | undefined): ThemePreference {
@@ -74,10 +75,9 @@ export function resolveTheme(preference: ThemePreference, systemPrefersDark: boo
  * that is hard to attribute.
  */
 export function applyTheme(theme: ResolvedTheme, doc: Document = document): void {
-  // Until the components have dark styles, everything that would actually
-  // change rendering is pinned to light. Applying only the parts that are
-  // ready produces a worse result than applying none of them: a dark
-  // color-scheme over light components means white text on white cards.
+  // The gate stays, though it now passes. It is the one line that turns the
+  // theme off if a regression ever needs that, rather than reverting the token
+  // conversion across forty files.
   const effective: ResolvedTheme = DARK_STYLES_READY ? theme : 'light';
 
   doc.documentElement.classList.toggle('dark', effective === 'dark');
