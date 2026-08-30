@@ -155,37 +155,37 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Total Workouts</h3>
             <Activity className="h-5 w-5 text-accent" />
           </div>
-          <p className="text-3xl font-bold text-content">{metrics.totalWorkouts}</p>
+          <p className="text-2xl font-bold text-content">{metrics.totalWorkouts}</p>
           <p className="text-sm text-content-subtle mt-1">
             {timeRange === 'all' ? 'All time' : `Last ${timeRange} days`}
           </p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Total Volume</h3>
             <Target className="h-5 w-5 text-positive" />
           </div>
-          <p className="text-3xl font-bold text-content">{Math.round(convertWeight(metrics.totalVolume)).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-content">{Math.round(convertWeight(metrics.totalVolume)).toLocaleString()}</p>
           <p className="text-sm text-content-subtle mt-1">{unit} lifted</p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Avg Duration</h3>
             <Calendar className="h-5 w-5 text-caution" />
           </div>
-          <p className="text-3xl font-bold text-content">{metrics.avgWorkoutDuration}</p>
+          <p className="text-2xl font-bold text-content">{metrics.avgWorkoutDuration}</p>
           <p className="text-sm text-content-subtle mt-1">minutes per workout</p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">This Week</h3>
             {weeklyChange >= 0 ? (
@@ -194,7 +194,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
               <TrendingDown className="h-5 w-5 text-critical" />
             )}
           </div>
-          <p className="text-3xl font-bold text-content">
+          <p className="text-2xl font-bold text-content">
             {metrics.workoutsThisWeek}/{metrics.weeklyGoal}
           </p>
           <div className="mt-2">
