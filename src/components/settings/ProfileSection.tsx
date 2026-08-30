@@ -26,9 +26,8 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   onChange,
 }) => {
   return (
-    {/* No bottom border. Every section below opens with `pt-6 border-t`, so a
-        closing border here drew a second line one gap away from the next
-        section's opening one. */}
+    // No bottom border: every section below opens with `pt-6 border-t`, so a
+    // closing border here drew a second line one gap from the next section's.
     <div className="pb-6">
       <h3 className="text-lg font-medium text-content mb-4">Profile</h3>
 
