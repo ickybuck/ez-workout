@@ -218,7 +218,7 @@ const TemplateFormatGuide: React.FC<TemplateFormatGuideProps> = ({ onClose }) =>
                     </button>
                   </div>
                 </div>
-                <pre className="bg-surface-overlay text-positive rounded-xl p-4 text-xs overflow-x-auto leading-relaxed whitespace-pre">
+                <pre className="bg-code text-code-content rounded-xl p-4 text-xs overflow-x-auto leading-relaxed whitespace-pre">
                   {sampleJSON}
                 </pre>
               </div>
@@ -283,7 +283,7 @@ const TemplateFormatGuide: React.FC<TemplateFormatGuideProps> = ({ onClose }) =>
                     </button>
                   </div>
                 </div>
-                <pre className="bg-surface-overlay text-positive rounded-xl p-4 text-xs overflow-x-auto leading-relaxed whitespace-pre">
+                <pre className="bg-code text-code-content rounded-xl p-4 text-xs overflow-x-auto leading-relaxed whitespace-pre">
                   {sampleCSV}
                 </pre>
               </div>
@@ -352,7 +352,7 @@ const TemplateFormatGuide: React.FC<TemplateFormatGuideProps> = ({ onClose }) =>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-surface-overlay text-content-inverse text-sm font-medium hover:bg-surface-overlay transition-colors"
+            className="px-4 py-2 rounded-lg bg-surface-inverse text-content-on-inverse text-sm font-medium hover:bg-surface-inverse transition-colors"
           >
             Close
           </button>

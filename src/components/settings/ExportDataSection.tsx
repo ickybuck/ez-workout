@@ -261,7 +261,7 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
                   onClick={() => handlePresetClick(p.value)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     preset === p.value && !isCustomActive
-                      ? 'bg-surface-overlay text-content-inverse'
+                      ? 'bg-surface-inverse text-content-on-inverse'
                       : 'bg-surface-sunken text-content-muted hover:bg-surface-sunken'
                   }`}
                 >

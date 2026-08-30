@@ -109,7 +109,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
                   className="w-full bg-accent rounded-t hover:bg-accent-hover transition-colors cursor-pointer relative"
                   style={{ height: `${heightPx}px` }}
                 >
-                  <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-surface-overlay text-content-inverse text-xs rounded py-1 px-2 whitespace-nowrap pointer-events-none z-10">
+                  <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-surface-inverse text-content-on-inverse text-xs rounded py-1 px-2 whitespace-nowrap pointer-events-none z-10">
                     <div className="font-semibold">{new Date(point.date).toLocaleDateString()}</div>
                     <div>Volume: {Math.round(convertWeight(point.volume)).toLocaleString()} {unit}</div>
                     <div>Workouts: {point.workouts}</div>

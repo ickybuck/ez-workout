@@ -291,7 +291,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               <button
                 onClick={() => check(pasted)}
                 disabled={!!busy || !pasted.trim()}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-surface-overlay text-content-inverse hover:bg-surface-overlay transition-all disabled:opacity-40 shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-surface-inverse text-content-on-inverse hover:bg-surface-inverse transition-all disabled:opacity-40 shadow-sm"
               >
                 {busy === 'check' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Check it

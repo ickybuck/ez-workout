@@ -313,7 +313,7 @@ const Templates: React.FC = () => {
           <h2 className="text-2xl font-bold text-content">Workout Templates</h2>
           <button
             onClick={() => navigate('/dashboard/templates/new')}
-            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-surface-overlay hover:bg-surface-overlay transition-colors"
+            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-on-inverse bg-surface-inverse hover:bg-surface-inverse transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add

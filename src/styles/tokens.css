@@ -29,11 +29,26 @@
   --surface-raised: 255 255 255; /* white     — cards */
   --surface-overlay: 255 255 255; /* white     — modals, sheets */
 
+  /* Ink: a block that reads as the opposite of the page. Tooltips, and the
+     handful of near-black buttons the app uses for a heavy primary action.
+     Distinct from `surface-overlay` — a modal sits ON the page and shares its
+     colour; this deliberately opposes it, and in dark mode it inverts. */
+  --surface-inverse: 17 24 39; /* gray-900 */
+
+  /* Code blocks. Deliberately absent from the dark block below, because these
+     do NOT flip: a terminal reads as a terminal in both themes, the same way a
+     modal scrim is dark on a light page. Inverting them would put emerald-400
+     on near-white at 1.6:1. Declared here rather than hardcoded so the one
+     place a fixed colour is correct is still visible as a decision. */
+  --code-surface: 17 24 39; /* gray-900 */
+  --code-content: 52 211 153; /* emerald-400 */
+
   /* Text, from most to least prominent. */
   --content: 17 24 39; /* gray-900 */
   --content-muted: 75 85 99; /* gray-600 */
   --content-subtle: 156 163 175; /* gray-400  — captions, placeholders */
-  --content-inverse: 255 255 255; /* on a filled accent */
+  --content-inverse: 255 255 255; /* on a filled accent or status colour */
+  --content-on-inverse: 255 255 255; /* on --surface-inverse */
 
   --border: 229 231 235; /* gray-200 */
   --border-strong: 209 213 219; /* gray-300  — inputs */
@@ -76,11 +91,19 @@
   --surface: 17 24 39; /* gray-900  — the page */
   --surface-raised: 31 41 55; /* gray-800  — cards */
   --surface-overlay: 55 65 81; /* gray-700  — modals */
+  --surface-inverse: 243 244 246; /* gray-100  — ink, inverted */
 
   --content: 243 244 246; /* gray-100, not white */
   --content-muted: 209 213 219; /* gray-300 */
   --content-subtle: 156 163 175; /* gray-400 */
-  --content-inverse: 255 255 255;
+
+  /* Both of these FLIP here, and that is the whole point of naming them by
+     what they sit on. The accent and status colours are lifted to their -400
+     shades below; white on indigo-400 measures 2.98:1, which fails AA for
+     body text. Near-black on the same swatch measures 5.96:1. Likewise the
+     ink surface is now pale, so what reads on it is dark. */
+  --content-inverse: 17 24 39; /* gray-900 */
+  --content-on-inverse: 17 24 39; /* gray-900 */
 
   --border: 55 65 81; /* gray-700 */
   --border-strong: 75 85 99; /* gray-600 */

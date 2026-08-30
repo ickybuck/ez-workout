@@ -449,7 +449,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                         <div className="text-sm group relative">
                           {muscle.name}
                           {muscle.description && (
-                            <div className="absolute left-0 bottom-full mb-1 w-48 p-2 bg-surface-overlay text-content-inverse text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                            <div className="absolute left-0 bottom-full mb-1 w-48 p-2 bg-surface-inverse text-content-on-inverse text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                               {muscle.description}
                             </div>
                           )}

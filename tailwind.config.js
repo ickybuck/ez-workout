@@ -33,12 +33,14 @@ export default {
           sunken: token('surface-sunken'),
           raised: token('surface-raised'),
           overlay: token('surface-overlay'),
+          inverse: token('surface-inverse'),
         },
         content: {
           DEFAULT: token('content'),
           muted: token('content-muted'),
           subtle: token('content-subtle'),
           inverse: token('content-inverse'),
+          'on-inverse': token('content-on-inverse'),
         },
         edge: {
           DEFAULT: token('border'),
@@ -59,6 +61,11 @@ export default {
           DEFAULT: token('caution'),
           soft: token('caution-soft'),
           content: token('caution-content'),
+        },
+        // The one pair that does not flip — see the note in tokens.css.
+        code: {
+          DEFAULT: token('code-surface'),
+          content: token('code-content'),
         },
         critical: {
           DEFAULT: token('critical'),

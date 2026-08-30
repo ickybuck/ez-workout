@@ -100,7 +100,7 @@ const ExportConfirmDialog: React.FC<ExportConfirmDialogProps> = ({
           </button>
           <button
             onClick={handleDownload}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-surface-overlay text-content-inverse text-sm font-medium hover:bg-surface-overlay transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-surface-inverse text-content-on-inverse text-sm font-medium hover:bg-surface-inverse transition-colors"
           >
             <Download className="h-4 w-4" />
             Download

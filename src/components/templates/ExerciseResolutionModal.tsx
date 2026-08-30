@@ -207,7 +207,7 @@ const ExerciseResolutionModal: React.FC<ExerciseResolutionModalProps> = ({
           <button
             onClick={handleConfirm}
             disabled={!allResolved}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-surface-overlay text-content-inverse text-sm font-medium hover:bg-surface-overlay transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2.5 rounded-lg bg-surface-inverse text-content-on-inverse text-sm font-medium hover:bg-surface-inverse transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Confirm Import
           </button>
