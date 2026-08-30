@@ -373,6 +373,7 @@ export type Database = {
           available_plates_lb: Json | null
           created_at: string | null
           dark_mode: boolean | null
+          onboarded_at: string | null
           first_name: string | null
           goal_weekday_start: number | null
           height: number | null
@@ -398,6 +399,7 @@ export type Database = {
           available_plates_lb?: Json | null
           created_at?: string | null
           dark_mode?: boolean | null
+          onboarded_at?: string | null
           first_name?: string | null
           goal_weekday_start?: number | null
           height?: number | null
@@ -423,6 +425,7 @@ export type Database = {
           available_plates_lb?: Json | null
           created_at?: string | null
           dark_mode?: boolean | null
+          onboarded_at?: string | null
           first_name?: string | null
           goal_weekday_start?: number | null
           height?: number | null

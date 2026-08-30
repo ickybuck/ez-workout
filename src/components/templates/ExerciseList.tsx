@@ -84,14 +84,14 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               <button
                 onClick={() => onMoveExercise(index, 'up')}
                 disabled={index === 0}
-                className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30"
+                className="p-2 text-content-subtle hover:text-content-muted disabled:opacity-30"
               >
                 <ChevronUp className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onMoveExercise(index, 'down')}
                 disabled={index === validExercises.length - 1}
-                className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30"
+                className="p-2 text-content-subtle hover:text-content-muted disabled:opacity-30"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -114,7 +114,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 </div>
                 <button
                   onClick={() => onRemoveExercise(exercise.id)}
-                  className="p-1.5 text-content-subtle hover:text-critical"
+                  className="p-2.5 text-content-subtle hover:text-critical"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

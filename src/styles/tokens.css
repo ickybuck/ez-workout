@@ -126,6 +126,37 @@ body {
  */
 
 /**
+ * Tap targets for icon-only buttons.
+ *
+ * Measured on the deployed build: 38 of 46 controls on the templates screen
+ * were under 44px, with delete at 28×28 and the reorder arrows at 24×24 — on a
+ * phone, held one-handed, with delete sitting between export and copy.
+ *
+ * The hit area is grown with a pseudo-element rather than by padding the
+ * buttons, because padding changes layout and six controls at a genuine 44px
+ * will not fit beside the exercise count on a 375px screen. This grows what
+ * responds to a thumb while leaving what is drawn alone.
+ *
+ * Four pixels each side, not eight. The rows use gap-2, so four makes adjacent
+ * targets meet exactly; eight would overlap them and hand the shared strip to
+ * whichever button came later in the DOM — trading a small target for an
+ * ambiguous one, which is worse.
+ *
+ * Worth being straight about the limit: this takes a 28px control to 36px, not
+ * to 44px. The row simply has too many buttons for that, and the real fix is
+ * fewer of them rather than smaller ones.
+ */
+button:has(> svg:only-child) {
+  position: relative;
+}
+
+button:has(> svg:only-child)::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
+/**
  * Form controls.
  *
  * These need a base rule rather than a class on each element, because the

@@ -102,7 +102,7 @@ const TemplateFormatGuide: React.FC<TemplateFormatGuideProps> = ({ onClose }) =>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
+            className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

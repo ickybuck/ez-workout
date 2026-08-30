@@ -413,14 +413,14 @@ const ExerciseLibraryV2: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedExercise(exercise)}
-                      className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                      className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
                       title="Add to template"
                     >
                       <ListPlus className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => navigate(`/dashboard/exercises/${exercise.id}/edit`)}
-                      className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                      className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
                       title="Edit exercise"
                     >
                       <Edit2 className="h-4 w-4" />

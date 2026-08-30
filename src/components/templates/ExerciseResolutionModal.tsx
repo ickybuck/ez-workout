@@ -114,7 +114,7 @@ const ExerciseResolutionModal: React.FC<ExerciseResolutionModalProps> = ({
           </div>
           <button
             onClick={onCancel}
-            className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
+            className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

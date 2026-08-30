@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Clock, Trash2, ArrowDownUp, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
+import { Clock, Trash2, ArrowDownUp, ChevronDown, ChevronUp, Dumbbell, History as HistoryIcon} from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -258,9 +259,21 @@ const History: React.FC = () => {
 
           <div className="space-y-4">
             {workouts.length === 0 ? (
-              <div className="text-center py-8 text-content-subtle">
-                No completed workouts yet
-              </div>
+              <EmptyState
+                icon={HistoryIcon}
+                title="Nothing logged yet"
+                action={{ label: 'Start a workout', to: '/dashboard' }}
+              >
+                <p>
+                  Finished sessions land here — every set, with what you lifted
+                  and how it went.
+                </p>
+                <p>
+                  Once a few are in, Insights starts showing what they add up
+                  to: weekly sets per muscle, and where a lift has stopped
+                  moving.
+                </p>
+              </EmptyState>
             ) : (
               workouts.map(workout => {
                 const isPR = isPersonalBest(workout);
@@ -289,7 +302,7 @@ const History: React.FC = () => {
                         )}
                         <button
                           onClick={(e) => toggleWorkoutExpanded(workout.id, e)}
-                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
+                          className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                         >
                           {expandedWorkouts.has(workout.id) ? (
                             <ChevronUp className="h-4 w-4" />

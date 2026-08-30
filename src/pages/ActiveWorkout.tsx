@@ -649,7 +649,7 @@ const ActiveWorkout: React.FC = () => {
                 {undoState && (
                   <button
                     onClick={handleUndoSet}
-                    className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full transition-colors"
+                    className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full transition-colors"
                     title="Undo last set"
                   >
                     <Undo2 className="h-5 w-5" />
@@ -657,7 +657,7 @@ const ActiveWorkout: React.FC = () => {
                 )}
                 <button
                   onClick={() => setShowQuitDialog(true)}
-                  className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
+                  className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
                   title="End workout"
                 >
                   <X className="h-5 w-5" />

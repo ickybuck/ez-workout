@@ -2,10 +2,13 @@ import React from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Play, Settings, History, Layout, Library, Shield, BarChart3 } from 'lucide-react';
 import { useAdminStatus } from '../hooks/useAdminStatus';
+import { useOnboarding } from '../hooks/useOnboarding';
+import Onboarding from '../pages/Onboarding';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const { isAdmin, showAdminTools } = useAdminStatus();
+  const { status: onboarding, markDone } = useOnboarding();
 
   const navItems = [
     { icon: Play, label: 'Start', path: '/dashboard' },
@@ -16,6 +19,20 @@ const DashboardLayout: React.FC = () => {
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
     ...(isAdmin && showAdminTools ? [{ icon: Shield, label: 'Admin', path: '/dashboard/admin' }] : []),
   ];
+
+  /*
+   * Setup takes over the whole screen rather than living at its own route.
+   *
+   * A route would need a redirect from every other route to be inescapable,
+   * and the moment one of those redirects disagreed with the guard we would
+   * have a loop. Rendering in place of the outlet cannot loop: there is one
+   * condition, in one file, and the navigation is not reachable while it holds.
+   *
+   * 'loading' renders nothing at all. Showing the app and then replacing it a
+   * beat later would flash the dashboard at someone who has never seen it.
+   */
+  if (onboarding === 'loading') return null;
+  if (onboarding === 'needed') return <Onboarding onDone={markDone} />;
 
   return (
     <div className="flex flex-col min-h-screen bg-surface">

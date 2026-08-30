@@ -222,7 +222,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
               <button
                 onClick={() => adjustWeight(false)}
                 disabled={disabled || adjustingWeight}
-                className="p-1 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
+                className="p-2 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
                 title="Decrease weight"
               >
                 <Minus className="h-4 w-4" />
@@ -245,7 +245,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
               <button
                 onClick={() => adjustWeight(true)}
                 disabled={disabled || adjustingWeight}
-                className="p-1 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
+                className="p-2 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
                 title="Increase weight"
               >
                 <Plus className="h-4 w-4" />
@@ -298,7 +298,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
             </h4>
             <button
               onClick={() => setShowExtraReps(false)}
-              className="p-1 text-positive hover:text-positive-content hover:bg-positive-soft rounded-full"
+              className="p-2 text-positive hover:text-positive-content hover:bg-positive-soft rounded-full"
             >
               <X className="h-4 w-4" />
             </button>
@@ -331,7 +331,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
                 setShowPartialReps(false);
                 setPendingShortfall(null);
               }}
-              className="p-1 text-caution hover:text-caution hover:bg-caution-soft rounded-full"
+              className="p-2 text-caution hover:text-caution hover:bg-caution-soft rounded-full"
             >
               <X className="h-4 w-4" />
             </button>

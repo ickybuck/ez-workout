@@ -345,7 +345,7 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
               <p className="text-sm font-medium text-content-muted">Workout Templates</p>
               <button
                 onClick={() => setShowFormatGuide(true)}
-                className="p-1 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
+                className="p-2 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
                 title="Import format guide"
               >
                 <HelpCircle className="h-4 w-4" />

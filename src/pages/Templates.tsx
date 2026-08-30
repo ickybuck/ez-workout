@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 // read as nothing at all — the one control people look for was the one icon
 // that could not be guessed. Almost certainly an auto-import picking the wrong
 // symbol; corrected to a pencil.
-import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, Info, Dumbbell, Upload, Download, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, Info, Dumbbell, Upload, Download, HelpCircle, Layout } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
@@ -368,7 +369,7 @@ const Templates: React.FC = () => {
                     <button
                       onClick={() => moveTemplate(index, 'up')}
                       disabled={index === 0}
-                      className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
+                      className="p-2 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
                       title="Move up"
                     >
                       <ChevronUp className="h-4 w-4" />
@@ -376,7 +377,7 @@ const Templates: React.FC = () => {
                     <button
                       onClick={() => moveTemplate(index, 'down')}
                       disabled={index === templates.length - 1}
-                      className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
+                      className="p-2 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
                       title="Move down"
                     >
                       <ChevronDown className="h-4 w-4" />
@@ -419,21 +420,21 @@ const Templates: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleDeleteTemplate(template.id)}
-                          className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
+                          className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
                           title="Delete template"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => setExportTarget({ templates: [template], label: template.name })}
-                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
+                          className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
                           title="Export template"
                         >
                           <Download className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleCopyTemplate(template)}
-                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
+                          className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                           title="Copy template"
                         >
                           <Copy className="h-4 w-4" />
@@ -454,7 +455,7 @@ const Templates: React.FC = () => {
                         {template.description && (
                           <button
                             onClick={() => toggleTemplate(template.id)}
-                            className="p-1.5 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
+                            className="p-2.5 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
                             title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
                           >
                             <Info className="h-4 w-4" />
@@ -462,7 +463,7 @@ const Templates: React.FC = () => {
                         )}
                         <button
                           onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
-                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
+                          className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                           title="Edit template"
                         >
                           <Pencil className="h-4 w-4" />
@@ -517,10 +518,22 @@ const Templates: React.FC = () => {
           ))}
 
           {templates.length === 0 && (
-            <div className="text-center py-12">
-              <Dumbbell className="h-10 w-10 text-content-subtle mx-auto mb-3" />
-              <p className="text-content-subtle text-sm">No templates yet. Create one or import a file.</p>
-            </div>
+            <EmptyState
+              icon={Layout}
+              title="No templates yet"
+              action={{ label: 'Build one', to: '/dashboard/templates/new' }}
+              secondary={{ label: 'How this works', to: '/dashboard/how-it-works' }}
+            >
+              <p>
+                A template is one workout: which exercises, in what order, with
+                their sets, reps and starting weight.
+              </p>
+              <p>
+                Build it here, or add exercises to it from the library as you
+                come across them. Pair two exercises to superset them, and put
+                movements that share a rack or a corner next to each other.
+              </p>
+            </EmptyState>
           )}
         </div>
       </div>

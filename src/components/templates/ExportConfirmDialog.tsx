@@ -36,7 +36,7 @@ const ExportConfirmDialog: React.FC<ExportConfirmDialogProps> = ({
           <h2 className="text-lg font-semibold text-content">Export Templates</h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
+            className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

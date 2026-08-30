@@ -252,7 +252,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
           </div>
           <button
             onClick={handleCancel}
-            className="p-1.5 text-content-subtle hover:text-content-subtle hover:bg-surface-sunken rounded-full"
+            className="p-2.5 text-content-subtle hover:text-content-subtle hover:bg-surface-sunken rounded-full"
           >
             <X className="h-5 w-5" />
           </button>

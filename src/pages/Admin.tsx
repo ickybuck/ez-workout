@@ -255,7 +255,7 @@ const Admin: React.FC = () => {
                       <button
                         onClick={() => removeAdmin(account.id)}
                         disabled={account.id === user?.id}
-                        className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                         title={account.id === user?.id ? "You can't remove yourself" : 'Remove admin access'}
                       >
                         <Trash2 className="h-4 w-4" />

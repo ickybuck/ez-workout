@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Settings from '../pages/Settings';
+import HowItWorks from '../pages/HowItWorks';
 import ExerciseLibraryV2 from '../pages/ExerciseLibraryV2';
 import ExerciseAdd from '../pages/ExerciseAdd';
 import ExerciseEdit from '../pages/ExerciseEdit';
@@ -49,6 +50,7 @@ const AppRoutes: React.FC = () => {
       >
         <Route index element={<Dashboard />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="how-it-works" element={<HowItWorks />} />
         <Route path="exercises" element={<ExerciseLibraryV2 />} />
         <Route path="exercises/new" element={<ExerciseAdd />} />
         <Route path="exercises/:id/edit" element={<ExerciseEdit />} />

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { HelpCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -160,6 +162,20 @@ const Settings: React.FC = () => {
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
         </div>
+
+        {/* Above the settings rather than buried at the bottom: someone who
+            needs it is usually looking for it, and someone who does not will
+            scroll past a single line. */}
+        <Link
+          to="/dashboard/how-it-works"
+          className="flex items-center justify-between p-3 mb-6 rounded-lg border border-edge hover:bg-surface transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm text-content-muted">
+            <HelpCircle className="h-4 w-4 text-content-subtle" />
+            How this works
+          </span>
+          <ChevronRight className="h-4 w-4 text-content-subtle" />
+        </Link>
 
         <div className="space-y-6">
           <ProfileSection
