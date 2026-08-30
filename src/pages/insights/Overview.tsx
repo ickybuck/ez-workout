@@ -154,9 +154,9 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
   const weeklyChange = metrics.workoutsThisWeek - metrics.workoutsLastWeek;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Total Workouts</h3>
             <Activity className="h-5 w-5 text-accent" />
@@ -167,7 +167,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
           </p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Total Volume</h3>
             <Target className="h-5 w-5 text-positive" />
@@ -176,7 +176,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
           <p className="text-sm text-content-subtle mt-1">{unit} lifted</p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">Avg Duration</h3>
             <Calendar className="h-5 w-5 text-caution" />
@@ -185,7 +185,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
           <p className="text-sm text-content-subtle mt-1">minutes per workout</p>
         </div>
 
-        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-content-muted">This Week</h3>
             {weeklyChange >= 0 ? (
@@ -216,7 +216,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
       </div>
 
       {metrics.mostImprovedExercise && (
-        <div className="bg-positive-soft rounded-lg shadow-sm border border-positive p-6">
+        <div className="bg-positive-soft rounded-lg shadow-sm border border-positive p-4">
           <div className="flex items-start gap-3">
             <Award className="h-6 w-6 text-positive flex-shrink-0 mt-1" />
             <div>

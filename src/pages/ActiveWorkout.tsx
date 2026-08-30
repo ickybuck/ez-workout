@@ -620,7 +620,7 @@ const ActiveWorkout: React.FC = () => {
               <h1 className="text-xl font-semibold text-content truncate">{workout.name}</h1>
               {pendingSync > 0 && (
                 <span
-                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-caution-soft px-2 py-0.5 text-xs font-medium text-caution"
+                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-caution-soft px-2 py-0.5 text-xs font-medium text-caution-content"
                   title={`${pendingSync} change${pendingSync === 1 ? '' : 's'} will sync when you're back online. Nothing is lost.`}
                 >
                   <CloudOff className="h-3 w-3" />
@@ -649,7 +649,7 @@ const ActiveWorkout: React.FC = () => {
                 {undoState && (
                   <button
                     onClick={handleUndoSet}
-                    className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full transition-colors"
+                    className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full transition-colors"
                     title="Undo last set"
                   >
                     <Undo2 className="h-5 w-5" />
@@ -657,7 +657,7 @@ const ActiveWorkout: React.FC = () => {
                 )}
                 <button
                   onClick={() => setShowQuitDialog(true)}
-                  className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
+                  className="p-2.5 text-content-subtle hover:text-critical-content hover:bg-critical-soft rounded-full"
                   title="End workout"
                 >
                   <X className="h-5 w-5" />
@@ -677,7 +677,7 @@ const ActiveWorkout: React.FC = () => {
 
       <div className="max-w-xl mx-auto px-4 py-6">
         {currentExercise && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Render the whole current block. Previously this was hardcoded to
                 one exercise plus an optional partner, which is why a template
                 could only ever be all pairs or all singles. */}
@@ -703,11 +703,11 @@ const ActiveWorkout: React.FC = () => {
 
       {showQuitDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-4">
             <h3 className="text-lg font-medium text-content mb-4">
               End Workout?
             </h3>
-            <p className="text-sm text-content-muted mb-6">
+            <p className="text-sm text-content-muted mb-4">
               Do you want to save your progress or delete this workout?
             </p>
             {undoState && (

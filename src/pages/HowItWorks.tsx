@@ -38,7 +38,7 @@ const HowItWorks: React.FC = () => (
   <div className="py-6 max-w-2xl mx-auto px-4">
     <Link
       to="/dashboard/settings"
-      className="inline-flex items-center gap-1.5 text-sm text-content-muted hover:text-content mb-6"
+      className="inline-flex items-center gap-1.5 text-sm text-content-muted hover:text-content mb-4"
     >
       <ArrowLeft className="h-4 w-4" />
       Settings

@@ -44,7 +44,7 @@ const Register: React.FC = () => {
           <UserPlus className="mx-auto h-12 w-12 text-accent" />
           <h2 className="mt-6 text-3xl font-bold text-content">Create your account</h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+        <form className="mt-8 space-y-4" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-content-muted">

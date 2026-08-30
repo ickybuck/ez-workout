@@ -150,9 +150,9 @@ const Settings: React.FC = () => {
   }
 
   return (
-    <div className="py-8">
-      <div className="bg-surface-raised rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
+    <div className="py-5">
+      <div className="bg-surface-raised rounded-lg shadow-md p-4">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-content">Settings</h2>
           <button
             onClick={saveSettings}
@@ -168,7 +168,7 @@ const Settings: React.FC = () => {
             scroll past a single line. */}
         <Link
           to="/dashboard/how-it-works"
-          className="flex items-center justify-between p-3 mb-6 rounded-lg border border-edge hover:bg-surface transition-colors"
+          className="flex items-center justify-between p-3 mb-4 rounded-lg border border-edge hover:bg-surface transition-colors"
         >
           <span className="flex items-center gap-2 text-sm text-content-muted">
             <HelpCircle className="h-4 w-4 text-content-subtle" />
@@ -177,7 +177,7 @@ const Settings: React.FC = () => {
           <ChevronRight className="h-4 w-4 text-content-subtle" />
         </Link>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <ProfileSection
             username={settings.username}
             firstName={settings.first_name}

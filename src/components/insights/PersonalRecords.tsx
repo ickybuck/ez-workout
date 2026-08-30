@@ -59,7 +59,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <Trophy className="h-5 w-5 text-caution" />
           Personal Records
@@ -73,12 +73,12 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
 
   if (records.length === 0) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <Trophy className="h-5 w-5 text-caution" />
           Personal Records
         </h3>
-        <div className="text-center py-8 text-content-subtle">
+        <div className="text-center py-5 text-content-subtle">
           No records found for this period. Keep working out to set new PRs!
         </div>
       </div>
@@ -86,7 +86,7 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
       <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
         <Trophy className="h-5 w-5 text-caution" />
         Personal Records

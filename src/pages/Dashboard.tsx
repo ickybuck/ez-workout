@@ -218,13 +218,13 @@ const Dashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-5">
         <div className="bg-critical-soft border border-critical rounded-lg p-4">
           <h2 className="text-lg font-medium text-critical-content mb-2">Connection Error</h2>
           <p className="text-sm text-critical">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-3 px-4 py-2 bg-critical-soft text-critical rounded-md hover:bg-critical-soft transition-colors"
+            className="mt-3 px-4 py-2 bg-critical-soft text-critical-content rounded-md hover:bg-critical-soft transition-colors"
           >
             Retry Connection
           </button>
@@ -241,7 +241,7 @@ const Dashboard: React.FC = () => {
         {!workout && (
           <>
             {favoriteTemplates.length > 0 ? (
-              <div className="mb-6">
+              <div className="mb-4">
                 <div className="space-y-2">
                   {favoriteTemplates.map(template => (
                     <button
@@ -271,8 +271,8 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             ) : !hasTemplates && (
-              <div className="mb-6">
-                <div className="text-center p-6 border-2 border-dashed border-edge-strong rounded-lg bg-surface">
+              <div className="mb-4">
+                <div className="text-center p-4 border-2 border-dashed border-edge-strong rounded-lg bg-surface">
                   <div className="mx-auto w-10 h-10 flex items-center justify-center rounded-full bg-accent-soft mb-3">
                     <Star className="h-5 w-5 text-accent" />
                   </div>
@@ -349,8 +349,8 @@ const Dashboard: React.FC = () => {
                                 completed 
                                   ? 'bg-positive-soft text-positive-content hover:bg-positive-soft' 
                                   : failed 
-                                    ? 'bg-critical-soft text-critical hover:bg-critical-soft'
-                                    : 'bg-caution-soft text-caution hover:bg-caution-soft'
+                                    ? 'bg-critical-soft text-critical-content hover:bg-critical-soft'
+                                    : 'bg-caution-soft text-caution-content hover:bg-caution-soft'
                               }`}
                               onClick={(e) => handleExerciseClick(exercise.exercise.id, e)}
                               title={`Click to edit ${exercise.exercise.name}`}

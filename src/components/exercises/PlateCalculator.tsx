@@ -242,8 +242,8 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-6">
-        <div className="flex justify-between items-start mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-4">
+        <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-lg font-medium text-content">Plate Calculator</h3>
             {exerciseName && (
@@ -259,14 +259,14 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         </div>
 
         {/* Weight Display and Controls */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Total Weight */}
           <div className="flex items-center justify-between">
             <div className="text-sm font-medium text-content-subtle">Total Weight</div>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => handleWeightChange(false)}
-                className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                className="p-2 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
               >
                 <Minus className="h-5 w-5" />
               </button>
@@ -298,7 +298,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
               </div>
               <button
                 onClick={() => handleWeightChange(true)}
-                className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                className="p-2 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
               >
                 <Plus className="h-5 w-5" />
               </button>

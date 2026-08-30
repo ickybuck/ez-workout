@@ -42,7 +42,7 @@ const VolumeAnalysis: React.FC<VolumeAnalysisProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-positive" />
           Volume by Day
@@ -60,7 +60,7 @@ const VolumeAnalysis: React.FC<VolumeAnalysisProps> = ({ timeRange }) => {
   , dayVolumes[0]);
 
   return (
-    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
       <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
         <BarChart3 className="h-5 w-5 text-positive" />
         Volume by Day of Week

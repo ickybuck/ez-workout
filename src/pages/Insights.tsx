@@ -40,7 +40,7 @@ const Insights: React.FC = () => {
   return (
     <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
-        <h1 className="text-2xl font-bold text-content mb-6">Workout Insights</h1>
+        <h1 className="text-2xl font-bold text-content mb-4">Workout Insights</h1>
         {renderContent()}
       </div>
 

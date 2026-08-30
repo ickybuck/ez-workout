@@ -208,7 +208,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
       </button>
 
       {expanded && (
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 space-y-4">
           <p className="text-sm text-content-subtle">
             Download your templates with instructions, talk them through with an AI chat, then bring
             the result back here. Importing only ever <span className="font-medium text-content-muted">adds</span>{' '}

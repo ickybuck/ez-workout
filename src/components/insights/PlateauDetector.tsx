@@ -214,7 +214,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-caution" />
           Plateau Detection
@@ -228,7 +228,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
 
   if (plateaus.length === 0 && bodyweightPlateaus.length === 0) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-positive" />
           Plateau Detection
@@ -241,7 +241,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
       <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
         <AlertCircle className="h-5 w-5 text-positive" />
         Plateau Detection
@@ -251,7 +251,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
       </p>
 
       {plateaus.length > 0 && (
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4">
           <h4 className="text-sm font-semibold text-content-muted uppercase tracking-wide">Weighted Exercises</h4>
           {plateaus.map((plateau) => {
             const isUpdating = updatingExercises.has(plateau.id);

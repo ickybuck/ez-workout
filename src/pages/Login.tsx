@@ -75,7 +75,7 @@ const Login: React.FC = () => {
 
         {!showForgotPassword ? (
           <>
-            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <form className="mt-8 space-y-4" onSubmit={handleLogin}>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-content-muted">
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
           </>
         ) : (
           <>
-            <form className="mt-8 space-y-6" onSubmit={handleForgotPassword}>
+            <form className="mt-8 space-y-4" onSubmit={handleForgotPassword}>
               <div>
                 <label htmlFor="reset-email" className="block text-sm font-medium text-content-muted">
                   Email address

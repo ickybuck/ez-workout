@@ -129,7 +129,7 @@ const ExerciseResolutionModal: React.FC<ExerciseResolutionModalProps> = ({
           </div>
         </div>
 
-        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-6">
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           {Array.from(grouped.entries()).map(([templateName, items]) => (
             <div key={templateName}>
               <p className="text-xs font-semibold text-content-subtle uppercase tracking-wider mb-3">

@@ -234,7 +234,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
                 onClick={handleWeightClick}
                 className={`px-2 py-1 rounded ${
                   isPlateLoaded
-                    ? 'bg-surface-sunken hover:bg-accent-soft text-content hover:text-accent cursor-pointer transition-colors duration-150'
+                    ? 'bg-surface-sunken hover:bg-accent-soft text-content hover:text-accent-content cursor-pointer transition-colors duration-150'
                     : 'text-content-subtle'
                 }`}
                 disabled={!isPlateLoaded || disabled}
@@ -331,7 +331,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
                 setShowPartialReps(false);
                 setPendingShortfall(null);
               }}
-              className="p-2 text-caution hover:text-caution hover:bg-caution-soft rounded-full"
+              className="p-2 text-caution hover:text-caution-content hover:bg-caution-soft rounded-full"
             >
               <X className="h-4 w-4" />
             </button>

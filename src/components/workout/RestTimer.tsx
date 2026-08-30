@@ -149,14 +149,14 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
       <div className="relative flex items-center gap-2">
         <button
           onClick={resetTimer}
-          className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+          className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
           title="Reset timer"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
         <button
           onClick={togglePause}
-          className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+          className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
           title={isPaused ? "Start timer" : "Pause timer"}
         >
           {isPaused ? (
@@ -167,14 +167,14 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
         </button>
         <button
           onClick={subtractTime}
-          className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+          className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
           title="Subtract 10 seconds"
         >
           <Minus className="h-4 w-4" />
         </button>
         <button
           onClick={addTime}
-          className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+          className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
           title="Add 10 seconds"
         >
           <Plus className="h-4 w-4" />

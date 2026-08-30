@@ -46,7 +46,12 @@
   /* Text, from most to least prominent. */
   --content: 17 24 39; /* gray-900 */
   --content-muted: 75 85 99; /* gray-600 */
-  --content-subtle: 156 163 175; /* gray-400  — captions, placeholders */
+  /* gray-500, not gray-400. Measured across the live screens: gray-400 on the
+     page is 2.54:1, and this token carries real content — dates, "Goal: 4 per
+     week", "Last 30 days", the caption under every chart. gray-500 is 4.83:1.
+     The dark block keeps gray-400, which is already 5.7:1 on a gray-800 card;
+     the problem was only ever the light theme. */
+  --content-subtle: 107 114 128; /* gray-500  — captions, placeholders */
   --content-inverse: 255 255 255; /* on a filled accent or status colour */
   --content-on-inverse: 255 255 255; /* on --surface-inverse */
 
@@ -61,7 +66,7 @@
 
   /* Status. Kept semantic: "positive" not "green", because the whole point is
      that a component should not be asserting a colour. */
-  --positive: 5 150 105; /* emerald-600 */
+  --positive: 4 120 87; /* emerald-700 */
   --positive-soft: 236 253 245; /* emerald-50 */
   --positive-content: 6 95 70; /* emerald-800 */
 
@@ -69,7 +74,7 @@
   --caution-soft: 255 251 235; /* amber-50 */
   --caution-content: 146 64 14; /* amber-800 */
 
-  --critical: 220 38 38; /* red-600 */
+  --critical: 185 28 28; /* red-700 */
   --critical-soft: 254 242 242; /* red-50 */
   --critical-content: 153 27 27; /* red-800 */
 }
@@ -115,15 +120,15 @@
   --accent-content: 199 210 254; /* indigo-200 */
 
   --positive: 52 211 153; /* emerald-400 */
-  --positive-soft: 6 78 59; /* emerald-900 */
+  --positive-soft: 2 44 34; /* emerald-950 */
   --positive-content: 167 243 208; /* emerald-200 */
 
   --caution: 251 191 36; /* amber-400 */
-  --caution-soft: 120 53 15; /* amber-900 */
+  --caution-soft: 69 26 3; /* amber-950 */
   --caution-content: 253 230 138; /* amber-200 */
 
   --critical: 248 113 113; /* red-400 */
-  --critical-soft: 127 29 29; /* red-900 */
+  --critical-soft: 69 10 10; /* red-950 */
   --critical-content: 254 202 202; /* red-200 */
 }
 

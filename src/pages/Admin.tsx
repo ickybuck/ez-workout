@@ -154,14 +154,14 @@ const Admin: React.FC = () => {
   }
 
   return (
-    <div className="py-8">
-      <div className="bg-surface-raised rounded-lg shadow-md p-6">
-        <div className="flex items-center gap-3 mb-6">
+    <div className="py-5">
+      <div className="bg-surface-raised rounded-lg shadow-md p-4">
+        <div className="flex items-center gap-3 mb-4">
           <Shield className="h-8 w-8 text-accent" />
           <h2 className="text-2xl font-bold text-content">Admin Settings</h2>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Exercise Management */}
           <div className="border-b pb-6">
             <h3 className="text-lg font-medium text-content mb-4">Exercise Management</h3>
@@ -204,7 +204,7 @@ const Admin: React.FC = () => {
             <h3 className="text-lg font-medium text-content mb-4">Accounts</h3>
             
             {/* Add Admin Form */}
-            <form onSubmit={addAdmin} className="mb-6">
+            <form onSubmit={addAdmin} className="mb-4">
               <div className="flex gap-2">
                 <input
                   type="email"
@@ -255,7 +255,7 @@ const Admin: React.FC = () => {
                       <button
                         onClick={() => removeAdmin(account.id)}
                         disabled={account.id === user?.id}
-                        className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2.5 text-content-subtle hover:text-critical-content hover:bg-critical-soft rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                         title={account.id === user?.id ? "You can't remove yourself" : 'Remove admin access'}
                       >
                         <Trash2 className="h-4 w-4" />

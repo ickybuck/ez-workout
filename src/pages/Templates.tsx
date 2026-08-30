@@ -309,7 +309,7 @@ const Templates: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
       <div className="bg-surface-raised rounded-lg shadow-md p-3">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-content">Workout Templates</h2>
           <button
             onClick={() => navigate('/dashboard/templates/new')}
@@ -420,7 +420,7 @@ const Templates: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleDeleteTemplate(template.id)}
-                          className="p-2.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
+                          className="p-2.5 text-content-subtle hover:text-critical-content hover:bg-critical-soft rounded-full"
                           title="Delete template"
                         >
                           <Trash2 className="h-4 w-4" />

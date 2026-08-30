@@ -79,7 +79,7 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <Layout className="h-5 w-5 text-accent" />
           Template Progress
@@ -93,12 +93,12 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
 
   if (templates.length === 0) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <Layout className="h-5 w-5 text-accent" />
           Template Progress
         </h3>
-        <div className="text-center py-8 text-content-subtle">
+        <div className="text-center py-5 text-content-subtle">
           No template-based workouts found for this period
         </div>
       </div>
@@ -106,7 +106,7 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4 mb-4">
       <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
         <Layout className="h-5 w-5 text-accent" />
         Template Progress
@@ -171,7 +171,7 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
               </div>
             )}
             {template.volumeTrend === 'down' && (
-              <div className="mt-3 p-2 bg-critical-soft border border-critical rounded text-xs text-critical">
+              <div className="mt-3 p-2 bg-critical-soft border border-critical rounded text-xs text-critical-content">
                 Volume is decreasing. Consider reviewing your approach.
               </div>
             )}

@@ -69,7 +69,7 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
       </button>
 
       {expanded && (
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-content-muted mb-2">Weight Unit</label>
             <div className="flex gap-4">

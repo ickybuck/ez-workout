@@ -153,8 +153,8 @@ const WorkoutDetail: React.FC = () => {
   }
 
   return (
-    <div className="py-8">
-      <div className="bg-surface-raised rounded-lg shadow-md p-6">
+    <div className="py-5">
+      <div className="bg-surface-raised rounded-lg shadow-md p-4">
         <button
           onClick={() => navigate('/dashboard/history')}
           className="flex items-center text-content-muted hover:text-content mb-4"
@@ -216,7 +216,7 @@ const WorkoutDetail: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {workout.exercises.map((exercise, index) => (
             <div key={exercise.id} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">

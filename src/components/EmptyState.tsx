@@ -54,7 +54,7 @@ const EmptyState: React.FC<Props> = ({ icon: Icon, title, children, action, seco
 
       <h3 className="text-lg font-medium text-content mb-2">{title}</h3>
 
-      <div className="text-sm text-content-muted space-y-2 mb-6">{children}</div>
+      <div className="text-sm text-content-muted space-y-2 mb-4">{children}</div>
 
       {(action || secondary) && (
         <div className="flex flex-col sm:flex-row gap-2 justify-center">

@@ -46,9 +46,9 @@ const ConsistencyTracker: React.FC<ConsistencyTrackerProps> = ({
   const getStatusColor = (completed: number, goal: number) => {
     const diff = goal - completed;
     if (diff <= 0) return 'bg-positive-soft text-positive-content border-positive'; // Met or exceeded goal
-    if (diff === 1) return 'bg-caution-soft text-caution border-caution'; // 1 workout below
+    if (diff === 1) return 'bg-caution-soft text-caution-content border-caution'; // 1 workout below
     if (diff <= 3) return 'bg-caution-soft text-caution-content border-caution'; // 2-3 workouts below
-    return 'bg-critical-soft text-critical border-critical'; // 4+ workouts below
+    return 'bg-critical-soft text-critical-content border-critical'; // 4+ workouts below
   };
 
   return (

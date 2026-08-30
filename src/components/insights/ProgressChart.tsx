@@ -45,7 +45,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <LineChart className="h-5 w-5 text-accent" />
           Volume Progress
@@ -59,7 +59,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
 
   if (data.length === 0) {
     return (
-      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
         <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
           <LineChart className="h-5 w-5 text-accent" />
           Volume Progress
@@ -83,7 +83,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ timeRange }) => {
     : 'stable';
 
   return (
-    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-content flex items-center gap-2">
           <LineChart className="h-5 w-5 text-accent" />

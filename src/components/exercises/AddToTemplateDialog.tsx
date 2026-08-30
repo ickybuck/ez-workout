@@ -182,7 +182,7 @@ const AddToTemplateDialog: React.FC<AddToTemplateDialogProps> = ({ exercise, onC
                   onClick={() => handleTemplateClick(template)}
                   className={`w-full flex items-center justify-between px-4 py-2 rounded text-left transition-colors duration-150 ${
                     template.has_exercise
-                      ? 'bg-positive-soft text-positive-content hover:bg-critical-soft hover:text-critical'
+                      ? 'bg-positive-soft text-positive-content hover:bg-critical-soft hover:text-critical-content'
                       : 'hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent'
                   }`}
                 >

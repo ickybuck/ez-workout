@@ -319,7 +319,7 @@ const History: React.FC = () => {
                           className={`p-1.5 rounded-full ${
                             deleting === workout.id
                               ? 'text-content-subtle cursor-not-allowed'
-                              : 'text-content-subtle hover:text-critical hover:bg-critical-soft'
+                              : 'text-content-subtle hover:text-critical-content hover:bg-critical-soft'
                           }`}
                           title="Delete workout"
                         >
@@ -385,8 +385,8 @@ const History: React.FC = () => {
                                 completed 
                                   ? 'bg-positive-soft text-positive-content' 
                                   : failed 
-                                    ? 'bg-critical-soft text-critical'
-                                    : 'bg-caution-soft text-caution'
+                                    ? 'bg-critical-soft text-critical-content'
+                                    : 'bg-caution-soft text-caution-content'
                               }`}
                             >
                               <div className="min-w-0 flex-1">

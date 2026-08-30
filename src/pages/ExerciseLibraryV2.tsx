@@ -229,13 +229,13 @@ const ExerciseLibraryV2: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
       <div className="bg-surface-raised rounded-lg shadow-md p-3">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold text-content">Exercise Library</h2>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`p-2 rounded-full ${
-                showFilters ? 'bg-accent-soft text-accent' : 'text-content-subtle hover:text-accent hover:bg-accent-soft'
+                showFilters ? 'bg-accent-soft text-accent-content' : 'text-content-subtle hover:text-accent-content hover:bg-accent-soft'
               }`}
               title="Toggle filters"
             >
@@ -256,7 +256,7 @@ const ExerciseLibraryV2: React.FC = () => {
         </div>
 
         {showFilters && (
-          <div className="mb-6 p-4 bg-surface rounded-lg space-y-4">
+          <div className="mb-4 p-4 bg-surface rounded-lg space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-content-muted mb-1">Body Part</label>
@@ -357,7 +357,7 @@ const ExerciseLibraryV2: React.FC = () => {
 
         <div className="space-y-4">
           {filteredAndSortedExercises.length === 0 ? (
-            <div className="text-center py-8 text-content-subtle">
+            <div className="text-center py-5 text-content-subtle">
               {search.trim()
                 ? `No exercises match "${search.trim()}"`
                 : 'No exercises found matching your filters'}
@@ -413,14 +413,14 @@ const ExerciseLibraryV2: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedExercise(exercise)}
-                      className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                      className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
                       title="Add to template"
                     >
                       <ListPlus className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => navigate(`/dashboard/exercises/${exercise.id}/edit`)}
-                      className="p-2.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                      className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
                       title="Edit exercise"
                     >
                       <Edit2 className="h-4 w-4" />
@@ -430,7 +430,7 @@ const ExerciseLibraryV2: React.FC = () => {
                       className={`p-1.5 rounded-full ${
                         exercise.defaults?.hidden
                           ? 'text-accent hover:bg-accent-soft'
-                          : 'text-content-subtle hover:text-accent hover:bg-accent-soft'
+                          : 'text-content-subtle hover:text-accent-content hover:bg-accent-soft'
                       }`}
                       title={exercise.defaults?.hidden ? 'Show in my library' : 'Hide from my library'}
                     >

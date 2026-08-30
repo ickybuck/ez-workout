@@ -115,7 +115,7 @@ const Onboarding: React.FC<Props> = ({ onDone }) => {
           {step === 0 && (
             <>
               <h1 className="text-2xl font-bold text-content mb-2">Kilograms or pounds?</h1>
-              <p className="text-sm text-content-muted mb-6">
+              <p className="text-sm text-content-muted mb-4">
                 Every weight in the app is shown this way. You can change it later
                 without losing anything — weights are stored once and converted for
                 display.
@@ -149,7 +149,7 @@ const Onboarding: React.FC<Props> = ({ onDone }) => {
           {step === 1 && (
             <>
               <h1 className="text-2xl font-bold text-content mb-2">How much do you weigh?</h1>
-              <p className="text-sm text-content-muted mb-6">
+              <p className="text-sm text-content-muted mb-4">
                 Only used so bodyweight exercises — push-ups, chin-ups, dips — count
                 toward your volume instead of registering as zero. Skip it if you
                 would rather not; you can add it in Settings any time.
@@ -175,7 +175,7 @@ const Onboarding: React.FC<Props> = ({ onDone }) => {
               <h1 className="text-2xl font-bold text-content mb-2">
                 Which plates does your gym have?
               </h1>
-              <p className="text-sm text-content-muted mb-6">
+              <p className="text-sm text-content-muted mb-4">
                 This is what lets the app tell you how to load a bar. Turn off
                 anything your gym does not stock — suggesting a plate you cannot
                 find is worse than suggesting a heavier one you can.

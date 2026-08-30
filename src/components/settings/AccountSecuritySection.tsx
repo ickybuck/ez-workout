@@ -97,7 +97,7 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({
       </button>
 
       {expanded && (
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 space-y-4">
           <div>
             <h4 className="text-sm font-medium text-content mb-2">Update Email</h4>
             <p className="text-xs text-content-subtle mb-3">Current email: {userEmail}</p>

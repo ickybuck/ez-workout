@@ -174,7 +174,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with Save/Cancel Buttons */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                 {editForm.is_plate_loaded && (
                   <button
                     onClick={() => setShowPlateCalculator(true)}
-                    className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
+                    className="p-2 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
                     title="Calculate plates"
                   >
                     <Scale className="h-5 w-5" />
