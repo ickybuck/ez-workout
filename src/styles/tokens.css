@@ -116,23 +116,14 @@ body {
   color: rgb(var(--content));
 }
 
-/**
- * The default border colour.
- *
- * Tailwind's preflight paints every unstyled border gray-200, so `border-t`
- * with no colour class is a pale line — correct on a white card, glaring on a
- * dark one. There are dozens of those across the settings sections and the
- * dialogs.
- *
- * The same shape of miss as the form inputs: the tokenise script converts
- * colours that were written, and `border-t` writes none. Both were invisible to
- * every automated check and both turned up by looking at the running app.
+/*
+ * The default border colour is NOT set here. Tailwind's preflight declares
+ * `border-color` on the same `*, ::before, ::after` selector, and this file is
+ * imported before `@tailwind base`, so an identical rule here loses the cascade
+ * on specificity ties and the borders stayed gray-200 while --border said
+ * otherwise. It is set as borderColor.DEFAULT in tailwind.config.js instead,
+ * which changes what preflight itself emits.
  */
-*,
-::before,
-::after {
-  border-color: rgb(var(--border));
-}
 
 /**
  * Form controls.

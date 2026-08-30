@@ -16,6 +16,15 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      // What an unstyled `border-t` paints. Tailwind's preflight defaults it to
+      // gray-200, which is a pale line on a dark card, and there are dozens of
+      // bare `border-t` / `border-b` across the settings sections and dialogs.
+      // It has to be set here rather than as a `*` rule in tokens.css: preflight
+      // declares the same selector and is imported later, so an equal-specificity
+      // rule loses the tie. This changes what preflight itself emits.
+      borderColor: {
+        DEFAULT: token('border'),
+      },
       colors: {
         // Named by role, so a component never asserts a colour and is therefore
         // correct in both themes without carrying a single `dark:` variant.
