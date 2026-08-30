@@ -20,7 +20,7 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({ elapsedTime, type = 'workou
   
   return (
     <div className={`flex items-center gap-2 font-mono ${isSmall ? 'text-base' : 'text-xl'}`}>
-      <Icon className={`${isSmall ? 'h-4 w-4' : 'h-5 w-5'} ${type === 'workout' ? 'text-indigo-500' : 'text-emerald-500'}`} />
+      <Icon className={`${isSmall ? 'h-4 w-4' : 'h-5 w-5'} ${type === 'workout' ? 'text-accent' : 'text-positive'}`} />
       <span className="tabular-nums">{formatTime(elapsedTime)}</span>
     </div>
   );

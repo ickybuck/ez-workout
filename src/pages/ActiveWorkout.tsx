@@ -601,7 +601,7 @@ const ActiveWorkout: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -612,15 +612,15 @@ const ActiveWorkout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
+    <div className="min-h-screen bg-surface">
+      <div className="sticky top-0 z-10 bg-surface-raised border-b shadow-sm">
         <div className="max-w-xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-xl font-semibold text-gray-900 truncate">{workout.name}</h1>
+              <h1 className="text-xl font-semibold text-content truncate">{workout.name}</h1>
               {pendingSync > 0 && (
                 <span
-                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
+                  className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-caution-soft px-2 py-0.5 text-xs font-medium text-caution"
                   title={`${pendingSync} change${pendingSync === 1 ? '' : 's'} will sync when you're back online. Nothing is lost.`}
                 >
                   <CloudOff className="h-3 w-3" />
@@ -649,7 +649,7 @@ const ActiveWorkout: React.FC = () => {
                 {undoState && (
                   <button
                     onClick={handleUndoSet}
-                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full transition-colors"
                     title="Undo last set"
                   >
                     <Undo2 className="h-5 w-5" />
@@ -657,7 +657,7 @@ const ActiveWorkout: React.FC = () => {
                 )}
                 <button
                   onClick={() => setShowQuitDialog(true)}
-                  className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
+                  className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
                   title="End workout"
                 >
                   <X className="h-5 w-5" />
@@ -702,27 +702,27 @@ const ActiveWorkout: React.FC = () => {
       />
 
       {showQuitDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-content mb-4">
               End Workout?
             </h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-content-muted mb-6">
               Do you want to save your progress or delete this workout?
             </p>
             {undoState && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="mb-4 p-3 bg-accent-soft border border-accent rounded-md">
                 <button
                   onClick={() => {
                     handleUndoSet();
                     setShowQuitDialog(false);
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-md transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-accent-content hover:bg-accent-soft rounded-md transition-colors"
                 >
                   <Undo2 className="h-4 w-4" />
                   Undo Last Set
                 </button>
-                <p className="text-xs text-blue-600 mt-2 text-center">
+                <p className="text-xs text-accent mt-2 text-center">
                   Accidentally recorded a set? Undo it before ending.
                 </p>
               </div>
@@ -730,19 +730,19 @@ const ActiveWorkout: React.FC = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowQuitDialog(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-content-muted hover:bg-surface border border-edge-strong rounded-md"
               >
                 Cancel
               </button>
               <button
                 onClick={deleteWorkout}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-content-inverse bg-critical hover:bg-critical rounded-md"
               >
                 Delete
               </button>
               <button
                 onClick={endWorkout}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover rounded-md"
               >
                 Save & End
               </button>

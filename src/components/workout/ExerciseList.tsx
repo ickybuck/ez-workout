@@ -52,7 +52,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
 
   return (
     <div className="max-w-xl mx-auto px-4 py-4">
-      <div className="bg-white rounded shadow-sm">
+      <div className="bg-surface-raised rounded shadow-sm">
         {exercises.map((exercise, index) => {
           const completedSets = exercise.logs.filter(log => log.completed);
           // Net reps against target across the completed sets: misses count
@@ -85,7 +85,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 showDivider ? 'border-t' : ''
               } ${
                 isCurrentOrNext(index)
-                  ? 'bg-blue-50 border-l-2 border-blue-500'
+                  ? 'bg-accent-soft border-l-2 border-accent'
                   : ''
               } ${
                 fullyCompleted
@@ -93,30 +93,30 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                   : ''
               } ${
                 swappable
-                  ? 'cursor-pointer hover:bg-gray-50 transition-colors'
+                  ? 'cursor-pointer hover:bg-surface transition-colors'
                   : isCurrentOrNext(index) ? '' : 'cursor-not-allowed'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 truncate">
-                    <h3 className="font-medium text-gray-900 text-sm truncate">
+                    <h3 className="font-medium text-content text-sm truncate">
                       {exercise.exercise.name}
                     </h3>
                     <span className="text-base flex-shrink-0" title={exercise.exercise.equipment_type.name}>
                       {exercise.exercise.equipment_type.emoji}
                     </span>
                     {!isInSuperset(exercises, index) && swappable && (
-                      <ExternalLink className="h-4.5 w-4.5 text-blue-600 flex-shrink-0" />
+                      <ExternalLink className="h-4.5 w-4.5 text-accent flex-shrink-0" />
                     )}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-xs font-medium text-gray-900">
+                  <div className="text-xs font-medium text-content">
                     {completedSets.length}/{exercise.logs.length}
                     {netReps !== 0 && (
                       <span
-                        className={`ml-1 ${netReps > 0 ? 'text-emerald-600' : 'text-amber-700'}`}
+                        className={`ml-1 ${netReps > 0 ? 'text-positive' : 'text-caution'}`}
                         title={
                           netReps > 0
                             ? `${netReps} reps past target across all sets`
@@ -128,7 +128,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                     )}
                   </div>
                   {nextSet && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-content-subtle">
                       {nextSet.reps} × {formatWeight(nextSet.weight)}
                     </div>
                   )}
@@ -140,10 +140,10 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                   <div className="relative">
                     <div
                       className={`
-                        px-3 py-0.5 bg-gradient-to-r from-blue-500 to-blue-600
-                        text-white rounded-full shadow-md
+                        px-3 py-0.5 bg-accent
+                        text-content-inverse rounded-full shadow-md
                         pointer-events-auto
-                        ${swappable ? 'cursor-pointer hover:from-blue-600 hover:to-blue-700 transition-all' : 'opacity-75'}
+                        ${swappable ? 'cursor-pointer hover:bg-accent-hover transition-all' : 'opacity-75'}
                       `}
                     >
                       <span className="text-xs font-semibold">
@@ -151,7 +151,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                       </span>
                     </div>
                     {swappable && (
-                      <ExternalLink className="h-5 w-5 text-blue-600 pointer-events-auto absolute left-full ml-2 top-1/2 -translate-y-1/2" />
+                      <ExternalLink className="h-5 w-5 text-accent pointer-events-auto absolute left-full ml-2 top-1/2 -translate-y-1/2" />
                     )}
                   </div>
                 </div>

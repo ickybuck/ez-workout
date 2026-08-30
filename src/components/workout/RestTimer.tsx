@@ -131,11 +131,11 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
 
   return (
     <div
-      className="relative flex items-center justify-between py-2 px-4 bg-gray-50 rounded-lg overflow-hidden"
+      className="relative flex items-center justify-between py-2 px-4 bg-surface rounded-lg overflow-hidden"
     >
       {/* Progress bar background */}
       <div
-        className="absolute inset-0 bg-green-100 transition-all duration-1000 ease-linear"
+        className="absolute inset-0 bg-positive-soft transition-all duration-1000 ease-linear"
         style={{
           width: `${progressPercentage}%`,
         }}
@@ -143,20 +143,20 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
 
       {/* Content on top of progress bar */}
       <div className="relative flex items-center gap-2">
-        <Clock className="h-5 w-5 text-gray-500" />
+        <Clock className="h-5 w-5 text-content-subtle" />
         <div className="font-mono text-lg tabular-nums">{formatTime(timeLeft)}</div>
       </div>
       <div className="relative flex items-center gap-2">
         <button
           onClick={resetTimer}
-          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+          className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
           title="Reset timer"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
         <button
           onClick={togglePause}
-          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+          className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
           title={isPaused ? "Start timer" : "Pause timer"}
         >
           {isPaused ? (
@@ -167,14 +167,14 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
         </button>
         <button
           onClick={subtractTime}
-          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+          className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
           title="Subtract 10 seconds"
         >
           <Minus className="h-4 w-4" />
         </button>
         <button
           onClick={addTime}
-          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+          className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
           title="Add 10 seconds"
         >
           <Plus className="h-4 w-4" />

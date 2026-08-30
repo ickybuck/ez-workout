@@ -25,8 +25,8 @@ interface Props {
  * value that means "whatever was closest to my thumb".
  */
 const StopReasonChips: React.FC<Props> = ({ onChoose, onSkip, variant }) => (
-  <div className="mt-3 pt-3 border-t border-gray-200">
-    <p className="text-xs font-medium text-gray-600 mb-2">
+  <div className="mt-3 pt-3 border-t border-edge">
+    <p className="text-xs font-medium text-content-muted mb-2">
       {variant === 'skipped' ? 'Why was this set skipped?' : 'Why did the set stop?'}
     </p>
 
@@ -36,7 +36,7 @@ const StopReasonChips: React.FC<Props> = ({ onChoose, onSkip, variant }) => (
           key={reason}
           onClick={() => onChoose(reason)}
           title={STOP_REASON_META[reason].meaning}
-          className="py-2.5 px-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 transition-colors text-left"
+          className="py-2.5 px-2 text-sm font-medium rounded-lg border border-edge-strong bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong active:bg-surface-sunken transition-colors text-left"
         >
           {STOP_REASON_META[reason].label}
         </button>
@@ -45,7 +45,7 @@ const StopReasonChips: React.FC<Props> = ({ onChoose, onSkip, variant }) => (
 
     <button
       onClick={onSkip}
-      className="mt-2 w-full py-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+      className="mt-2 w-full py-1.5 text-xs text-content-subtle hover:text-content-muted transition-colors"
     >
       Skip — don’t record a reason
     </button>

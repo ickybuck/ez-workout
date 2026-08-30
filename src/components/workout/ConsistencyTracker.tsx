@@ -45,21 +45,21 @@ const ConsistencyTracker: React.FC<ConsistencyTrackerProps> = ({
   // Get color based on goal completion
   const getStatusColor = (completed: number, goal: number) => {
     const diff = goal - completed;
-    if (diff <= 0) return 'bg-emerald-100 text-emerald-700 border-emerald-200'; // Met or exceeded goal
-    if (diff === 1) return 'bg-yellow-100 text-yellow-700 border-yellow-200'; // 1 workout below
-    if (diff <= 3) return 'bg-orange-100 text-orange-700 border-orange-200'; // 2-3 workouts below
-    return 'bg-red-100 text-red-700 border-red-200'; // 4+ workouts below
+    if (diff <= 0) return 'bg-positive-soft text-positive-content border-positive'; // Met or exceeded goal
+    if (diff === 1) return 'bg-caution-soft text-caution border-caution'; // 1 workout below
+    if (diff <= 3) return 'bg-caution-soft text-caution-content border-caution'; // 2-3 workouts below
+    return 'bg-critical-soft text-critical border-critical'; // 4+ workouts below
   };
 
   return (
-    <div className="bg-white rounded-lg p-2">
+    <div className="bg-surface-raised rounded-lg p-2">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-900">Workout Consistency</h3>
+        <h3 className="text-sm font-medium text-content">Workout Consistency</h3>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Goal: {weeklyGoal} per week</span>
+          <span className="text-sm text-content-subtle">Goal: {weeklyGoal} per week</span>
           <div className="group relative">
-            <Info className="h-4 w-4 text-gray-400" />
-            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <Info className="h-4 w-4 text-content-subtle" />
+            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-overlay text-content border border-edge text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
               Week starts on {format(startOfWeek(today, { weekStartsOn: weekdayStart }), 'EEEE')}
             </div>
           </div>

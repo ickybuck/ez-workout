@@ -211,7 +211,7 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -219,12 +219,12 @@ const Dashboard: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-lg font-medium text-red-800 mb-2">Connection Error</h2>
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-critical-soft border border-critical rounded-lg p-4">
+          <h2 className="text-lg font-medium text-critical-content mb-2">Connection Error</h2>
+          <p className="text-sm text-critical">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+            className="mt-3 px-4 py-2 bg-critical-soft text-critical rounded-md hover:bg-critical-soft transition-colors"
           >
             Retry Connection
           </button>
@@ -235,8 +235,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{getWelcomeMessage()}</h1>
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
+        <h1 className="text-2xl font-bold text-content mb-4">{getWelcomeMessage()}</h1>
 
         {!workout && (
           <>
@@ -247,20 +247,20 @@ const Dashboard: React.FC = () => {
                     <button
                       key={template.id}
                       onClick={() => navigate(`/dashboard/workout?template=${template.id}`)}
-                      className="group relative w-full text-left border rounded-lg p-3 hover:shadow-md transition-all duration-200 bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200"
+                      className="group relative w-full text-left border rounded-lg p-3 hover:shadow-md transition-all duration-200 bg-surface hover:bg-accent-soft hover:border-accent"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0">
-                          <div className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-100 group-hover:bg-indigo-200 transition-colors duration-200">
-                            <Play className="h-4 w-4 text-indigo-600 group-hover:text-indigo-700" />
+                          <div className="w-9 h-9 flex items-center justify-center rounded-full bg-accent-soft group-hover:bg-accent transition-colors duration-200">
+                            <Play className="h-4 w-4 text-accent group-hover:text-accent-content" />
                           </div>
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900 group-hover:text-indigo-900">
+                          <h3 className="font-medium text-content group-hover:text-accent">
                             Start {template.name}
                           </h3>
                           {template.description && (
-                            <p className="text-sm text-gray-600 group-hover:text-indigo-700 mt-0.5 line-clamp-2">
+                            <p className="text-sm text-content-muted group-hover:text-accent-content mt-0.5 line-clamp-2">
                               {template.description}
                             </p>
                           )}
@@ -272,27 +272,27 @@ const Dashboard: React.FC = () => {
               </div>
             ) : !hasTemplates && (
               <div className="mb-6">
-                <div className="text-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-                  <div className="mx-auto w-10 h-10 flex items-center justify-center rounded-full bg-indigo-100 mb-3">
-                    <Star className="h-5 w-5 text-indigo-600" />
+                <div className="text-center p-6 border-2 border-dashed border-edge-strong rounded-lg bg-surface">
+                  <div className="mx-auto w-10 h-10 flex items-center justify-center rounded-full bg-accent-soft mb-3">
+                    <Star className="h-5 w-5 text-accent" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg font-medium text-content mb-2">
                     Get Started with Templates
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-content-muted mb-4">
                     Create your first workout template or favorite an existing one to get started.
                   </p>
                   <div className="flex justify-center gap-3">
                     <button
                       onClick={() => navigate('/dashboard/templates/new')}
-                      className="flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                      className="flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Create Template
                     </button>
                     <button
                       onClick={() => navigate('/dashboard/templates')}
-                      className="flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="flex items-center px-3 py-1.5 border border-edge-strong rounded-md text-sm font-medium text-content-muted hover:bg-surface"
                     >
                       <Star className="h-4 w-4 mr-1" />
                       Browse Templates
@@ -304,18 +304,18 @@ const Dashboard: React.FC = () => {
 
             {recentWorkouts.length > 0 && (
               <>
-                <h2 className="text-lg font-medium text-gray-900 mb-3">Recent Workouts</h2>
+                <h2 className="text-lg font-medium text-content mb-3">Recent Workouts</h2>
                 <div className="space-y-3">
                   {recentWorkouts.map(workout => (
                     <div key={workout.id} className="border rounded-lg overflow-hidden">
-                      <div className="bg-gray-50 px-3 py-2 border-b">
+                      <div className="bg-surface px-3 py-2 border-b">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-medium text-gray-900">{workout.name}</h3>
-                          <span className="text-sm text-gray-500">
+                          <h3 className="font-medium text-content">{workout.name}</h3>
+                          <span className="text-sm text-content-subtle">
                             {format(new Date(workout.end_time), 'PPp')}
                           </span>
                         </div>
-                        <div className="flex items-center justify-end gap-3 mt-1 text-sm text-gray-600">
+                        <div className="flex items-center justify-end gap-3 mt-1 text-sm text-content-muted">
                           <div className="flex items-center gap-1">
                             <Dumbbell className="h-4 w-4" />
                             <span>{workout.exercises.length}</span>
@@ -347,10 +347,10 @@ const Dashboard: React.FC = () => {
                               key={exercise.exercise.id}
                               className={`text-xs px-2 py-1 rounded flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity ${
                                 completed 
-                                  ? 'bg-green-50 text-green-700 hover:bg-green-100' 
+                                  ? 'bg-positive-soft text-positive-content hover:bg-positive-soft' 
                                   : failed 
-                                    ? 'bg-red-50 text-red-700 hover:bg-red-100'
-                                    : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                                    ? 'bg-critical-soft text-critical hover:bg-critical-soft'
+                                    : 'bg-caution-soft text-caution hover:bg-caution-soft'
                               }`}
                               onClick={(e) => handleExerciseClick(exercise.exercise.id, e)}
                               title={`Click to edit ${exercise.exercise.name}`}

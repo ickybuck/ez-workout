@@ -110,10 +110,10 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
   const dates = [...new Set(data.map(d => d.date.toISOString()))].sort();
 
   return (
-    <div className="bg-white rounded-lg p-2 -mt-2">
+    <div className="bg-surface-raised rounded-lg p-2 -mt-2">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-900">Volume Progression</h3>
-        <span className="text-sm text-gray-500">in {unit}</span>
+        <h3 className="text-sm font-medium text-content">Volume Progression</h3>
+        <span className="text-sm text-content-subtle">in {unit}</span>
       </div>
 
       <div ref={containerRef} className="relative">
@@ -128,7 +128,7 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
                 y1={padding.top}
                 x2={x}
                 y2={height - padding.bottom}
-                stroke="#f3f4f6"
+                stroke="rgb(var(--border))"
                 strokeWidth="1"
               />
             );
@@ -142,7 +142,7 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
               y={y}
               textAnchor="start"
               alignmentBaseline="middle"
-              className="text-xs fill-gray-500"
+              className="text-xs" fill="rgb(var(--content-subtle))"
             >
               {formatYLabel(value)}
             </text>
@@ -215,7 +215,7 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
                       cy={point.y}
                       r="4"
                       fill={color}
-                      stroke="white"
+                      stroke="rgb(var(--surface-raised))"
                       strokeWidth="1.5"
                       className="transition-all duration-300"
                     />
@@ -234,9 +234,9 @@ const VolumeGraph: React.FC<VolumeGraphProps> = ({ data }) => {
             <div key={key} className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <div className="w-6 h-1" style={{ backgroundColor: color, borderRadius: '2px' }} />
-                <div className="w-2 h-2 rounded-full border border-white" style={{ backgroundColor: color, boxShadow: '0 0 0 0.5px white' }} />
+                <div className="w-2 h-2 rounded-full border border-edge" style={{ backgroundColor: color }} />
               </div>
-              <span className="text-xs font-medium text-gray-700">{truncatedName}</span>
+              <span className="text-xs font-medium text-content-muted">{truncatedName}</span>
             </div>
           );
         })}

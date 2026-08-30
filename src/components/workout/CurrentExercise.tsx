@@ -35,24 +35,24 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
     !!stall && !!nextSet && Math.abs(nextSet.weight - stall.weight) < 0.01;
 
   return (
-    <div className={`bg-white rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
+    <div className={`bg-surface-raised rounded shadow-sm p-4 ${!isActive ? 'opacity-50' : ''}`}>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h2 className="text-base font-medium text-gray-900">
+          <h2 className="text-base font-medium text-content">
             {exercise.exercise.name}
           </h2>
           <span className="text-lg" title={exercise.exercise.equipment_type.name}>
             {exercise.exercise.equipment_type.emoji}
           </span>
           {isSuperset && (
-            <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
+            <span className="px-1.5 py-0.5 text-xs bg-accent-soft text-accent-content rounded">
               Superset
             </span>
           )}
           {exercise.exercise.description && (
             <button
               onClick={() => setShowInfo(!showInfo)}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="p-1 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken"
               aria-label={showInfo ? "Hide exercise information" : "Show exercise information"}
             >
               {showInfo ? (
@@ -64,7 +64,7 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
           )}
         </div>
         {showInfo && exercise.exercise.description && (
-          <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
+          <div className="mt-2 p-2 bg-surface rounded text-sm text-content-muted">
             {exercise.exercise.description}
           </div>
         )}
@@ -72,9 +72,9 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
             greyed-out card is noise, and this can be true of several exercises
             in the same session. */}
         {stall && isActive && weightUnchanged && (
-          <div className="mt-2 flex items-start gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2">
-            <TrendingUp className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-emerald-800">
+          <div className="mt-2 flex items-start gap-2 rounded-md bg-positive-soft border border-positive px-3 py-2">
+            <TrendingUp className="h-4 w-4 text-positive flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-positive-content">
               {/* Whole units, not formatWeight. The stall's weight is the
                   heaviest set of the run, and converting a stored kilogram
                   value back to pounds produced "275.14 lb" directly above a
