@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 
 /**
- * The bar an exercise uses when nothing overrides it, in kilograms.
+ * The bar an exercise uses when nothing overrides it, in the DISPLAY unit.
  *
  * Module level and synchronous on purpose. The old code started `barWeight` at
  * 0 and only learned the real value after a round trip, so the calculator
@@ -14,9 +14,31 @@ import { toast } from 'sonner';
  * 147.5 a side — and visibly corrected itself once the fetch landed. The
  * default is knowable without asking anyone, so it should be known at first
  * paint.
+ *
+ * Given per unit rather than converted from one, because these are different
+ * bars, not one bar described twice. Converting 20 kg into pounds produced
+ * 44.09 — a number no gym has ever stocked, in a field the user is invited to
+ * edit. A pound gym's standard bar is 45.
  */
-const defaultBarWeightKg = (exerciseName?: string): number =>
-  exerciseName?.toLowerCase().includes('smith') ? 11.34 : 20;
+const defaultBarWeight = (exerciseName: string | undefined, unit: 'kg' | 'lb'): number => {
+  const smith = exerciseName?.toLowerCase().includes('smith') ?? false;
+  if (smith) return unit === 'kg' ? 11.34 : 25;
+  return unit === 'kg' ? 20 : 45;
+};
+
+/**
+ * Snap a converted increment onto the unit's own step.
+ *
+ * Increments are stored in kilograms and a kilogram step is never a round
+ * number of pounds: 4.5 kg is 9.92 lb. This is the same rounding the set
+ * stepper already does — without it the field offers 9.92 for editing, which
+ * is both ugly and an invitation to "correct" it into a slightly different
+ * number that then drifts the stored weights.
+ */
+const snapIncrement = (display: number, unit: 'kg' | 'lb'): number => {
+  const step = unit === 'lb' ? 1 : 0.5;
+  return Math.max(step, Math.round(display / step) * step);
+};
 
 interface PlateCalculatorProps {
   weight: number; // Weight in kg
@@ -43,19 +65,19 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 }) => {
   const { unit, convertWeight, parseWeight } = useWeightUnit();
   const [localWeight, setLocalWeight] = useState(convertWeight(weight));
-  const [localWeightIncrement, setLocalWeightIncrement] = useState(convertWeight(weightIncrement));
+  const [localWeightIncrement, setLocalWeightIncrement] = useState(() =>
+    snapIncrement(convertWeight(weightIncrement), unit),
+  );
   const [plateConfig, setPlateConfig] = useState<PlateConfiguration | null>(null);
-  const [barWeight, setBarWeight] = useState(() =>
-    convertWeight(defaultBarWeightKg(exerciseName), undefined, true),
-  );
-  const [initialBarWeight, setInitialBarWeight] = useState(() =>
-    convertWeight(defaultBarWeightKg(exerciseName), undefined, true),
-  );
+  const [barWeight, setBarWeight] = useState(() => defaultBarWeight(exerciseName, unit));
+  const [initialBarWeight, setInitialBarWeight] = useState(() => defaultBarWeight(exerciseName, unit));
   // Whether the per-exercise override has been resolved. Until it has, no
   // plate breakdown is shown at all — a wrong one that corrects itself is
   // worse than a blank that fills in.
   const [defaultsLoaded, setDefaultsLoaded] = useState(false);
-  const [initialWeightIncrement, setInitialWeightIncrement] = useState(convertWeight(weightIncrement));
+  const [initialWeightIncrement, setInitialWeightIncrement] = useState(() =>
+    snapIncrement(convertWeight(weightIncrement), unit),
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -75,10 +97,10 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 
     const loadExerciseDefaults = async () => {
       if (!exerciseId) {
-        const defaultBarWeight = getDefaultBarWeight();
-        setBarWeight(defaultBarWeight);
-        setInitialBarWeight(defaultBarWeight);
-        const defaultIncrement = convertWeight(2.3);
+        const fallbackBar = getDefaultBarWeight();
+        setBarWeight(fallbackBar);
+        setInitialBarWeight(fallbackBar);
+        const defaultIncrement = snapIncrement(convertWeight(2.3), unit);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
         setDefaultsLoaded(true);
@@ -106,9 +128,9 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         }
 
         if (data && data.weight_increment !== null) {
-          displayWeightIncrement = convertWeight(data.weight_increment);
+          displayWeightIncrement = snapIncrement(convertWeight(data.weight_increment), unit);
         } else {
-          displayWeightIncrement = convertWeight(2.3);
+          displayWeightIncrement = snapIncrement(convertWeight(2.3), unit);
         }
 
         setBarWeight(displayBarWeight);
@@ -118,10 +140,10 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         setDefaultsLoaded(true);
       } catch (error) {
         console.error('Error loading exercise defaults:', error);
-        const defaultBarWeight = getDefaultBarWeight();
-        setBarWeight(defaultBarWeight);
-        setInitialBarWeight(defaultBarWeight);
-        const defaultIncrement = convertWeight(2.3);
+        const fallbackBar = getDefaultBarWeight();
+        setBarWeight(fallbackBar);
+        setInitialBarWeight(fallbackBar);
+        const defaultIncrement = snapIncrement(convertWeight(2.3), unit);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
         setDefaultsLoaded(true);
@@ -131,8 +153,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
     loadExerciseDefaults();
   }, [exerciseId, unit]);
 
-  const getDefaultBarWeight = () =>
-    convertWeight(defaultBarWeightKg(exerciseName), undefined, true);
+  const getDefaultBarWeight = () => defaultBarWeight(exerciseName, unit);
 
   useEffect(() => {
     const displayWeight = convertWeight(weight);
@@ -366,27 +387,26 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
             <div className="space-y-2">
               <div className="text-sm font-medium text-content-subtle">Plates Per Side</div>
               {plateConfig.plates.map(({ weight, count }) => (
-                <div
-                  key={weight}
-                  className="flex items-center justify-between py-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: count }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-1.5 h-8 bg-accent rounded"
-                          style={{
-                            opacity: 0.3 + (0.7 * weight) / (unit === 'kg' ? 20 : 45),
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <div className="text-sm text-content">
-                      {count} × {weight}
-                    </div>
+                <div key={weight} className="flex items-center gap-3 py-1">
+                  {/* Same weight as the total above it: this is the number you
+                      act on at the rack, and it was set in caption type while
+                      the total it derives from was three times the size. Fixed
+                      width so the rows line up on the × rather than ragging. */}
+                  <div className="w-36 flex-shrink-0 text-2xl font-mono font-semibold text-content tabular-nums">
+                    {count} × {weight}
+                    <span className="text-base font-sans font-normal text-content-subtle"> {unit}</span>
                   </div>
-                  <div className="text-sm text-content-subtle">{unit}</div>
+                  <div className="flex flex-wrap items-center gap-1 min-w-0">
+                    {Array.from({ length: count }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-2 h-9 bg-accent rounded-sm"
+                        style={{
+                          opacity: 0.35 + (0.65 * weight) / (unit === 'kg' ? 25 : 45),
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
