@@ -387,15 +387,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
             <div className="space-y-2">
               <div className="text-sm font-medium text-content-subtle">Plates Per Side</div>
               {plateConfig.plates.map(({ weight, count }) => (
-                <div key={weight} className="flex items-center gap-3 py-1">
-                  {/* Same weight as the total above it: this is the number you
-                      act on at the rack, and it was set in caption type while
-                      the total it derives from was three times the size. Fixed
-                      width so the rows line up on the × rather than ragging. */}
-                  <div className="w-36 flex-shrink-0 text-2xl font-mono font-semibold text-content tabular-nums">
-                    {count} × {weight}
-                    <span className="text-base font-sans font-normal text-content-subtle"> {unit}</span>
-                  </div>
+                <div key={weight} className="flex items-center justify-between gap-3 py-1">
                   <div className="flex flex-wrap items-center gap-1 min-w-0">
                     {Array.from({ length: count }).map((_, i) => (
                       <div
@@ -406,6 +398,15 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
                         }}
                       />
                     ))}
+                  </div>
+                  {/* Value on the right, at the same weight as the total above:
+                      this is the number you act on at the rack, and every other
+                      row in this panel puts its value on the right. Fixed width
+                      and right-aligned so the rows stack into a column instead
+                      of ragging with the bar counts. */}
+                  <div className="w-36 flex-shrink-0 text-right text-2xl font-mono font-semibold text-content tabular-nums">
+                    {count} × {weight}
+                    <span className="text-base font-sans font-normal text-content-subtle"> {unit}</span>
                   </div>
                 </div>
               ))}
