@@ -5,6 +5,19 @@ import { PlateConfiguration } from '../../types/exercise';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 
+/**
+ * The bar an exercise uses when nothing overrides it, in kilograms.
+ *
+ * Module level and synchronous on purpose. The old code started `barWeight` at
+ * 0 and only learned the real value after a round trip, so the calculator
+ * opened having divided the FULL weight across the plates — 295 lb read as
+ * 147.5 a side — and visibly corrected itself once the fetch landed. The
+ * default is knowable without asking anyone, so it should be known at first
+ * paint.
+ */
+const defaultBarWeightKg = (exerciseName?: string): number =>
+  exerciseName?.toLowerCase().includes('smith') ? 11.34 : 20;
+
 interface PlateCalculatorProps {
   weight: number; // Weight in kg
   onWeightChange: (weight: number) => void; // Weight in kg
@@ -32,8 +45,16 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
   const [localWeight, setLocalWeight] = useState(convertWeight(weight));
   const [localWeightIncrement, setLocalWeightIncrement] = useState(convertWeight(weightIncrement));
   const [plateConfig, setPlateConfig] = useState<PlateConfiguration | null>(null);
-  const [barWeight, setBarWeight] = useState(0);
-  const [initialBarWeight, setInitialBarWeight] = useState(0);
+  const [barWeight, setBarWeight] = useState(() =>
+    convertWeight(defaultBarWeightKg(exerciseName), undefined, true),
+  );
+  const [initialBarWeight, setInitialBarWeight] = useState(() =>
+    convertWeight(defaultBarWeightKg(exerciseName), undefined, true),
+  );
+  // Whether the per-exercise override has been resolved. Until it has, no
+  // plate breakdown is shown at all — a wrong one that corrects itself is
+  // worse than a blank that fills in.
+  const [defaultsLoaded, setDefaultsLoaded] = useState(false);
   const [initialWeightIncrement, setInitialWeightIncrement] = useState(convertWeight(weightIncrement));
   const [isEditing, setIsEditing] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -46,6 +67,12 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 
   // Load bar weight and weight increment from exercise defaults
   useEffect(() => {
+    // Reset first. If the calculator stays mounted between openings, a new
+    // exercise would otherwise show the previous one's breakdown while its own
+    // bar weight was still in flight — the same stale-then-correct flicker,
+    // just sourced from the last exercise instead of from zero.
+    setDefaultsLoaded(false);
+
     const loadExerciseDefaults = async () => {
       if (!exerciseId) {
         const defaultBarWeight = getDefaultBarWeight();
@@ -54,6 +81,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         const defaultIncrement = convertWeight(2.3);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
+        setDefaultsLoaded(true);
         return;
       }
 
@@ -87,6 +115,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         setInitialBarWeight(displayBarWeight);
         setLocalWeightIncrement(displayWeightIncrement);
         setInitialWeightIncrement(displayWeightIncrement);
+        setDefaultsLoaded(true);
       } catch (error) {
         console.error('Error loading exercise defaults:', error);
         const defaultBarWeight = getDefaultBarWeight();
@@ -95,27 +124,22 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         const defaultIncrement = convertWeight(2.3);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
+        setDefaultsLoaded(true);
       }
     };
 
     loadExerciseDefaults();
   }, [exerciseId, unit]);
 
-  const getDefaultBarWeight = () => {
-    const isSmithMachine = exerciseName?.toLowerCase().includes('smith') ?? false;
-
-    if (isSmithMachine) {
-      return convertWeight(11.34, undefined, true);
-    }
-
-    return convertWeight(20, undefined, true);
-  };
+  const getDefaultBarWeight = () =>
+    convertWeight(defaultBarWeightKg(exerciseName), undefined, true);
 
   useEffect(() => {
     const displayWeight = convertWeight(weight);
     setLocalWeight(displayWeight);
+    if (!defaultsLoaded) return;
     calculatePlates(displayWeight);
-  }, [weight, unit, barWeight]);
+  }, [weight, unit, barWeight, defaultsLoaded]);
 
   // Check if anything has changed
   useEffect(() => {
@@ -368,7 +392,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
             </div>
           )}
 
-          {!plateConfig && (
+          {defaultsLoaded && !plateConfig && (
             <div className="text-center text-content-subtle py-4">
               Weight is less than the bar weight
             </div>
