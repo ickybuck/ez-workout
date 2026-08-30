@@ -222,7 +222,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
               <button
                 onClick={() => adjustWeight(false)}
                 disabled={disabled || adjustingWeight}
-                className="p-2 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
+                className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
                 title="Decrease weight"
               >
                 <Minus className="h-4 w-4" />
@@ -232,7 +232,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
               </span>
               <button
                 onClick={handleWeightClick}
-                className={`px-2 py-1 rounded ${
+                className={`px-2 min-h-[44px] rounded ${
                   isPlateLoaded
                     ? 'bg-surface-sunken hover:bg-accent-soft text-content hover:text-accent-content cursor-pointer transition-colors duration-150'
                     : 'text-content-subtle'
@@ -245,7 +245,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
               <button
                 onClick={() => adjustWeight(true)}
                 disabled={disabled || adjustingWeight}
-                className="p-2 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
+                className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full disabled:opacity-50"
                 title="Increase weight"
               >
                 <Plus className="h-4 w-4" />
@@ -267,14 +267,14 @@ const SetProgress: React.FC<SetProgressProps> = ({
         <div className="flex gap-2">
           <button
             onClick={() => onComplete(currentSet.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-accent text-content-inverse text-sm rounded hover:bg-accent-hover transition-colors whitespace-nowrap"
+            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 bg-accent text-content-inverse text-sm rounded hover:bg-accent-hover transition-colors whitespace-nowrap"
           >
             <Check className="h-4 w-4" />
             <span>Complete</span>
           </button>
           <button
             onClick={() => setShowExtraReps(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-positive text-content-inverse text-sm rounded hover:bg-positive transition-colors whitespace-nowrap"
+            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 bg-positive text-content-inverse text-sm rounded hover:bg-positive transition-colors whitespace-nowrap"
             title="Did more reps than the target"
           >
             <TrendingUp className="h-4 w-4" />
@@ -282,7 +282,7 @@ const SetProgress: React.FC<SetProgressProps> = ({
           </button>
           <button
             onClick={() => setShowPartialReps(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-caution text-content-inverse text-sm rounded hover:bg-caution transition-colors whitespace-nowrap"
+            className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] px-2 bg-caution text-content-inverse text-sm rounded hover:bg-caution transition-colors whitespace-nowrap"
           >
             <AlertTriangle className="h-4 w-4" />
             <span>Partial</span>

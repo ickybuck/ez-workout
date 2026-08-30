@@ -49,11 +49,15 @@ const DashboardLayout: React.FC = () => {
           <div className="flex justify-around">
             {navItems.map(({ icon: Icon, label, path }) => {
               const isActive = location.pathname === path;
+              // px-1, not px-2. With Admin visible that is seven tabs, and at
+              // 375px the row needed 393px of the 367 available — the last tab
+              // ran off the screen. min-w-0 lets a long label shrink rather
+              // than push its neighbours out.
               return (
                 <Link
                   key={path}
                   to={path}
-                  className={`flex flex-col items-center py-2 px-2 ${
+                  className={`flex flex-col items-center min-w-0 py-2 px-1 ${
                     isActive ? 'text-accent' : 'text-content-muted hover:text-content'
                   }`}
                 >

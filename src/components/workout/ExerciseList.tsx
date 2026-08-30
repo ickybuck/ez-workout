@@ -128,7 +128,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                     )}
                   </div>
                   {nextSet && (
-                    <div className="text-xs text-content-subtle">
+                    <div className="text-xs text-content-muted">
                       {nextSet.reps} × {formatWeight(nextSet.weight)}
                     </div>
                   )}

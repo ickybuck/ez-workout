@@ -52,7 +52,7 @@ const CurrentExercise: React.FC<CurrentExerciseProps> = ({
           {exercise.exercise.description && (
             <button
               onClick={() => setShowInfo(!showInfo)}
-              className="p-2 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken"
+              className="p-2.5 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken"
               aria-label={showInfo ? "Hide exercise information" : "Show exercise information"}
             >
               {showInfo ? (
