@@ -221,21 +221,21 @@ const ExerciseLibraryV2: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-gray-900">Exercise Library</h2>
+            <h2 className="text-2xl font-bold text-content">Exercise Library</h2>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`p-2 rounded-full ${
-                showFilters ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50'
+                showFilters ? 'bg-accent-soft text-accent' : 'text-content-subtle hover:text-accent hover:bg-accent-soft'
               }`}
               title="Toggle filters"
             >
@@ -243,27 +243,27 @@ const ExerciseLibraryV2: React.FC = () => {
             </button>
           </div>
           <div className="relative flex-1 max-w-xs ml-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-content-subtle pointer-events-none" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search exercises"
               aria-label="Search exercises"
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full pl-9 pr-3 py-2 border border-edge-strong rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
             />
           </div>
         </div>
 
         {showFilters && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+          <div className="mb-6 p-4 bg-surface rounded-lg space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Body Part</label>
+                <label className="block text-sm font-medium text-content-muted mb-1">Body Part</label>
                 <select
                   value={filters.bodyPart}
                   onChange={(e) => updateFilters({ bodyPart: e.target.value })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
                 >
                   <option value="">All</option>
                   {bodyParts.map(part => (
@@ -273,11 +273,11 @@ const ExerciseLibraryV2: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Equipment</label>
+                <label className="block text-sm font-medium text-content-muted mb-1">Equipment</label>
                 <select
                   value={filters.equipment}
                   onChange={(e) => updateFilters({ equipment: e.target.value })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
                 >
                   <option value="">All</option>
                   {equipmentTypes.map(type => (
@@ -287,11 +287,11 @@ const ExerciseLibraryV2: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Template Usage</label>
+                <label className="block text-sm font-medium text-content-muted mb-1">Template Usage</label>
                 <select
                   value={filters.inTemplates}
                   onChange={(e) => updateFilters({ inTemplates: e.target.value as 'all' | 'used' | 'unused' })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
                 >
                   <option value="all">All</option>
                   <option value="used">Used in Templates</option>
@@ -300,11 +300,11 @@ const ExerciseLibraryV2: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-content-muted mb-1">Type</label>
                 <select
                   value={filters.compound}
                   onChange={(e) => updateFilters({ compound: e.target.value as 'all' | 'compound' | 'isolated' })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
                 >
                   <option value="all">All</option>
                   <option value="compound">Compound</option>
@@ -314,22 +314,22 @@ const ExerciseLibraryV2: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t">
-              <label className="flex items-center gap-2 text-sm text-gray-700">
+              <label className="flex items-center gap-2 text-sm text-content-muted">
                 <input
                   type="checkbox"
                   checked={filters.showHidden}
                   onChange={(e) => updateFilters({ showHidden: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-edge-strong text-accent focus:ring-accent"
                 />
                 Show hidden exercises
                 {hiddenCount > 0 && (
-                  <span className="text-gray-400">({hiddenCount})</span>
+                  <span className="text-content-subtle">({hiddenCount})</span>
                 )}
               </label>
             </div>
 
             <div className="flex items-center gap-4 pt-2 border-t">
-              <span className="text-sm font-medium text-gray-700">Sort by:</span>
+              <span className="text-sm font-medium text-content-muted">Sort by:</span>
               <div className="flex flex-wrap gap-2">
                 {[
                   { field: 'name', label: 'Name' },
@@ -343,8 +343,8 @@ const ExerciseLibraryV2: React.FC = () => {
                     onClick={() => toggleSort(field as SortField)}
                     className={`px-3 py-1 rounded text-sm ${
                       sortConfig.field === field
-                        ? 'bg-indigo-100 text-indigo-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-accent-soft text-accent-content'
+                        : 'bg-surface-sunken text-content-muted hover:bg-surface-sunken'
                     }`}
                   >
                     {label} {getSortIcon(field as SortField)}
@@ -357,7 +357,7 @@ const ExerciseLibraryV2: React.FC = () => {
 
         <div className="space-y-4">
           {filteredAndSortedExercises.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-content-subtle">
               {search.trim()
                 ? `No exercises match "${search.trim()}"`
                 : 'No exercises found matching your filters'}
@@ -367,18 +367,18 @@ const ExerciseLibraryV2: React.FC = () => {
               <div
                 key={exercise.id}
                 className={`border rounded-lg p-3 hover:shadow-md transition-shadow duration-200 ${
-                  exercise.defaults?.hidden ? 'opacity-60 bg-gray-50' : ''
+                  exercise.defaults?.hidden ? 'opacity-60 bg-surface' : ''
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-content">
                     {exercise.name}
                   </h3>
                   <span className="text-xl" title={exercise.equipment_type?.name || 'No equipment'}>
                     {exercise.equipment_type?.emoji || '🏋️'}
                   </span>
                   {exercise.is_compound && (
-                    <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded">
+                    <span className="text-xs px-2 py-0.5 bg-accent-soft text-accent-content rounded">
                       Compound
                     </span>
                   )}
@@ -387,24 +387,24 @@ const ExerciseLibraryV2: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-baseline">
-                      <span className="tabular-nums font-medium text-gray-900">
+                      <span className="tabular-nums font-medium text-content">
                         {exercise.defaults?.sets || 3}
                       </span>
-                      <span className="text-gray-500 text-xs uppercase">s</span>
-                      <span className="text-gray-400 mx-0.5">×</span>
-                      <span className="tabular-nums font-medium text-gray-900">
+                      <span className="text-content-subtle text-xs uppercase">s</span>
+                      <span className="text-content-subtle mx-0.5">×</span>
+                      <span className="tabular-nums font-medium text-content">
                         {exercise.defaults?.reps || 10}
                       </span>
-                      <span className="text-gray-500 text-xs uppercase">r</span>
+                      <span className="text-content-subtle text-xs uppercase">r</span>
                     </div>
-                    <span className="text-gray-900">{formatWeight(exercise.defaults?.weight || 0)}</span>
+                    <span className="text-content">{formatWeight(exercise.defaults?.weight || 0)}</span>
                     {exercise.templateCount > 0 ? (
-                      <div className="flex items-center gap-1 text-green-600" title="Used in templates">
+                      <div className="flex items-center gap-1 text-positive" title="Used in templates">
                         <Check className="h-4 w-4" />
                         <span className="text-xs">{exercise.templateCount}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-red-500" title="Not used in any template">
+                      <div className="flex items-center gap-1 text-critical" title="Not used in any template">
                         <X className="h-4 w-4" />
                       </div>
                     )}
@@ -413,14 +413,14 @@ const ExerciseLibraryV2: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedExercise(exercise)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+                      className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
                       title="Add to template"
                     >
                       <ListPlus className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => navigate(`/dashboard/exercises/${exercise.id}/edit`)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+                      className="p-1.5 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
                       title="Edit exercise"
                     >
                       <Edit2 className="h-4 w-4" />
@@ -429,8 +429,8 @@ const ExerciseLibraryV2: React.FC = () => {
                       onClick={() => handleToggleHidden(exercise)}
                       className={`p-1.5 rounded-full ${
                         exercise.defaults?.hidden
-                          ? 'text-indigo-600 hover:bg-indigo-50'
-                          : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50'
+                          ? 'text-accent hover:bg-accent-soft'
+                          : 'text-content-subtle hover:text-accent hover:bg-accent-soft'
                       }`}
                       title={exercise.defaults?.hidden ? 'Show in my library' : 'Hide from my library'}
                     >
@@ -447,8 +447,8 @@ const ExerciseLibraryV2: React.FC = () => {
           )}
 
           {isAdmin && (
-            <div className="pt-4 mt-2 border-t border-gray-200 text-center">
-              <p className="text-sm text-gray-500 mb-2">
+            <div className="pt-4 mt-2 border-t border-edge text-center">
+              <p className="text-sm text-content-subtle mb-2">
                 {search.trim()
                   ? `Not what you were looking for?`
                   : 'Searched and it is genuinely not here?'}
@@ -461,7 +461,7 @@ const ExerciseLibraryV2: React.FC = () => {
                       : '/dashboard/exercises/new',
                   )
                 }
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="inline-flex items-center px-4 py-2 border border-edge-strong rounded-md text-sm font-medium text-content-muted bg-surface-raised hover:bg-surface"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {search.trim() ? `Create "${search.trim()}"` : 'Create a new exercise'}

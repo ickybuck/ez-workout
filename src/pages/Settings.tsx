@@ -142,20 +142,20 @@ const Settings: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
 
   return (
     <div className="py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-surface-raised rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+          <h2 className="text-2xl font-bold text-content">Settings</h2>
           <button
             onClick={saveSettings}
             disabled={saving || !hasChanges}
-            className="flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            className="flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>

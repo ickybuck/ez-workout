@@ -88,34 +88,34 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({
         onClick={onToggle}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="text-lg font-medium text-gray-900">Account Security</h3>
+        <h3 className="text-lg font-medium text-content">Account Security</h3>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <ChevronUp className="h-5 w-5 text-content-subtle" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <ChevronDown className="h-5 w-5 text-content-subtle" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-6">
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Update Email</h4>
-            <p className="text-xs text-gray-500 mb-3">Current email: {userEmail}</p>
+            <h4 className="text-sm font-medium text-content mb-2">Update Email</h4>
+            <p className="text-xs text-content-subtle mb-3">Current email: {userEmail}</p>
             <form onSubmit={handleUpdateEmail} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">New Email Address</label>
+                <label className="block text-sm font-medium text-content-muted">New Email Address</label>
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="Enter new email"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent"
                 />
               </div>
               <button
                 type="submit"
                 disabled={updatingEmail}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
               >
                 {updatingEmail ? 'Updating...' : 'Update Email'}
               </button>
@@ -123,32 +123,32 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Update Password</h4>
+            <h4 className="text-sm font-medium text-content mb-2">Update Password</h4>
             <form onSubmit={handleUpdatePassword} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">New Password</label>
+                <label className="block text-sm font-medium text-content-muted">New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                <label className="block text-sm font-medium text-content-muted">Confirm New Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent"
                 />
               </div>
               <button
                 type="submit"
                 disabled={updatingPassword}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
               >
                 {updatingPassword ? 'Updating...' : 'Update Password'}
               </button>
@@ -158,7 +158,7 @@ const AccountSecuritySection: React.FC<AccountSecuritySectionProps> = ({
           <div className="pt-4 border-t">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-critical rounded-md shadow-sm text-sm font-medium text-critical bg-surface-raised hover:bg-critical-soft focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-critical"
             >
               <LogOut className="h-4 w-4" />
               Log Out

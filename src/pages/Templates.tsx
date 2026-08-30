@@ -300,30 +300,30 @@ const Templates: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-800"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Workout Templates</h2>
+          <h2 className="text-2xl font-bold text-content">Workout Templates</h2>
           <button
             onClick={() => navigate('/dashboard/templates/new')}
-            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors"
+            className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-surface-overlay hover:bg-surface-overlay transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-edge">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-muted border border-edge rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="h-3.5 w-3.5" />
             Import
@@ -332,7 +332,7 @@ const Templates: React.FC = () => {
           {templates.length > 0 && (
             <button
               onClick={() => setExportTarget({ templates, label: 'All templates' })}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-muted border border-edge rounded-lg hover:bg-surface transition-colors"
             >
               <Download className="h-3.5 w-3.5" />
               Export All
@@ -341,7 +341,7 @@ const Templates: React.FC = () => {
 
           <button
             onClick={() => setShowFormatGuide(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-subtle hover:text-content-muted hover:bg-surface rounded-lg transition-colors"
           >
             <HelpCircle className="h-3.5 w-3.5" />
             Format Guide
@@ -368,7 +368,7 @@ const Templates: React.FC = () => {
                     <button
                       onClick={() => moveTemplate(index, 'up')}
                       disabled={index === 0}
-                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-gray-100"
+                      className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
                       title="Move up"
                     >
                       <ChevronUp className="h-4 w-4" />
@@ -376,7 +376,7 @@ const Templates: React.FC = () => {
                     <button
                       onClick={() => moveTemplate(index, 'down')}
                       disabled={index === templates.length - 1}
-                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-gray-100"
+                      className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30 disabled:cursor-not-allowed rounded-full hover:bg-surface-sunken"
                       title="Move down"
                     >
                       <ChevronDown className="h-4 w-4" />
@@ -390,27 +390,27 @@ const Templates: React.FC = () => {
                             opens the editor rather than doing nothing. */}
                         <button
                           onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
-                          className="text-lg font-medium text-gray-900 truncate hover:text-indigo-600 transition-colors text-left"
+                          className="text-lg font-medium text-content truncate hover:text-accent transition-colors text-left"
                           title="Edit template"
                         >
                           {template.name}
                         </button>
                       </div>
                       <div className="flex-shrink-0">
-                        <span className="px-2 py-0.5 text-sm bg-gray-100 text-gray-600 rounded-full">
+                        <span className="px-2 py-0.5 text-sm bg-surface-sunken text-content-muted rounded-full">
                           {template.category}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 text-sm text-content-subtle">
                         {/* The template-wide Linear/Superset label is gone. A
                             template can now be both at once, so labelling the
                             whole thing one or the other was not just useless —
                             it was wrong for any template that mixes them. */}
                         <div className="flex items-center gap-1" title={`${template.exercises.length} exercises`}>
-                          <Dumbbell className="h-4 w-4 text-gray-500" />
+                          <Dumbbell className="h-4 w-4 text-content-subtle" />
                           <span>{template.exercises.length}</span>
                         </div>
                       </div>
@@ -419,31 +419,31 @@ const Templates: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleDeleteTemplate(template.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
+                          className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full"
                           title="Delete template"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => setExportTarget({ templates: [template], label: template.name })}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full transition-colors"
                           title="Export template"
                         >
                           <Download className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleCopyTemplate(template)}
-                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                           title="Copy template"
                         >
                           <Copy className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => toggleFavorite(template)}
-                          className={`p-1.5 rounded-full hover:bg-gray-100 ${
+                          className={`p-1.5 rounded-full hover:bg-surface-sunken ${
                             template.is_favorite
-                              ? 'text-yellow-500 hover:text-yellow-600'
-                              : 'text-gray-400 hover:text-gray-600'
+                              ? 'text-caution hover:text-caution'
+                              : 'text-content-subtle hover:text-content-muted'
                           }`}
                           title={template.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
                         >
@@ -454,7 +454,7 @@ const Templates: React.FC = () => {
                         {template.description && (
                           <button
                             onClick={() => toggleTemplate(template.id)}
-                            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                            className="p-1.5 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
                             title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
                           >
                             <Info className="h-4 w-4" />
@@ -462,7 +462,7 @@ const Templates: React.FC = () => {
                         )}
                         <button
                           onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
-                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                           title="Edit template"
                         >
                           <Pencil className="h-4 w-4" />
@@ -476,8 +476,8 @@ const Templates: React.FC = () => {
               {expandedTemplates.has(template.id) && (
                 <>
                   {template.description && (
-                    <div className="px-4 py-2 border-t bg-gray-50">
-                      <p className="text-sm text-gray-600">{template.description}</p>
+                    <div className="px-4 py-2 border-t bg-surface">
+                      <p className="text-sm text-content-muted">{template.description}</p>
                     </div>
                   )}
 
@@ -492,19 +492,19 @@ const Templates: React.FC = () => {
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-content">
                                 {exercise.exercise.name}
                               </span>
                               <span className="text-xl" title={exercise.exercise.equipment_type.name}>
                                 {exercise.exercise.equipment_type.emoji}
                               </span>
                               {template.template_type === 'superset' && i % 2 === 0 && i < template.exercises.length - 1 && (
-                                <span className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                                <span className="px-1.5 py-0.5 text-xs bg-surface-sunken text-content-muted rounded">
                                   Superset
                                 </span>
                               )}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-content-subtle">
                               {exercise.default_sets} × {exercise.default_reps}
                             </div>
                           </div>
@@ -518,8 +518,8 @@ const Templates: React.FC = () => {
 
           {templates.length === 0 && (
             <div className="text-center py-12">
-              <Dumbbell className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">No templates yet. Create one or import a file.</p>
+              <Dumbbell className="h-10 w-10 text-content-subtle mx-auto mb-3" />
+              <p className="text-content-subtle text-sm">No templates yet. Create one or import a file.</p>
             </div>
           )}
         </div>

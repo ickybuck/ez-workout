@@ -59,13 +59,13 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-yellow-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-caution" />
           Personal Records
         </h3>
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
         </div>
       </div>
     );
@@ -73,12 +73,12 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
 
   if (records.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-yellow-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-caution" />
           Personal Records
         </h3>
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-content-subtle">
           No records found for this period. Keep working out to set new PRs!
         </div>
       </div>
@@ -86,12 +86,12 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Trophy className="h-5 w-5 text-yellow-600" />
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+        <Trophy className="h-5 w-5 text-caution" />
         Personal Records
       </h3>
-      <p className="text-gray-600 mb-4">Your best performances (based on estimated 1RM):</p>
+      <p className="text-content-muted mb-4">Your best performances (based on estimated 1RM):</p>
 
       <div className="space-y-2">
         {records.map((record, index) => {
@@ -101,25 +101,25 @@ const PersonalRecords: React.FC<PersonalRecordsProps> = ({ timeRange }) => {
               key={record.exerciseId}
               className={`flex items-start gap-3 p-3 rounded-lg ${
                 index < 3
-                  ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200'
-                  : 'bg-gray-50 border border-gray-200'
+                  ? 'bg-caution-soft border border-caution'
+                  : 'bg-surface border border-edge'
               }`}
             >
               {index < 3 ? (
-                <Award className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                <Award className="h-5 w-5 text-caution flex-shrink-0" />
               ) : (
-                <div className="h-5 w-5 flex items-center justify-center text-gray-400 font-semibold text-xs">
+                <div className="h-5 w-5 flex items-center justify-center text-content-subtle font-semibold text-xs">
                   {index + 1}
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <h4 className="font-semibold text-gray-900">{record.exerciseName}</h4>
-                  <p className="text-xs text-gray-500 whitespace-nowrap">
+                  <h4 className="font-semibold text-content">{record.exerciseName}</h4>
+                  <p className="text-xs text-content-subtle whitespace-nowrap">
                     {formatDistanceToNow(new Date(record.date), { addSuffix: true })}
                   </p>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-content-muted">
                   {formatWeight(record.weight)} × {record.reps} reps • Est. 1RM: {formatWeight(estimatedMax)}
                 </p>
               </div>

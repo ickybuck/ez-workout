@@ -154,12 +154,12 @@ const AddToTemplateDialog: React.FC<AddToTemplateDialogProps> = ({ exercise, onC
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-medium">Add to Template</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-content-subtle hover:text-content-subtle"
           >
             <X className="h-5 w-5" />
           </button>
@@ -168,10 +168,10 @@ const AddToTemplateDialog: React.FC<AddToTemplateDialogProps> = ({ exercise, onC
         <div className="p-4">
           {loading ? (
             <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-600"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-accent"></div>
             </div>
           ) : templates.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">
+            <p className="text-center text-content-subtle py-4">
               No templates available. Create a template first.
             </p>
           ) : (
@@ -182,13 +182,13 @@ const AddToTemplateDialog: React.FC<AddToTemplateDialogProps> = ({ exercise, onC
                   onClick={() => handleTemplateClick(template)}
                   className={`w-full flex items-center justify-between px-4 py-2 rounded text-left transition-colors duration-150 ${
                     template.has_exercise
-                      ? 'bg-emerald-50 text-emerald-700 hover:bg-red-50 hover:text-red-700'
-                      : 'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      ? 'bg-positive-soft text-positive-content hover:bg-critical-soft hover:text-critical'
+                      : 'hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent'
                   }`}
                 >
                   <span>{template.name}</span>
                   {template.has_exercise ? (
-                    <Check className="h-4 w-4 text-emerald-600 group-hover:hidden" />
+                    <Check className="h-4 w-4 text-positive group-hover:hidden" />
                   ) : (
                     <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100" />
                   )}

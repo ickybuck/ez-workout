@@ -143,7 +143,7 @@ const WorkoutDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -154,10 +154,10 @@ const WorkoutDetail: React.FC = () => {
 
   return (
     <div className="py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-surface-raised rounded-lg shadow-md p-6">
         <button
           onClick={() => navigate('/dashboard/history')}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+          className="flex items-center text-content-muted hover:text-content mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           <span className="text-sm">Back to History</span>
@@ -165,50 +165,50 @@ const WorkoutDetail: React.FC = () => {
 
         <div className="space-y-4 mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{workout.name}</h2>
-            <div className="text-sm text-gray-500">
+            <h2 className="text-2xl font-bold text-content">{workout.name}</h2>
+            <div className="text-sm text-content-subtle">
               {format(new Date(workout.start_time), 'PPpp')}
             </div>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-100">
-                <Dumbbell className="h-4 w-4 text-purple-600" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-accent-soft">
+                <Dumbbell className="h-4 w-4 text-accent-content" />
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-content">
                   {workout.exercises.length} exercises
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-content-subtle">
                   {calculateTotalReps()} total reps
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
-                <Clock className="h-4 w-4 text-blue-600" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-accent-soft">
+                <Clock className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-content">
                   {formatDuration(workout.start_time, workout.end_time)}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-content-subtle">
                   Duration
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100">
-                <RotateCcw className="h-4 w-4 text-emerald-600" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-positive-soft">
+                <RotateCcw className="h-4 w-4 text-positive" />
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-content">
                   {formatWeight(calculateTotalVolume())}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-content-subtle">
                   Total volume
                 </div>
               </div>
@@ -220,14 +220,14 @@ const WorkoutDetail: React.FC = () => {
           {workout.exercises.map((exercise, index) => (
             <div key={exercise.id} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-content">
                   {exercise.exercise.name}
                 </h3>
                 <span className="text-xl" title={exercise.exercise.equipment_type.name}>
                   {exercise.exercise.equipment_type.emoji}
                 </span>
                 {workout.template_type === 'superset' && index % 2 === 0 && index < workout.exercises.length - 1 && (
-                  <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">
+                  <span className="px-2 py-0.5 text-xs bg-accent-soft text-accent-content rounded-full">
                     Superset
                   </span>
                 )}
@@ -237,11 +237,11 @@ const WorkoutDetail: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 pl-2 pr-4 font-medium text-gray-500">#</th>
-                      <th className="text-right py-2 px-4 font-medium text-gray-500">{unit}</th>
-                      <th className="text-right py-2 px-4 font-medium text-gray-500">×</th>
-                      <th className="text-right py-2 px-4 font-medium text-gray-500">done</th>
-                      <th className="text-right py-2 pl-4 pr-2 font-medium text-gray-500">✓</th>
+                      <th className="text-left py-2 pl-2 pr-4 font-medium text-content-subtle">#</th>
+                      <th className="text-right py-2 px-4 font-medium text-content-subtle">{unit}</th>
+                      <th className="text-right py-2 px-4 font-medium text-content-subtle">×</th>
+                      <th className="text-right py-2 px-4 font-medium text-content-subtle">done</th>
+                      <th className="text-right py-2 pl-4 pr-2 font-medium text-content-subtle">✓</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -256,12 +256,12 @@ const WorkoutDetail: React.FC = () => {
                         <td className="text-right py-2 pl-4 pr-2">
                           {log.completed ? (
                             log.failed_reps > 0 ? (
-                              <span className="text-yellow-600">⚠️</span>
+                              <span className="text-caution">⚠️</span>
                             ) : (
-                              <span className="text-emerald-600">✓</span>
+                              <span className="text-positive">✓</span>
                             )
                           ) : (
-                            <span className="text-red-600">×</span>
+                            <span className="text-critical">×</span>
                           )}
                         </td>
                       </tr>

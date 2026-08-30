@@ -226,15 +226,15 @@ const History: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Workout History</h2>
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
+        <h2 className="text-2xl font-bold text-content mb-4">Workout History</h2>
 
         {settings.show_consistency_tracker && (
           <ConsistencyTracker
@@ -252,13 +252,13 @@ const History: React.FC = () => {
 
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-900">Recent Workouts</h3>
-            <span className="text-sm text-gray-500">{workouts.length}</span>
+            <h3 className="text-sm font-medium text-content">Recent Workouts</h3>
+            <span className="text-sm text-content-subtle">{workouts.length}</span>
           </div>
 
           <div className="space-y-4">
             {workouts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-content-subtle">
                 No completed workouts yet
               </div>
             ) : (
@@ -268,7 +268,7 @@ const History: React.FC = () => {
                 <div
                   key={workout.id}
                   className={`border rounded-lg hover:shadow-md transition-shadow duration-200 ${
-                    isPR ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300' : ''
+                    isPR ? 'bg-caution-soft border-caution' : ''
                   }`}
                 >
                   <div 
@@ -277,19 +277,19 @@ const History: React.FC = () => {
                   >
                     {/* First Row: Name and Type */}
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-medium text-gray-900 truncate max-w-[70%]">
+                      <h3 className="text-lg font-medium text-content truncate max-w-[70%]">
                         {workout.name}
                       </h3>
                       <div className="flex items-center gap-3">
                         {workout.template_type === 'superset' && (
-                          <div className="flex items-center gap-1 text-purple-600">
+                          <div className="flex items-center gap-1 text-accent-content">
                             <ArrowDownUp className="h-4 w-4" />
                             <span className="text-sm">Superset</span>
                           </div>
                         )}
                         <button
                           onClick={(e) => toggleWorkoutExpanded(workout.id, e)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+                          className="p-1.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
                         >
                           {expandedWorkouts.has(workout.id) ? (
                             <ChevronUp className="h-4 w-4" />
@@ -305,8 +305,8 @@ const History: React.FC = () => {
                           disabled={deleting === workout.id}
                           className={`p-1.5 rounded-full ${
                             deleting === workout.id
-                              ? 'text-gray-400 cursor-not-allowed'
-                              : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                              ? 'text-content-subtle cursor-not-allowed'
+                              : 'text-content-subtle hover:text-critical hover:bg-critical-soft'
                           }`}
                           title="Delete workout"
                         >
@@ -316,11 +316,11 @@ const History: React.FC = () => {
                     </div>
 
                     {/* Second Row: Stats */}
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className="font-medium text-gray-900">
+                    <div className="flex items-center gap-2 text-sm text-content-muted">
+                      <div className="font-medium text-content">
                         {formatVolume(calculateTotalVolume(workout))}
                       </div>
-                      <span className="text-gray-400">•</span>
+                      <span className="text-content-subtle">•</span>
                       <div>
                         {format(
                           new Date(workout.end_time),
@@ -331,16 +331,16 @@ const History: React.FC = () => {
                       </div>
                       {expandedWorkouts.has(workout.id) && (
                         <>
-                          <span className="text-gray-400">•</span>
+                          <span className="text-content-subtle">•</span>
                           <div>{format(new Date(workout.end_time), 'p')}</div>
                         </>
                       )}
-                      <span className="text-gray-400">•</span>
+                      <span className="text-content-subtle">•</span>
                       <div className="flex items-center gap-0.5">
                         <Clock className="h-4 w-4" />
                         <span>{formatDuration(workout.start_time, workout.end_time)}</span>
                       </div>
-                      <span className="text-gray-400">•</span>
+                      <span className="text-content-subtle">•</span>
                       <div className="flex items-center gap-0.5">
                         <Dumbbell className="h-4 w-4" />
                         <span>{workout.exercises.length}</span>
@@ -370,10 +370,10 @@ const History: React.FC = () => {
                               key={exercise.id}
                               className={`text-xs px-2 py-1 rounded flex items-center justify-between ${
                                 completed 
-                                  ? 'bg-green-50 text-green-700' 
+                                  ? 'bg-positive-soft text-positive-content' 
                                   : failed 
-                                    ? 'bg-red-50 text-red-700'
-                                    : 'bg-yellow-50 text-yellow-700'
+                                    ? 'bg-critical-soft text-critical'
+                                    : 'bg-caution-soft text-caution'
                               }`}
                             >
                               <div className="min-w-0 flex-1">

@@ -199,29 +199,29 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
   return (
     <div className="pt-6 border-t">
       <button onClick={onToggle} className="w-full flex items-center justify-between text-left">
-        <h3 className="text-lg font-medium text-gray-900">Rebuild Templates with AI</h3>
+        <h3 className="text-lg font-medium text-content">Rebuild Templates with AI</h3>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <ChevronUp className="h-5 w-5 text-content-subtle" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <ChevronDown className="h-5 w-5 text-content-subtle" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-6">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-content-subtle">
             Download your templates with instructions, talk them through with an AI chat, then bring
-            the result back here. Importing only ever <span className="font-medium text-gray-700">adds</span>{' '}
+            the result back here. Importing only ever <span className="font-medium text-content-muted">adds</span>{' '}
             templates — nothing is overwritten or deleted.
           </p>
 
           {/* Step 1 */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1">1. Take it to the chat</p>
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-sm font-medium text-content-muted mb-1">1. Take it to the chat</p>
+            <p className="text-xs text-content-subtle mb-3">
               The document holds your templates, your exercise list, and the rules the AI needs to
               give you something this app can read back. Weights are in{' '}
-              <span className="font-medium text-gray-600">{unit}</span>.
+              <span className="font-medium text-content-muted">{unit}</span>.
             </p>
 
             <label className="flex items-start gap-2 mb-3 cursor-pointer">
@@ -229,11 +229,11 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                 type="checkbox"
                 checked={includePerformance}
                 onChange={(e) => setIncludePerformance(e.target.checked)}
-                className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="mt-0.5 rounded border-edge-strong text-accent focus:ring-accent"
               />
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-content-muted">
                 Include my recent performance
-                <span className="block text-gray-400">
+                <span className="block text-content-subtle">
                   Real weights, reps and failed-rep rates from the last six months, so the AI can set
                   sensible loads instead of guessing. This is your training data — it leaves the app
                   only if you tick this.
@@ -245,37 +245,37 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               <button
                 onClick={() => handleDownload('md')}
                 disabled={!!busy}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 shadow-sm"
               >
                 {busy === 'md' ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <FileText className="h-4 w-4 text-blue-600" />
+                  <FileText className="h-4 w-4 text-accent" />
                 )}
                 Instructions + templates
               </button>
               <button
                 onClick={() => handleDownload('json')}
                 disabled={!!busy}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 shadow-sm"
               >
                 {busy === 'json' ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <FileJson className="h-4 w-4 text-gray-500" />
+                  <FileJson className="h-4 w-4 text-content-subtle" />
                 )}
                 Data only
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-1.5 text-center">
+            <p className="text-xs text-content-subtle mt-1.5 text-center">
               Use the first one unless you know you want the second.
             </p>
           </div>
 
           {/* Step 2 */}
-          <div className="pt-4 border-t border-gray-100">
-            <p className="text-sm font-medium text-gray-700 mb-1">2. Bring the answer back</p>
-            <p className="text-xs text-gray-400 mb-3">
+          <div className="pt-4 border-t border-edge">
+            <p className="text-sm font-medium text-content-muted mb-1">2. Bring the answer back</p>
+            <p className="text-xs text-content-subtle mb-3">
               Paste the whole reply — the prose around the code block is fine, it gets ignored.
             </p>
 
@@ -284,14 +284,14 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               onChange={(e) => setPasted(e.target.value)}
               rows={5}
               placeholder='Paste the reply here, including the ```json block…'
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
+              className="block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent text-sm font-mono"
             />
 
             <div className="grid grid-cols-2 gap-3 mt-3">
               <button
                 onClick={() => check(pasted)}
                 disabled={!!busy || !pasted.trim()}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 transition-all disabled:opacity-40 shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-surface-overlay text-content-inverse hover:bg-surface-overlay transition-all disabled:opacity-40 shadow-sm"
               >
                 {busy === 'check' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Check it
@@ -299,9 +299,9 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!!busy}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 shadow-sm"
               >
-                <Upload className="h-4 w-4 text-gray-500" />
+                <Upload className="h-4 w-4 text-content-subtle" />
                 Upload a file
               </button>
             </div>
@@ -309,28 +309,28 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
 
           {/* Problems */}
           {errors.length > 0 && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+            <div className="rounded-lg border border-critical bg-critical-soft p-3">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <p className="text-sm font-medium text-red-800">
+                <AlertTriangle className="h-4 w-4 text-critical" />
+                <p className="text-sm font-medium text-critical-content">
                   This file can’t be imported ({errors.length} problem{errors.length === 1 ? '' : 's'})
                 </p>
               </div>
               <ul className="space-y-1 mb-3 max-h-48 overflow-y-auto">
                 {errors.map((issue, i) => (
-                  <li key={i} className="text-xs text-red-700">
-                    <span className="font-mono text-red-900">{issue.path}</span> — {issue.message}
+                  <li key={i} className="text-xs text-critical">
+                    <span className="font-mono text-critical-content">{issue.path}</span> — {issue.message}
                   </li>
                 ))}
               </ul>
               <button
                 onClick={copyReport}
-                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-white border border-red-200 text-red-700 hover:bg-red-100 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium bg-surface-raised border border-critical text-critical hover:bg-critical-soft transition-colors"
               >
                 <ClipboardCopy className="h-3.5 w-3.5" />
                 Copy report for the chat
               </button>
-              <p className="text-xs text-red-600 mt-2">
+              <p className="text-xs text-critical mt-2">
                 Paste it back and it will fix all of these at once.
               </p>
             </div>
@@ -338,12 +338,12 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
 
           {/* Review */}
           {plan && (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-4">
+            <div className="rounded-lg border border-edge bg-surface p-3 space-y-4">
               <div>
-                <p className="text-sm font-medium text-gray-800">
+                <p className="text-sm font-medium text-content">
                   3. Review — nothing has been saved yet
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-content-subtle mt-0.5">
                   {plan.bundle.templates.length} template
                   {plan.bundle.templates.length === 1 ? '' : 's'} to add, with weights read as{' '}
                   <span className="font-medium">{plan.bundle.weight_unit}</span>.
@@ -353,8 +353,8 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               {warnings.length > 0 && (
                 <ul className="space-y-1">
                   {warnings.map((issue, i) => (
-                    <li key={i} className="text-xs text-amber-700">
-                      <span className="font-mono text-amber-900">{issue.path}</span> — {issue.message}
+                    <li key={i} className="text-xs text-caution">
+                      <span className="font-mono text-caution-content">{issue.path}</span> — {issue.message}
                     </li>
                   ))}
                 </ul>
@@ -362,9 +362,9 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
 
               <ul className="space-y-1">
                 {plan.bundle.templates.map((template) => (
-                  <li key={template.name} className="text-xs text-gray-700">
+                  <li key={template.name} className="text-xs text-content-muted">
                     <span className="font-medium">{template.name}</span>{' '}
-                    <span className="text-gray-400">
+                    <span className="text-content-subtle">
                       — {template.category}, {template.exercises.length} exercises
                     </span>
                   </li>
@@ -374,7 +374,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               {/* Exercises the file named that nothing matched */}
               {plan.resolutions.some((r) => !r.exerciseId || r.fuzzy) && (
                 <div>
-                  <p className="text-xs font-medium text-gray-700 mb-1.5">Exercise names</p>
+                  <p className="text-xs font-medium text-content-muted mb-1.5">Exercise names</p>
                   <div className="space-y-2">
                     {plan.resolutions
                       .filter((r) => !r.exerciseId || r.fuzzy)
@@ -382,10 +382,10 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                         const current = effectiveId(resolution.name, resolution.exerciseId) ?? '';
                         return (
                           <div key={resolution.name} className="flex items-center gap-2">
-                            <span className="text-xs text-gray-600 flex-1 truncate" title={resolution.name}>
+                            <span className="text-xs text-content-muted flex-1 truncate" title={resolution.name}>
                               {resolution.name}
                               {resolution.fuzzy && (
-                                <span className="text-amber-600"> → {resolution.matchedName}</span>
+                                <span className="text-caution"> → {resolution.matchedName}</span>
                               )}
                             </span>
                             <select
@@ -396,7 +396,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                                   [resolution.name]: e.target.value || null,
                                 }))
                               }
-                              className="text-xs px-2 py-1 border border-gray-300 rounded bg-white text-gray-700 max-w-[55%]"
+                              className="text-xs px-2 py-1 border border-edge-strong rounded bg-surface-raised text-content-muted max-w-[55%]"
                             >
                               <option value="">Skip this exercise</option>
                               {plan.availableExercises.map((exercise) => (
@@ -410,7 +410,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                       })}
                   </div>
                   {unresolvedCount > 0 && (
-                    <p className="text-xs text-amber-700 mt-1.5">
+                    <p className="text-xs text-caution mt-1.5">
                       {unresolvedCount} will be left out of the new templates.
                     </p>
                   )}
@@ -420,8 +420,8 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               {/* Name collisions */}
               {plan.collisions.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-700 mb-1">Already have these names</p>
-                  <p className="text-xs text-gray-500 mb-2">
+                  <p className="text-xs font-medium text-content-muted mb-1">Already have these names</p>
+                  <p className="text-xs text-content-subtle mb-2">
                     The new ones are added either way. Hiding the old one keeps its workout history
                     but takes it off your list.
                   </p>
@@ -439,9 +439,9 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                               return next;
                             })
                           }
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-edge-strong text-accent focus:ring-accent"
                         />
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-content-muted">
                           Hide the old “{collision.templateName}”
                         </span>
                       </label>
@@ -453,17 +453,17 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
               {/* Exercises the AI wants added */}
               {plan.bundle.proposed_exercises.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-700 mb-1">
+                  <p className="text-xs font-medium text-content-muted mb-1">
                     New exercises suggested — not added
                   </p>
-                  <p className="text-xs text-gray-500 mb-2">
+                  <p className="text-xs text-content-subtle mb-2">
                     Add these in the exercise library first if you want them, then import again.
                   </p>
                   <ul className="space-y-1">
                     {plan.bundle.proposed_exercises.map((proposed) => (
-                      <li key={proposed.name} className="text-xs text-gray-600">
+                      <li key={proposed.name} className="text-xs text-content-muted">
                         <span className="font-medium">{proposed.name}</span>
-                        {proposed.reason && <span className="text-gray-400"> — {proposed.reason}</span>}
+                        {proposed.reason && <span className="text-content-subtle"> — {proposed.reason}</span>}
                       </li>
                     ))}
                   </ul>
@@ -474,7 +474,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                 <button
                   onClick={handleImport}
                   disabled={!!busy}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all disabled:opacity-40 shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-accent text-content-inverse hover:bg-accent-hover transition-all disabled:opacity-40 shadow-sm"
                 >
                   {busy === 'import' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -487,7 +487,7 @@ const TemplateAiSection: React.FC<Props> = ({ expanded, onToggle }) => {
                 <button
                   onClick={reset}
                   disabled={!!busy}
-                  className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface transition-all disabled:opacity-50 shadow-sm"
                 >
                   Cancel
                 </button>

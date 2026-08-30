@@ -120,23 +120,23 @@ const ExerciseAdd: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard/exercises')}
-              className="text-gray-600 hover:text-gray-900"
+              className="text-content-muted hover:text-content"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-2xl font-bold text-gray-900">New Exercise</h2>
+            <h2 className="text-2xl font-bold text-content">New Exercise</h2>
           </div>
         </div>
 

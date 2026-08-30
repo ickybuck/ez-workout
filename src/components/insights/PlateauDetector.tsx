@@ -214,13 +214,13 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-orange-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-caution" />
           Plateau Detection
         </h3>
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
         </div>
       </div>
     );
@@ -228,12 +228,12 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
 
   if (plateaus.length === 0 && bodyweightPlateaus.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-green-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-positive" />
           Plateau Detection
         </h3>
-        <div className="text-gray-600">
+        <div className="text-content-muted">
           <p>Great job! No exercises showing signs of plateau. Keep up the progressive overload!</p>
         </div>
       </div>
@@ -241,18 +241,18 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <AlertCircle className="h-5 w-5 text-green-600" />
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+        <AlertCircle className="h-5 w-5 text-positive" />
         Plateau Detection
       </h3>
-      <p className="text-gray-600 mb-4">
+      <p className="text-content-muted mb-4">
         These exercises are ready for progression. Time to increase the intensity:
       </p>
 
       {plateaus.length > 0 && (
         <div className="space-y-3 mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Weighted Exercises</h4>
+          <h4 className="text-sm font-semibold text-content-muted uppercase tracking-wide">Weighted Exercises</h4>
           {plateaus.map((plateau) => {
             const isUpdating = updatingExercises.has(plateau.id);
             const isUpdated = updatedExercises.has(plateau.id);
@@ -262,26 +262,26 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                 key={plateau.id}
                 className={`border rounded-lg p-4 transition-colors ${
                   isUpdated
-                    ? 'border-blue-300 bg-blue-50'
-                    : 'border-green-200 bg-green-50'
+                    ? 'border-accent bg-accent-soft'
+                    : 'border-positive bg-positive-soft'
                 }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-gray-900">{plateau.name}</h4>
+                      <h4 className="font-semibold text-content">{plateau.name}</h4>
                       {isUpdated && (
-                        <span className="flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                        <span className="flex items-center gap-1 text-xs text-accent-content bg-accent-soft px-2 py-0.5 rounded-full">
                           <Check className="h-3 w-3" />
                           Updated
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap gap-4 text-sm text-content-muted">
                       <span>Last: {formatWeight(plateau.lastWeight)} × {plateau.lastReps} reps</span>
                       <span>Plateau: {plateau.plateauWorkouts} {plateau.plateauWorkouts === 1 ? 'workout' : 'workouts'}</span>
                       {isUpdated && (
-                        <span className="text-blue-700 font-medium">
+                        <span className="text-accent-content font-medium">
                           New: {formatWeight(plateau.defaultWeight)}
                         </span>
                       )}
@@ -293,15 +293,15 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                       disabled={isUpdating}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                         isUpdating
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          ? 'bg-surface-sunken text-content-subtle cursor-not-allowed'
                           : isUpdated
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'bg-green-600 text-white hover:bg-green-700'
+                          ? 'bg-accent text-content-inverse hover:bg-accent-hover'
+                          : 'bg-positive text-content-inverse hover:bg-positive'
                       }`}
                     >
                       {isUpdating ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-edge border-t-transparent" />
                           <span>Updating...</span>
                         </>
                       ) : (
@@ -311,7 +311,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                         </>
                       )}
                     </button>
-                    <TrendingUp className={`h-5 w-5 flex-shrink-0 ${isUpdated ? 'text-blue-600' : 'text-green-600'}`} />
+                    <TrendingUp className={`h-5 w-5 flex-shrink-0 ${isUpdated ? 'text-accent' : 'text-positive'}`} />
                   </div>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
 
       {bodyweightPlateaus.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Bodyweight Exercises</h4>
+          <h4 className="text-sm font-semibold text-content-muted uppercase tracking-wide">Bodyweight Exercises</h4>
           {bodyweightPlateaus.map((plateau) => {
             const isUpdating = updatingExercises.has(plateau.id);
             const isUpdated = updatedExercises.has(plateau.id);
@@ -332,26 +332,26 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                 key={plateau.id}
                 className={`border rounded-lg p-4 transition-colors ${
                   isUpdated
-                    ? 'border-blue-300 bg-blue-50'
-                    : 'border-purple-200 bg-purple-50'
+                    ? 'border-accent bg-accent-soft'
+                    : 'border-accent bg-accent-soft'
                 }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-gray-900">{plateau.name}</h4>
+                      <h4 className="font-semibold text-content">{plateau.name}</h4>
                       {isUpdated && (
-                        <span className="flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                        <span className="flex items-center gap-1 text-xs text-accent-content bg-accent-soft px-2 py-0.5 rounded-full">
                           <Check className="h-3 w-3" />
                           Updated
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap gap-4 text-sm text-content-muted">
                       <span>Last: {plateau.lastReps} reps</span>
                       <span>Plateau: {plateau.plateauWorkouts} {plateau.plateauWorkouts === 1 ? 'workout' : 'workouts'}</span>
                       {isUpdated && (
-                        <span className="text-blue-700 font-medium">
+                        <span className="text-accent-content font-medium">
                           New: {plateau.defaultReps} reps
                         </span>
                       )}
@@ -363,15 +363,15 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                       disabled={isUpdating}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                         isUpdating
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          ? 'bg-surface-sunken text-content-subtle cursor-not-allowed'
                           : isUpdated
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'bg-purple-600 text-white hover:bg-purple-700'
+                          ? 'bg-accent text-content-inverse hover:bg-accent-hover'
+                          : 'bg-accent text-content-inverse hover:bg-accent'
                       }`}
                     >
                       {isUpdating ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-edge border-t-transparent" />
                           <span>Updating...</span>
                         </>
                       ) : (
@@ -381,7 +381,7 @@ const PlateauDetector: React.FC<PlateauDetectorProps> = ({ timeRange }) => {
                         </>
                       )}
                     </button>
-                    <TrendingUp className={`h-5 w-5 flex-shrink-0 ${isUpdated ? 'text-blue-600' : 'text-purple-600'}`} />
+                    <TrendingUp className={`h-5 w-5 flex-shrink-0 ${isUpdated ? 'text-accent' : 'text-accent-content'}`} />
                   </div>
                 </div>
               </div>

@@ -49,21 +49,21 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-medium text-gray-900">Exercises</h3>
-          <span className="px-2 py-0.5 text-sm bg-gray-100 text-gray-600 rounded-full">
+          <h3 className="text-lg font-medium text-content">Exercises</h3>
+          <span className="px-2 py-0.5 text-sm bg-surface-sunken text-content-muted rounded-full">
             {validExercises.length}
           </span>
         </div>
         <button
           onClick={onAddClick}
-          className="flex items-center px-3 py-1.5 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          className="flex items-center px-3 py-1.5 border border-transparent rounded-md text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover"
         >
           <Plus className="h-4 w-4 mr-1" />
           Add Exercise
         </button>
       </div>
 
-      <p className="text-xs text-gray-500 -mt-2">
+      <p className="text-xs text-content-subtle -mt-2">
         Use the link between two exercises to superset them — they’re performed
         together with one rest after the pair. Unlinked exercises are straight
         sets with their own rest.
@@ -75,8 +75,8 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
           <div
             className={`flex items-start gap-4 p-3 rounded-lg ${
               isInSuperset(validExercises, index)
-                ? 'bg-blue-50 border border-blue-200'
-                : 'bg-gray-50'
+                ? 'bg-accent-soft border border-accent'
+                : 'bg-surface'
             }`}
           >
             {/* Move Buttons */}
@@ -84,14 +84,14 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               <button
                 onClick={() => onMoveExercise(index, 'up')}
                 disabled={index === 0}
-                className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30"
               >
                 <ChevronUp className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onMoveExercise(index, 'down')}
                 disabled={index === validExercises.length - 1}
-                className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                className="p-1 text-content-subtle hover:text-content-muted disabled:opacity-30"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -102,19 +102,19 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               {/* First Line: Name and Equipment */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="font-medium text-gray-900 truncate">
+                  <div className="font-medium text-content truncate">
                     {exercise.exercise.name}
                   </div>
                   <span className="text-xl" title={exercise.exercise.equipment_type.name}>
                     {exercise.exercise.equipment_type.emoji}
                   </span>
                   {exercise.exercise.is_plate_loaded && (
-                    <Scale className="h-4 w-4 text-gray-400" title="Plate loaded exercise" />
+                    <Scale className="h-4 w-4 text-content-subtle" title="Plate loaded exercise" />
                   )}
                 </div>
                 <button
                   onClick={() => onRemoveExercise(exercise.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-600"
+                  className="p-1.5 text-content-subtle hover:text-critical"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -123,7 +123,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
               {/* Second Line: Exercise Parameters */}
               <div className="flex items-baseline gap-2 text-sm">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 uppercase text-xs">s</span>
+                  <span className="text-content-subtle uppercase text-xs">s</span>
                   <input
                     type="number"
                     min="1"
@@ -132,12 +132,12 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                       const sets = parseInt(e.target.value);
                       onExerciseValuesChange(exercise.exercise.id, { sets });
                     }}
-                    className="w-8 h-7 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                    className="w-8 h-7 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-sm"
                   />
                 </div>
-                <span className="text-gray-500">×</span>
+                <span className="text-content-subtle">×</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 uppercase text-xs">r</span>
+                  <span className="text-content-subtle uppercase text-xs">r</span>
                   <input
                     type="number"
                     min="1"
@@ -146,10 +146,10 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                       const reps = parseInt(e.target.value);
                       onExerciseValuesChange(exercise.exercise.id, { reps });
                     }}
-                    className="w-8 h-7 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                    className="w-8 h-7 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-sm"
                   />
                 </div>
-                <span className="text-gray-500">@</span>
+                <span className="text-content-subtle">@</span>
                 <div className="flex items-baseline gap-1">
                   <input
                     type="number"
@@ -157,9 +157,9 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                     step="0.5"
                     value={convertWeight(exercise.default_weight || 0)}
                     onChange={e => handleWeightChange(exercise.exercise.id, e.target.value)}
-                    className="w-12 h-7 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                    className="w-12 h-7 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-sm"
                   />
-                  <span className="text-gray-500 text-xs">{unit}</span>
+                  <span className="text-content-subtle text-xs">{unit}</span>
                 </div>
               </div>
             </div>
@@ -177,8 +177,8 @@ const ExerciseList: React.FC<ExerciseListProps> = ({
                 }
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   isPairedWithNext(validExercises, index)
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-white border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-600'
+                    ? 'bg-accent text-content-inverse hover:bg-accent-hover'
+                    : 'bg-surface-raised border border-dashed border-edge-strong text-content-subtle hover:border-accent hover:text-accent'
                 }`}
               >
                 {isPairedWithNext(validExercises, index) ? (

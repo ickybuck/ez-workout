@@ -181,14 +181,14 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
           <button
             onClick={onCancel}
             disabled={saving}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="px-4 py-2 border border-edge-strong rounded-md text-sm font-medium text-content-muted hover:bg-surface focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -198,25 +198,25 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
       {/* Basic Info Section */}
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
+          <label className="block text-sm font-medium text-content-muted">Name</label>
           <input
             type="text"
             value={editForm.name || ''}
             onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Equipment Type</label>
+            <label className="block text-sm font-medium text-content-muted">Equipment Type</label>
             <select
               value={editForm.equipment_type?.id || ''}
               onChange={e => {
                 const type = equipmentTypes.find(t => t.id === e.target.value);
                 setEditForm({ ...editForm, equipment_type: type });
               }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
             >
               <option value="">Select equipment</option>
               {equipmentTypes.map(type => (
@@ -228,14 +228,14 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Body Part</label>
+            <label className="block text-sm font-medium text-content-muted">Body Part</label>
             <select
               value={editForm.body_part?.id || ''}
               onChange={e => {
                 const part = bodyParts.find(p => p.id === e.target.value);
                 setEditForm({ ...editForm, body_part: part });
               }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
             >
               <option value="">Select body part</option>
               {bodyParts.map(part => (
@@ -247,23 +247,23 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
 
         {/* Description Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label className="block text-sm font-medium text-content-muted">Description</label>
           <textarea
             value={editForm.description || ''}
             onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
             rows={2}
           />
         </div>
 
         {/* Exercise Parameters Section */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-700">Exercise Parameters</h3>
+          <h3 className="text-sm font-medium text-content-muted">Exercise Parameters</h3>
           
           <div className="space-y-3">
             {/* Sets */}
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-500">Sets</label>
+              <label className="text-sm text-content-subtle">Sets</label>
               <input
                 type="number"
                 min="1"
@@ -275,13 +275,13 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                     sets: parseInt(e.target.value),
                   },
                 })}
-                className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
               />
             </div>
 
             {/* Reps */}
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-500">Reps</label>
+              <label className="text-sm text-content-subtle">Reps</label>
               <input
                 type="number"
                 min="1"
@@ -293,26 +293,26 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                     reps: parseInt(e.target.value),
                   },
                 })}
-                className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
               />
             </div>
 
             {/* Weight */}
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-500">Weight</label>
+              <label className="text-sm text-content-subtle">Weight</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   step="0.5"
                   value={displayWeight}
                   onChange={e => handleWeightChange(parseFloat(e.target.value) || 0)}
-                  className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                  className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
                 />
-                <div className="text-sm text-gray-500 w-8">{unit}</div>
+                <div className="text-sm text-content-subtle w-8">{unit}</div>
                 {editForm.is_plate_loaded && (
                   <button
                     onClick={() => setShowPlateCalculator(true)}
-                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+                    className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
                     title="Calculate plates"
                   >
                     <Scale className="h-5 w-5" />
@@ -323,7 +323,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
 
             {/* Weight Increment */}
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-500">Weight Increment</label>
+              <label className="text-sm text-content-subtle">Weight Increment</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -331,29 +331,29 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                   step="0.1"
                   value={displayIncrement}
                   onChange={e => handleIncrementChange(parseFloat(e.target.value) || 0)}
-                  className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                  className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
                 />
-                <div className="text-sm text-gray-500 w-8">{unit}</div>
+                <div className="text-sm text-content-subtle w-8">{unit}</div>
               </div>
             </div>
 
             {/* Rep Increment */}
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-500">Rep Increment</label>
+              <label className="text-sm text-content-subtle">Rep Increment</label>
               <input
                 type="number"
                 min="1"
                 step="1"
                 value={displayRepIncrement}
                 onChange={e => handleRepIncrementChange(parseInt(e.target.value) || 1)}
-                className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
               />
             </div>
 
             {/* Bar Weight - Only show for plate loaded exercises */}
             {editForm.is_plate_loaded && (
               <div className="flex items-center justify-between">
-                <label className="text-sm text-gray-500">Bar Weight</label>
+                <label className="text-sm text-content-subtle">Bar Weight</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -361,9 +361,9 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                     step={unit === 'kg' ? "0.01" : "0.1"}
                     value={displayBarWeight}
                     onChange={e => handleBarWeightChange(parseFloat(e.target.value) || 0)}
-                    className="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right"
+                    className="w-24 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-right"
                   />
-                  <div className="text-sm text-gray-500 w-8">{unit}</div>
+                  <div className="text-sm text-content-subtle w-8">{unit}</div>
                 </div>
               </div>
             )}
@@ -378,9 +378,9 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                 type="checkbox"
                 checked={editForm.is_compound || false}
                 onChange={e => setEditForm({ ...editForm, is_compound: e.target.checked })}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-edge-strong text-accent focus:ring-accent"
               />
-              <span className="text-sm text-gray-700">Compound Exercise</span>
+              <span className="text-sm text-content-muted">Compound Exercise</span>
             </label>
           </div>
 
@@ -390,11 +390,11 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                 type="checkbox"
                 checked={editForm.is_plate_loaded || false}
                 onChange={e => setEditForm({ ...editForm, is_plate_loaded: e.target.checked })}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-edge-strong text-accent focus:ring-accent"
               />
-              <span className="text-sm text-gray-700">Plate Loaded Exercise</span>
+              <span className="text-sm text-content-muted">Plate Loaded Exercise</span>
             </label>
-            <p className="mt-1 text-xs text-gray-500 ml-6">
+            <p className="mt-1 text-xs text-content-subtle ml-6">
               Enable plate calculator for barbell and plate-loaded exercises
             </p>
           </div>
@@ -402,14 +402,14 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
 
         {/* Muscles Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Muscles Worked</label>
+          <label className="block text-sm font-medium text-content-muted mb-2">Muscles Worked</label>
           <div className="grid grid-cols-2 gap-6 border rounded-md p-4">
             {Object.entries(groupedMuscles).map(([category, muscles]) => (
               <div key={category} className="space-y-4">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category}</h3>
+                <h3 className="text-xs font-semibold text-content-subtle uppercase tracking-wider">{category}</h3>
                 
                 {/* Radio button labels at the top */}
-                <div className="flex text-xs text-gray-500 pl-8 mb-2">
+                <div className="flex text-xs text-content-subtle pl-8 mb-2">
                   <div className="w-12">n/a</div>
                   <div className="w-12">Pri</div>
                   <div className="w-12">Sec</div>
@@ -429,27 +429,27 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
                             name={`muscle-${muscle.id}`}
                             checked={!isSelected}
                             onChange={() => toggleMuscleGroup(muscle.id, false)}
-                            className="h-3 w-3 text-gray-400 border-gray-300 focus:ring-gray-500"
+                            className="h-3 w-3 text-content-subtle border-edge-strong focus:ring-edge-strong"
                           />
                           <input
                             type="radio"
                             name={`muscle-${muscle.id}`}
                             checked={isSelected && isPrimary}
                             onChange={() => toggleMuscleGroup(muscle.id, true)}
-                            className="h-3 w-3 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                            className="h-3 w-3 text-accent border-edge-strong focus:ring-accent"
                           />
                           <input
                             type="radio"
                             name={`muscle-${muscle.id}`}
                             checked={isSelected && !isPrimary}
                             onChange={() => toggleMuscleGroup(muscle.id, false)}
-                            className="h-3 w-3 text-indigo-400 border-gray-300 focus:ring-indigo-500"
+                            className="h-3 w-3 text-accent border-edge-strong focus:ring-accent"
                           />
                         </div>
                         <div className="text-sm group relative">
                           {muscle.name}
                           {muscle.description && (
-                            <div className="absolute left-0 bottom-full mb-1 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                            <div className="absolute left-0 bottom-full mb-1 w-48 p-2 bg-surface-overlay text-content-inverse text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                               {muscle.description}
                             </div>
                           )}

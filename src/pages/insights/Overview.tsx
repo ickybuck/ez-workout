@@ -145,7 +145,7 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -156,57 +156,57 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Workouts</h3>
-            <Activity className="h-5 w-5 text-blue-600" />
+            <h3 className="text-sm font-medium text-content-muted">Total Workouts</h3>
+            <Activity className="h-5 w-5 text-accent" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{metrics.totalWorkouts}</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-3xl font-bold text-content">{metrics.totalWorkouts}</p>
+          <p className="text-sm text-content-subtle mt-1">
             {timeRange === 'all' ? 'All time' : `Last ${timeRange} days`}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Volume</h3>
-            <Target className="h-5 w-5 text-green-600" />
+            <h3 className="text-sm font-medium text-content-muted">Total Volume</h3>
+            <Target className="h-5 w-5 text-positive" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{Math.round(convertWeight(metrics.totalVolume)).toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">{unit} lifted</p>
+          <p className="text-3xl font-bold text-content">{Math.round(convertWeight(metrics.totalVolume)).toLocaleString()}</p>
+          <p className="text-sm text-content-subtle mt-1">{unit} lifted</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Avg Duration</h3>
-            <Calendar className="h-5 w-5 text-orange-600" />
+            <h3 className="text-sm font-medium text-content-muted">Avg Duration</h3>
+            <Calendar className="h-5 w-5 text-caution" />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{metrics.avgWorkoutDuration}</p>
-          <p className="text-sm text-gray-500 mt-1">minutes per workout</p>
+          <p className="text-3xl font-bold text-content">{metrics.avgWorkoutDuration}</p>
+          <p className="text-sm text-content-subtle mt-1">minutes per workout</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">This Week</h3>
+            <h3 className="text-sm font-medium text-content-muted">This Week</h3>
             {weeklyChange >= 0 ? (
-              <TrendingUp className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-positive" />
             ) : (
-              <TrendingDown className="h-5 w-5 text-red-600" />
+              <TrendingDown className="h-5 w-5 text-critical" />
             )}
           </div>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-3xl font-bold text-content">
             {metrics.workoutsThisWeek}/{metrics.weeklyGoal}
           </p>
           <div className="mt-2">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-surface-sunken rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
-                  weeklyProgress >= 100 ? 'bg-green-600' : 'bg-blue-600'
+                  weeklyProgress >= 100 ? 'bg-positive' : 'bg-accent'
                 }`}
                 style={{ width: `${Math.min(weeklyProgress, 100)}%` }}
               />
             </div>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-content-subtle mt-1">
               {weeklyChange > 0 && `+${weeklyChange} from last week`}
               {weeklyChange === 0 && 'Same as last week'}
               {weeklyChange < 0 && `${weeklyChange} from last week`}
@@ -216,14 +216,14 @@ const Overview: React.FC<OverviewProps> = ({ timeRange }) => {
       </div>
 
       {metrics.mostImprovedExercise && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-sm border border-green-200 p-6">
+        <div className="bg-positive-soft rounded-lg shadow-sm border border-positive p-6">
           <div className="flex items-start gap-3">
-            <Award className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+            <Award className="h-6 w-6 text-positive flex-shrink-0 mt-1" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Most Improved Exercise</h3>
-              <p className="text-gray-700">
+              <h3 className="text-lg font-semibold text-content mb-1">Most Improved Exercise</h3>
+              <p className="text-content-muted">
                 <span className="font-semibold">{metrics.mostImprovedExercise.name}</span> has improved by{' '}
-                <span className="font-semibold text-green-600">
+                <span className="font-semibold text-positive">
                   {metrics.mostImprovedExercise.improvement}%
                 </span>{' '}
                 in volume over the selected period!

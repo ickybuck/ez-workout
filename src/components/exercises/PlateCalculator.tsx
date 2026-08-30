@@ -242,17 +242,17 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <div className="bg-surface-raised rounded-lg shadow-xl max-w-md w-full p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Plate Calculator</h3>
+            <h3 className="text-lg font-medium text-content">Plate Calculator</h3>
             {exerciseName && (
-              <p className="text-sm text-gray-500 mt-1">{exerciseName}</p>
+              <p className="text-sm text-content-subtle mt-1">{exerciseName}</p>
             )}
           </div>
           <button
             onClick={handleCancel}
-            className="p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full"
+            className="p-1.5 text-content-subtle hover:text-content-subtle hover:bg-surface-sunken rounded-full"
           >
             <X className="h-5 w-5" />
           </button>
@@ -262,16 +262,16 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         <div className="space-y-6">
           {/* Total Weight */}
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-500">Total Weight</div>
+            <div className="text-sm font-medium text-content-subtle">Total Weight</div>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => handleWeightChange(false)}
-                className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+                className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
               >
                 <Minus className="h-5 w-5" />
               </button>
               <div 
-                className="text-2xl font-mono font-semibold text-gray-900 tabular-nums w-24 text-center"
+                className="text-2xl font-mono font-semibold text-content tabular-nums w-24 text-center"
                 onClick={() => setIsEditing(true)}
               >
                 {isEditing ? (
@@ -285,7 +285,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
                         setIsEditing(false);
                       }
                     }}
-                    className="w-full text-center bg-gray-50 border border-gray-300 rounded focus:border-indigo-500 focus:ring-indigo-500"
+                    className="w-full text-center bg-surface border border-edge-strong rounded focus:border-accent focus:ring-accent"
                     autoFocus
                     step={localWeightIncrement}
                     min={barWeight}
@@ -298,7 +298,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
               </div>
               <button
                 onClick={() => handleWeightChange(true)}
-                className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
+                className="p-2 text-content-subtle hover:text-accent hover:bg-accent-soft rounded-full"
               >
                 <Plus className="h-5 w-5" />
               </button>
@@ -307,7 +307,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
 
           {/* Bar Weight */}
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-500">Bar Weight</div>
+            <div className="text-sm font-medium text-content-subtle">Bar Weight</div>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -315,15 +315,15 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
                 onChange={(e) => handleBarWeightChange(e.target.value)}
                 step={localWeightIncrement}
                 min="0"
-                className="w-24 text-right rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg tabular-nums"
+                className="w-24 text-right rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-lg tabular-nums"
               />
-              <div className="text-sm text-gray-500 w-8">{unit}</div>
+              <div className="text-sm text-content-subtle w-8">{unit}</div>
             </div>
           </div>
 
           {/* Weight Increment */}
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-500">Weight Increment</div>
+            <div className="text-sm font-medium text-content-subtle">Weight Increment</div>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -331,16 +331,16 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
                 onChange={(e) => handleWeightIncrementChange(e.target.value)}
                 step="0.1"
                 min="0.1"
-                className="w-24 text-right rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg tabular-nums"
+                className="w-24 text-right rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent text-lg tabular-nums"
               />
-              <div className="text-sm text-gray-500 w-8">{unit}</div>
+              <div className="text-sm text-content-subtle w-8">{unit}</div>
             </div>
           </div>
 
           {/* Plates Per Side */}
           {plateConfig && (
             <div className="space-y-2">
-              <div className="text-sm font-medium text-gray-500">Plates Per Side</div>
+              <div className="text-sm font-medium text-content-subtle">Plates Per Side</div>
               {plateConfig.plates.map(({ weight, count }) => (
                 <div
                   key={weight}
@@ -351,25 +351,25 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
                       {Array.from({ length: count }).map((_, i) => (
                         <div
                           key={i}
-                          className="w-1.5 h-8 bg-indigo-600 rounded"
+                          className="w-1.5 h-8 bg-accent rounded"
                           style={{
                             opacity: 0.3 + (0.7 * weight) / (unit === 'kg' ? 20 : 45),
                           }}
                         />
                       ))}
                     </div>
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-content">
                       {count} × {weight}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-500">{unit}</div>
+                  <div className="text-sm text-content-subtle">{unit}</div>
                 </div>
               ))}
             </div>
           )}
 
           {!plateConfig && (
-            <div className="text-center text-gray-500 py-4">
+            <div className="text-center text-content-subtle py-4">
               Weight is less than the bar weight
             </div>
           )}
@@ -379,14 +379,14 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-content-muted bg-surface-raised border border-edge-strong rounded-md hover:bg-surface"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!isDirty || saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-content-inverse bg-accent border border-transparent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>

@@ -60,39 +60,39 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
         onClick={onToggle}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="text-lg font-medium text-gray-900">Units & Plates</h3>
+        <h3 className="text-lg font-medium text-content">Units & Plates</h3>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <ChevronUp className="h-5 w-5 text-content-subtle" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <ChevronDown className="h-5 w-5 text-content-subtle" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Weight Unit</label>
+            <label className="block text-sm font-medium text-content-muted mb-2">Weight Unit</label>
             <div className="flex gap-4">
               <label className="flex items-center">
                 <input
                   type="radio"
                   checked={weightUnit === 'kg'}
                   onChange={() => onChange({ weight_unit: 'kg' })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="h-4 w-4 text-accent focus:ring-accent border-edge-strong"
                 />
-                <span className="ml-2 text-gray-900">Kilograms (kg)</span>
+                <span className="ml-2 text-content">Kilograms (kg)</span>
               </label>
               <label className="flex items-center">
                 <input
                   type="radio"
                   checked={weightUnit === 'lb'}
                   onChange={() => onChange({ weight_unit: 'lb' })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="h-4 w-4 text-accent focus:ring-accent border-edge-strong"
                 />
-                <span className="ml-2 text-gray-900">Pounds (lb)</span>
+                <span className="ml-2 text-content">Pounds (lb)</span>
               </label>
             </div>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-content-subtle">
               {currentUnit === 'kg' ? 'Using metric units' : 'Using imperial units'}
             </p>
           </div>
@@ -100,14 +100,14 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">Available Plates</h4>
-                <p className="text-xs text-gray-500 mt-1">
+                <h4 className="text-sm font-medium text-content">Available Plates</h4>
+                <p className="text-xs text-content-subtle mt-1">
                   Select which plates are available at your gym for the plate calculator
                 </p>
               </div>
               <button
                 onClick={handleReset}
-                className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                className="px-3 py-1 text-xs font-medium text-accent hover:text-accent-content hover:bg-accent-soft rounded-md transition-colors"
               >
                 Reset to Default
               </button>
@@ -124,8 +124,8 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
                         onClick={() => handlePlateToggleKg(plate)}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                           isSelected
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-accent text-content-inverse hover:bg-accent-hover'
+                            : 'bg-surface-sunken text-content-muted hover:bg-surface-sunken'
                         }`}
                       >
                         {plate} kg
@@ -133,7 +133,7 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-content-subtle mt-2">
                   Selected: {availablePlatesKg.length} plate{availablePlatesKg.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -148,8 +148,8 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
                         onClick={() => handlePlateToggleLb(plate)}
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                           isSelected
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-accent text-content-inverse hover:bg-accent-hover'
+                            : 'bg-surface-sunken text-content-muted hover:bg-surface-sunken'
                         }`}
                       >
                         {plate} lb
@@ -157,7 +157,7 @@ const UnitsAndPlatesSection: React.FC<UnitsAndPlatesSectionProps> = ({
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-content-subtle mt-2">
                   Selected: {availablePlatesLb.length} plate{availablePlatesLb.length !== 1 ? 's' : ''}
                 </p>
               </div>

@@ -38,14 +38,14 @@ const Insights: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Workout Insights</h1>
+        <h1 className="text-2xl font-bold text-content mb-6">Workout Insights</h1>
         {renderContent()}
       </div>
 
       {/* Secondary insights navigation - fixed above main navbar */}
-      <nav className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 z-40">
+      <nav className="fixed bottom-16 left-0 right-0 bg-surface-raised border-t border-edge z-40">
         <div className="flex items-center justify-between px-1">
           <div className="flex flex-1 overflow-x-auto">
             {insightsNavItems.map(({ id, icon: Icon, label }) => {
@@ -55,7 +55,7 @@ const Insights: React.FC = () => {
                   key={id}
                   onClick={() => setActiveView(id)}
                   className={`flex flex-col items-center py-2 px-2 min-w-[60px] ${
-                    isActive ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                    isActive ? 'text-accent' : 'text-content-muted hover:text-content'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -68,7 +68,7 @@ const Insights: React.FC = () => {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as '30' | '90' | '180' | 'all')}
-              className="text-xs px-2 py-1.5 border border-gray-300 rounded bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-xs px-2 py-1.5 border border-edge-strong rounded bg-surface-raised text-content-muted focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="30">30D</option>
               <option value="90">90D</option>

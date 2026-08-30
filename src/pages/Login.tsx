@@ -64,11 +64,11 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
+      <div className="max-w-md w-full space-y-8 p-8 bg-surface-raised rounded-lg shadow-md">
         <div className="text-center">
-          <LogIn className="mx-auto h-12 w-12 text-blue-600" />
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <LogIn className="mx-auto h-12 w-12 text-accent" />
+          <h2 className="mt-6 text-3xl font-bold text-content">
             {showForgotPassword ? 'Reset Password' : 'Sign in to your account'}
           </h2>
         </div>
@@ -78,7 +78,7 @@ const Login: React.FC = () => {
             <form className="mt-8 space-y-6" onSubmit={handleLogin}>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="block text-sm font-medium text-content-muted">
                     Email address
                   </label>
                   <input
@@ -89,11 +89,11 @@ const Login: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-edge-strong rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent"
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="block text-sm font-medium text-content-muted">
                     Password
                   </label>
                   <input
@@ -104,13 +104,13 @@ const Login: React.FC = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-edge-strong rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent"
                   />
                   <div className="mt-2 text-right">
                     <button
                       type="button"
                       onClick={() => setShowForgotPassword(true)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                      className="text-sm font-medium text-accent hover:text-accent"
                     >
                       Forgot password?
                     </button>
@@ -122,7 +122,7 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
                 >
                   {loading ? 'Signing in...' : 'Sign in'}
                 </button>
@@ -131,9 +131,9 @@ const Login: React.FC = () => {
 
             {SIGNUPS_ENABLED && (
               <div className="text-center mt-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-content-muted">
                   Don't have an account?{' '}
-                  <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                  <Link to="/register" className="font-medium text-accent hover:text-accent">
                     Sign up
                   </Link>
                 </p>
@@ -144,7 +144,7 @@ const Login: React.FC = () => {
           <>
             <form className="mt-8 space-y-6" onSubmit={handleForgotPassword}>
               <div>
-                <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="reset-email" className="block text-sm font-medium text-content-muted">
                   Email address
                 </label>
                 <input
@@ -156,9 +156,9 @@ const Login: React.FC = () => {
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-edge-strong rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent"
                 />
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-content-subtle">
                   We'll send you an email with instructions to reset your password.
                 </p>
               </div>
@@ -170,14 +170,14 @@ const Login: React.FC = () => {
                     setShowForgotPassword(false);
                     setResetEmail('');
                   }}
-                  className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="flex-1 py-2 px-4 border border-edge-strong rounded-md shadow-sm text-sm font-medium text-content-muted bg-surface-raised hover:bg-surface focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={sendingReset}
-                  className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
                 >
                   {sendingReset ? 'Sending...' : 'Send Reset Email'}
                 </button>

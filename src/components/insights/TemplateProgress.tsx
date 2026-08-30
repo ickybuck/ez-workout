@@ -79,13 +79,13 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Layout className="h-5 w-5 text-blue-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <Layout className="h-5 w-5 text-accent" />
           Template Progress
         </h3>
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
         </div>
       </div>
     );
@@ -93,12 +93,12 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
 
   if (templates.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Layout className="h-5 w-5 text-blue-600" />
+      <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+        <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+          <Layout className="h-5 w-5 text-accent" />
           Template Progress
         </h3>
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-content-subtle">
           No template-based workouts found for this period
         </div>
       </div>
@@ -106,12 +106,12 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Layout className="h-5 w-5 text-blue-600" />
+    <div className="bg-surface-raised rounded-lg shadow-sm border border-edge p-6 mb-6">
+      <h3 className="text-lg font-semibold text-content mb-4 flex items-center gap-2">
+        <Layout className="h-5 w-5 text-accent" />
         Template Progress
       </h3>
-      <p className="text-gray-600 mb-4">
+      <p className="text-content-muted mb-4">
         Track your performance across different workout templates:
       </p>
 
@@ -119,30 +119,30 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
         {templates.map((template) => (
           <div
             key={template.id}
-            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="border border-edge rounded-lg p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="font-semibold text-gray-900">{template.name}</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="font-semibold text-content">{template.name}</h4>
+                <p className="text-sm text-content-muted">
                   {template.workoutCount} workout{template.workoutCount !== 1 ? 's' : ''}
                 </p>
               </div>
               <div className="flex items-center gap-1">
                 {template.volumeTrend === 'up' && (
-                  <div className="flex items-center gap-1 text-green-600">
+                  <div className="flex items-center gap-1 text-positive">
                     <TrendingUp className="h-5 w-5" />
                     <span className="text-sm font-medium">+{template.trendPercent}%</span>
                   </div>
                 )}
                 {template.volumeTrend === 'down' && (
-                  <div className="flex items-center gap-1 text-red-600">
+                  <div className="flex items-center gap-1 text-critical">
                     <TrendingDown className="h-5 w-5" />
                     <span className="text-sm font-medium">{template.trendPercent}%</span>
                   </div>
                 )}
                 {template.volumeTrend === 'stable' && (
-                  <div className="flex items-center gap-1 text-gray-500">
+                  <div className="flex items-center gap-1 text-content-subtle">
                     <Minus className="h-5 w-5" />
                     <span className="text-sm font-medium">Stable</span>
                   </div>
@@ -152,26 +152,26 @@ const TemplateProgress: React.FC<TemplateProgressProps> = ({ timeRange }) => {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Avg Volume:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="text-content-muted">Avg Volume:</span>
+                <span className="font-semibold text-content">
                   {template.avgVolume.toLocaleString()} kg
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Last Workout:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="text-content-muted">Last Workout:</span>
+                <span className="font-semibold text-content">
                   {new Date(template.lastWorkout).toLocaleDateString()}
                 </span>
               </div>
             </div>
 
             {template.volumeTrend === 'up' && (
-              <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
+              <div className="mt-3 p-2 bg-positive-soft border border-positive rounded text-xs text-positive-content">
                 Great progress! Volume is trending upward.
               </div>
             )}
             {template.volumeTrend === 'down' && (
-              <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+              <div className="mt-3 p-2 bg-critical-soft border border-critical rounded text-xs text-critical">
                 Volume is decreasing. Consider reviewing your approach.
               </div>
             )}

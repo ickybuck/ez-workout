@@ -38,16 +38,16 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
+      <div className="max-w-md w-full space-y-8 p-8 bg-surface-raised rounded-lg shadow-md">
         <div className="text-center">
-          <UserPlus className="mx-auto h-12 w-12 text-indigo-600" />
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
+          <UserPlus className="mx-auto h-12 w-12 text-accent" />
+          <h2 className="mt-6 text-3xl font-bold text-content">Create your account</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-content-muted">
                 Email address
               </label>
               <input
@@ -58,11 +58,11 @@ const Register: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-edge-strong rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-content-muted">
                 Password
               </label>
               <input
@@ -73,7 +73,7 @@ const Register: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-2 border border-edge-strong rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent"
               />
             </div>
           </div>
@@ -82,7 +82,7 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
@@ -90,9 +90,9 @@ const Register: React.FC = () => {
         </form>
 
         <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-content-muted">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/login" className="font-medium text-accent hover:text-accent">
               Sign in
             </Link>
           </p>

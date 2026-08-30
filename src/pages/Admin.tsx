@@ -144,7 +144,7 @@ const Admin: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -155,21 +155,21 @@ const Admin: React.FC = () => {
 
   return (
     <div className="py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-surface-raised rounded-lg shadow-md p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="h-8 w-8 text-indigo-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Admin Settings</h2>
+          <Shield className="h-8 w-8 text-accent" />
+          <h2 className="text-2xl font-bold text-content">Admin Settings</h2>
         </div>
 
         <div className="space-y-6">
           {/* Exercise Management */}
           <div className="border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Exercise Management</h3>
+            <h3 className="text-lg font-medium text-content mb-4">Exercise Management</h3>
             <div className="flex gap-4">
               <button
                 onClick={handleExport}
                 disabled={exportingExercises}
-                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
               >
                 <Download className="h-4 w-4 mr-2" />
                 {exportingExercises ? 'Exporting...' : 'Export Exercises'}
@@ -187,21 +187,21 @@ const Admin: React.FC = () => {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={importing}
-                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   {importing ? 'Importing...' : 'Import Exercises'}
                 </button>
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-content-subtle">
               Export exercises to CSV, make changes, then import the updated file.
             </p>
           </div>
 
           {/* Admin Users Section */}
           <div className="border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Accounts</h3>
+            <h3 className="text-lg font-medium text-content mb-4">Accounts</h3>
             
             {/* Add Admin Form */}
             <form onSubmit={addAdmin} className="mb-6">
@@ -211,12 +211,12 @@ const Admin: React.FC = () => {
                   value={newAdminEmail}
                   onChange={(e) => setNewAdminEmail(e.target.value)}
                   placeholder="Enter email address"
-                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="flex-1 rounded-md border-edge-strong shadow-sm focus:border-accent focus:ring-accent"
                 />
                 <button
                   type="submit"
                   disabled={addingAdmin || !newAdminEmail.trim()}
-                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Admin
@@ -228,26 +228,26 @@ const Admin: React.FC = () => {
             <div className="space-y-2">
               {loadingAdmins ? (
                 <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-accent mx-auto"></div>
                 </div>
               ) : adminUsers.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No accounts found</p>
+                <p className="text-content-subtle text-center py-4">No accounts found</p>
               ) : (
                 adminUsers.map(account => (
                   <div
                     key={account.id}
-                    className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between py-2 px-3 bg-surface rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-gray-900 flex items-center gap-2">
+                      <div className="font-medium text-content flex items-center gap-2">
                         {account.email}
                         {account.is_admin && (
-                          <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded">
+                          <span className="text-xs px-2 py-0.5 bg-accent-soft text-accent-content rounded">
                             Admin
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-content-subtle">
                         Joined {new Date(account.created_at).toLocaleDateString()}
                       </div>
                     </div>
@@ -255,7 +255,7 @@ const Admin: React.FC = () => {
                       <button
                         onClick={() => removeAdmin(account.id)}
                         disabled={account.id === user?.id}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 text-content-subtle hover:text-critical hover:bg-critical-soft rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                         title={account.id === user?.id ? "You can't remove yourself" : 'Remove admin access'}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -269,15 +269,15 @@ const Admin: React.FC = () => {
 
           {/* Default Template Settings */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Default Template Settings</h3>
+            <h3 className="text-lg font-medium text-content mb-2">Default Template Settings</h3>
             <button
               onClick={setAsDefault}
               disabled={settingAsDefault}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50"
             >
               {settingAsDefault ? 'Setting as Default...' : 'Set My Data as Default Template'}
             </button>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-content-subtle">
               This will use your current exercises, settings, and templates as the default for all new users.
             </p>
           </div>

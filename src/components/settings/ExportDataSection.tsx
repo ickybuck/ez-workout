@@ -237,23 +237,23 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
         onClick={onToggle}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="text-lg font-medium text-gray-900">Export Data</h3>
+        <h3 className="text-lg font-medium text-content">Export Data</h3>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <ChevronUp className="h-5 w-5 text-content-subtle" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <ChevronDown className="h-5 w-5 text-content-subtle" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-5">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-content-subtle">
             Download your complete workout history in your preferred format. Weights are exported in{' '}
-            <span className="font-medium text-gray-700">{weightUnit}</span>.
+            <span className="font-medium text-content-muted">{weightUnit}</span>.
           </p>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <label className="block text-sm font-medium text-content-muted mb-2">Date Range</label>
             <div className="flex flex-wrap gap-2">
               {presets.map((p) => (
                 <button
@@ -261,8 +261,8 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
                   onClick={() => handlePresetClick(p.value)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     preset === p.value && !isCustomActive
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-surface-overlay text-content-inverse'
+                      : 'bg-surface-sunken text-content-muted hover:bg-surface-sunken'
                   }`}
                 >
                   {p.label}
@@ -273,34 +273,34 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+              <label className="block text-xs font-medium text-content-subtle mb-1">From</label>
               <input
                 type="date"
                 value={customStart}
                 onChange={(e) => handleCustomDateChange('start', e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+              <label className="block text-xs font-medium text-content-subtle mb-1">To</label>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => handleCustomDateChange('end', e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full rounded-md border-edge-strong shadow-sm focus:ring-accent focus:border-accent text-sm"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
             {countLoading ? (
-              <span className="flex items-center gap-1.5 text-gray-400">
+              <span className="flex items-center gap-1.5 text-content-subtle">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 Counting workouts...
               </span>
             ) : workoutCount !== null ? (
-              <span className="text-gray-600">
-                <span className="font-semibold text-gray-900">{workoutCount}</span>{' '}
+              <span className="text-content-muted">
+                <span className="font-semibold text-content">{workoutCount}</span>{' '}
                 {workoutCount === 1 ? 'workout' : 'workouts'} found in selected range
               </span>
             ) : null}
@@ -311,66 +311,66 @@ const ExportDataSection: React.FC<ExportDataSectionProps> = ({
               <button
                 onClick={() => handleExport('json')}
                 disabled={!!exporting || workoutCount === 0}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {exporting === 'json' ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <FileJson className="h-4 w-4 text-blue-600" />
+                  <FileJson className="h-4 w-4 text-accent" />
                 )}
                 Export JSON
               </button>
-              <p className="text-xs text-gray-400 text-center">Structured, AI-friendly, full detail</p>
+              <p className="text-xs text-content-subtle text-center">Structured, AI-friendly, full detail</p>
             </div>
 
             <div className="space-y-1.5">
               <button
                 onClick={() => handleExport('csv')}
                 disabled={!!exporting || workoutCount === 0}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {exporting === 'csv' ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <FileText className="h-4 w-4 text-green-600" />
+                  <FileText className="h-4 w-4 text-positive" />
                 )}
                 Export CSV
               </button>
-              <p className="text-xs text-gray-400 text-center">Compatible with Strong, Hevy, spreadsheets</p>
+              <p className="text-xs text-content-subtle text-center">Compatible with Strong, Hevy, spreadsheets</p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-edge">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium text-gray-700">Workout Templates</p>
+              <p className="text-sm font-medium text-content-muted">Workout Templates</p>
               <button
                 onClick={() => setShowFormatGuide(true)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-1 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
                 title="Import format guide"
               >
                 <HelpCircle className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-xs text-content-subtle mb-3">
               Export your templates as JSON or CSV, or import templates from a file.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => allTemplates.length > 0 ? setExportTarget(allTemplates) : toast.error('No templates to export')}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all shadow-sm"
               >
-                <Download className="h-4 w-4 text-gray-500" />
+                <Download className="h-4 w-4 text-content-subtle" />
                 Export Templates
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importing}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border border-edge bg-surface-raised text-content-muted hover:bg-surface hover:border-edge-strong transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {importing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Upload className="h-4 w-4 text-gray-500" />
+                  <Upload className="h-4 w-4 text-content-subtle" />
                 )}
                 Import Templates
               </button>

@@ -42,19 +42,19 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
         onClick={onToggle}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="text-lg font-medium text-gray-900">Display Options</h3>
+        <h3 className="text-lg font-medium text-content">Display Options</h3>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <ChevronUp className="h-5 w-5 text-content-subtle" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <ChevronDown className="h-5 w-5 text-content-subtle" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-3">
-          <div className="pb-3 border-b border-gray-200">
-            <div className="text-sm font-medium text-gray-700 mb-2">Appearance</div>
-            <div className="inline-flex rounded-lg border border-gray-300 p-0.5">
+          <div className="pb-3 border-b border-edge">
+            <div className="text-sm font-medium text-content-muted mb-2">Appearance</div>
+            <div className="inline-flex rounded-lg border border-edge-strong p-0.5">
               {themeOptions.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -63,8 +63,8 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
                   aria-pressed={preference === value}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${
                     preference === value
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-accent text-content-inverse'
+                      : 'text-content-muted hover:bg-surface-sunken'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -72,7 +72,7 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-content-subtle">
               Dark styling is being rolled out with the interface refresh; the setting is
               saved and applied now.
             </p>
@@ -83,9 +83,9 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
               type="checkbox"
               checked={showWorkoutTimer}
               onChange={(e) => onChange({ show_workout_timer: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-edge-strong rounded"
             />
-            <span className="text-gray-900">Show Workout Timer</span>
+            <span className="text-content">Show Workout Timer</span>
           </label>
 
           <label className="flex items-center space-x-3">
@@ -93,9 +93,9 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
               type="checkbox"
               checked={showExerciseTimer}
               onChange={(e) => onChange({ show_exercise_timer: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-edge-strong rounded"
             />
-            <span className="text-gray-900">Show Exercise Timer</span>
+            <span className="text-content">Show Exercise Timer</span>
           </label>
 
           <label className="flex items-center space-x-3">
@@ -103,9 +103,9 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
               type="checkbox"
               checked={showVolumeGraph}
               onChange={(e) => onChange({ show_volume_graph: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-edge-strong rounded"
             />
-            <span className="text-gray-900">Show Volume Graph</span>
+            <span className="text-content">Show Volume Graph</span>
           </label>
 
           <label className="flex items-center space-x-3">
@@ -113,9 +113,9 @@ const DisplayOptionsSection: React.FC<DisplayOptionsSectionProps> = ({
               type="checkbox"
               checked={showConsistencyTracker}
               onChange={(e) => onChange({ show_consistency_tracker: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-edge-strong rounded"
             />
-            <span className="text-gray-900">Show Workout Consistency Tracker</span>
+            <span className="text-content">Show Workout Consistency Tracker</span>
           </label>
         </div>
       )}

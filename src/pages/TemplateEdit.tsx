@@ -398,7 +398,7 @@ const TemplateEdit: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -410,16 +410,16 @@ const TemplateEdit: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-2">
-      <div className="bg-white rounded-lg shadow-md p-3">
+      <div className="bg-surface-raised rounded-lg shadow-md p-3">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard/templates')}
-              className="text-gray-600 hover:text-gray-900"
+              className="text-content-muted hover:text-content"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-content">
               {id ? 'Edit Template' : 'New Template'}
             </h2>
           </div>
@@ -427,7 +427,7 @@ const TemplateEdit: React.FC = () => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+              className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-content-inverse bg-accent hover:bg-accent-hover disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
