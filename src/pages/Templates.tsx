@@ -1,50 +1,32 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 // Edit was aliased to CreditCard, so the edit button showed a credit card and
 // read as nothing at all — the one control people look for was the one icon
 // that could not be guessed. Almost certainly an auto-import picking the wrong
 // symbol; corrected to a pencil.
-import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, Info, Dumbbell, Upload, Download, HelpCircle, Layout } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Pencil, Plus, Star, Trash2, Dumbbell, Download, Layout } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
 import ExportConfirmDialog from '../components/templates/ExportConfirmDialog';
-import ExerciseResolutionModal from '../components/templates/ExerciseResolutionModal';
-import TemplateFormatGuide from '../components/templates/TemplateFormatGuide';
-import {
-  parseTemplateFile,
-  commitTemplateImport,
-  UnresolvedExercise,
-  AvailableExercise,
-} from '../lib/templateImport';
-import { ExportedTemplate } from '../lib/templateExport';
+import { isPairedWithNext } from '../lib/supersets';
 
 interface ExportTarget {
   templates: WorkoutTemplate[];
   label: string;
 }
 
-interface PendingImport {
-  templates: ExportedTemplate[];
-  unresolved: UnresolvedExercise[];
-  availableExercises: AvailableExercise[];
-}
-
 const Templates: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
 
   const [exportTarget, setExportTarget] = useState<ExportTarget | null>(null);
-  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
-  const [showFormatGuide, setShowFormatGuide] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -256,48 +238,6 @@ const Templates: React.FC = () => {
     }
   };
 
-  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = '';
-
-    setImporting(true);
-    try {
-      const result = await parseTemplateFile(file);
-
-      if (result.unresolved.length > 0) {
-        setPendingImport(result);
-      } else {
-        await finishImport(result.templates, {}, result.availableExercises);
-      }
-    } catch (err: any) {
-      toast.error(err.message ?? 'Failed to parse file');
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const finishImport = async (
-    templates: ExportedTemplate[],
-    resolutions: Record<string, string | null>,
-    availableExercises: AvailableExercise[]
-  ) => {
-    if (!user) return;
-    setImporting(true);
-    try {
-      const result = await commitTemplateImport(user.id, templates, resolutions, availableExercises);
-      const msg = `Imported ${result.imported} template${result.imported !== 1 ? 's' : ''}` +
-        (result.skipped > 0 ? ` (${result.skipped} exercise${result.skipped !== 1 ? 's' : ''} skipped)` : '');
-      toast.success(msg);
-      setPendingImport(null);
-      loadTemplates();
-    } catch (err: any) {
-      toast.error(err.message ?? 'Failed to import templates');
-    } finally {
-      setImporting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -320,42 +260,21 @@ const Templates: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-edge">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-muted border border-edge rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        {/* Import, export-all and the format guide used to sit here as three
+            more buttons. They were a duplicate: Settings has the same file
+            import, the same export and the same format guide, alongside the
+            AI round trip they belong with. One line pointing there leaves this
+            screen for the thing it is actually for — the list. */}
+        <p className="mb-4 pb-4 border-b border-edge text-sm text-content-subtle">
+          Importing and exporting templates lives in{' '}
+          <Link
+            to="/dashboard/settings"
+            className="text-accent hover:underline font-medium"
           >
-            <Upload className="h-3.5 w-3.5" />
-            Import
-          </button>
-
-          {templates.length > 0 && (
-            <button
-              onClick={() => setExportTarget({ templates, label: 'All templates' })}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-muted border border-edge rounded-lg hover:bg-surface transition-colors"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export All
-            </button>
-          )}
-
-          <button
-            onClick={() => setShowFormatGuide(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-content-subtle hover:text-content-muted hover:bg-surface rounded-lg transition-colors"
-          >
-            <HelpCircle className="h-3.5 w-3.5" />
-            Format Guide
-          </button>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,.csv"
-          className="hidden"
-          onChange={handleFileSelected}
-        />
+            Settings
+          </Link>
+          . Export one template with the arrow on its row.
+        </p>
 
         <div className="space-y-4">
           {templates.map((template, index) => (
@@ -387,12 +306,18 @@ const Templates: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center">
                       <div className="flex-1 flex items-center gap-2 min-w-0 mr-4">
-                        {/* Tapping the name is what everyone tries first, so it
-                            opens the editor rather than doing nothing. */}
+                        {/* The name opens the details rather than the editor.
+                            It used to open the editor, on the reasoning that
+                            tapping the name is what everyone tries first —
+                            still true, but what they are usually after is
+                            "what is in this one", and editing has a pencil
+                            two inches to the right. This also retires the
+                            info icon from a row that had six. */}
                         <button
-                          onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
+                          onClick={() => toggleTemplate(template.id)}
                           className="text-lg font-medium text-content truncate hover:text-accent transition-colors text-left"
-                          title="Edit template"
+                          title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
+                          aria-expanded={expandedTemplates.has(template.id)}
                         >
                           {template.name}
                         </button>
@@ -416,7 +341,7 @@ const Templates: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Order: delete, export, copy, favourite, info, edit. */}
+                      {/* Order: delete, export, copy, favourite, edit. */}
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleDeleteTemplate(template.id)}
@@ -450,17 +375,6 @@ const Templates: React.FC = () => {
                         >
                           <Star className="h-4 w-4" fill={template.is_favorite ? 'currentColor' : 'none'} />
                         </button>
-                        {/* Only when there is a description, rather than a
-                            button that would expand nothing. */}
-                        {template.description && (
-                          <button
-                            onClick={() => toggleTemplate(template.id)}
-                            className="p-2.5 text-content-subtle hover:text-content-muted rounded-full hover:bg-surface-sunken transition-colors"
-                            title={expandedTemplates.has(template.id) ? 'Hide details' : 'Show details'}
-                          >
-                            <Info className="h-4 w-4" />
-                          </button>
-                        )}
                         <button
                           onClick={() => navigate(`/dashboard/templates/${template.id}/edit`)}
                           className="p-2.5 text-content-subtle hover:text-content-muted hover:bg-surface-sunken rounded-full"
@@ -483,10 +397,11 @@ const Templates: React.FC = () => {
                   )}
 
                   <div className="border-t divide-y">
-                    {template.exercises
-                      .filter(ex => ex?.exercise && ex.exercise?.equipment_type)
-                      .sort((a, b) => a.order_index - b.order_index)
-                      .map((exercise, i) => (
+                    {(() => {
+                      const ordered = template.exercises
+                        .filter(ex => ex?.exercise && ex.exercise?.equipment_type)
+                        .sort((a, b) => a.order_index - b.order_index);
+                      return ordered.map((exercise, i) => (
                         <div
                           key={exercise.id}
                           className="flex items-center justify-between py-2 px-4"
@@ -499,7 +414,17 @@ const Templates: React.FC = () => {
                               <span className="text-xl" title={exercise.exercise.equipment_type.name}>
                                 {exercise.exercise.equipment_type.emoji}
                               </span>
-                              {template.template_type === 'superset' && i % 2 === 0 && i < template.exercises.length - 1 && (
+                              {/* Read from the stored pairing, not from
+                                  position. This said `template_type ===
+                                  'superset' && i % 2 === 0`, the adjacency
+                                  rule superset_group replaced: it labelled
+                                  every other exercise in a template flagged
+                                  superset whether or not those two were
+                                  paired, and labelled nothing at all in a
+                                  template flagged regular that pairs some of
+                                  its exercises — which is what every template
+                                  the AI round trip produces looks like. */}
+                              {isPairedWithNext(ordered, i) && !isPairedWithNext(ordered, i - 1) && (
                                 <span className="px-1.5 py-0.5 text-xs bg-surface-sunken text-content-muted rounded">
                                   Superset
                                 </span>
@@ -510,7 +435,8 @@ const Templates: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      ))}
+                      ));
+                    })()}
                   </div>
                 </>
               )}
@@ -546,20 +472,6 @@ const Templates: React.FC = () => {
         />
       )}
 
-      {pendingImport && (
-        <ExerciseResolutionModal
-          unresolved={pendingImport.unresolved}
-          availableExercises={pendingImport.availableExercises}
-          onConfirm={(resolutions) =>
-            finishImport(pendingImport.templates, resolutions, pendingImport.availableExercises)
-          }
-          onCancel={() => setPendingImport(null)}
-        />
-      )}
-
-      {showFormatGuide && (
-        <TemplateFormatGuide onClose={() => setShowFormatGuide(false)} />
-      )}
     </div>
   );
 };

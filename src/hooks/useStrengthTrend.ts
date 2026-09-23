@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllPages, type Page } from '../lib/paging';
 import { useAuth } from '../contexts/AuthContext';
 import {
   bestOneRepMax,
@@ -77,23 +78,34 @@ export function useStrengthTrend(timeRange: '30' | '90' | '180' | 'all') {
       const days = DAYS[timeRange] ?? 180;
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
-        .from('exercise_logs')
-        .select(
-          `weight, reps, failed_reps, extra_reps,
-           workout_exercise:workout_exercise_id(
-             exercise:exercise_id(id, name),
-             workout:workout_id(user_id, start_time, end_time)
-           )`,
-        )
-        .gte('created_at', since);
-
-      if (cancelled) return;
-      if (error || !data) {
+      // Paged. Both the default 180-day range and "all" are past the 1,000-row
+      // cap on this table, and a trend drawn from the oldest slice of its own
+      // window is a trend that stops before the present (EZ-35).
+      let data: Row[];
+      try {
+        data = await fetchAllPages<Row>((from, to) =>
+          supabase
+            .from('exercise_logs')
+            .select(
+              `id, weight, reps, failed_reps, extra_reps,
+               workout_exercise:workout_exercise_id(
+                 exercise:exercise_id(id, name),
+                 workout:workout_id(user_id, start_time, end_time)
+               )`,
+            )
+            .gte('created_at', since)
+            .order('created_at', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to) as unknown as PromiseLike<Page<Row>>,
+        );
+      } catch (error) {
+        if (cancelled) return;
         console.error('Could not load strength trend:', error);
         setLoading(false);
         return;
       }
+
+      if (cancelled) return;
 
       // Group sets by exercise and session date. Ownership and the finished
       // test are applied here rather than in the query, because both live on an
@@ -103,7 +115,7 @@ export function useStrengthTrend(timeRange: '30' | '90' | '180' | 'all') {
         { name: string; sessions: Map<string, Row[]> }
       >();
 
-      for (const row of data as unknown as Row[]) {
+      for (const row of data) {
         const exercise = row.workout_exercise?.exercise;
         const workout = row.workout_exercise?.workout;
         if (!exercise || !workout || workout.user_id !== user.id || !workout.end_time) continue;

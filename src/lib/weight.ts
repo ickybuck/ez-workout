@@ -51,6 +51,40 @@ export function convert(value: number, from: WeightUnit, to: WeightUnit): number
 }
 
 /**
+ * The step a user is offered when nothing else says otherwise.
+ *
+ * Stored in kilograms like every other weight, but chosen in the unit the
+ * plates are actually marked in. 2.3 kg was the old answer everywhere, picked
+ * back in 2025 as "about five pounds" — and it shows in the app as 5.07 lb,
+ * which is not a step anybody takes. Five pounds is 2.267962 kg; the pounds
+ * user gets exactly that, and the kilogram user gets 2.5, which is what the
+ * plates on that side of the Atlantic come in.
+ *
+ * Note this is the same number to one decimal place in kilograms — 2.3 — so
+ * the kilogram display does not change. Only the pounds one stops lying.
+ */
+export function defaultIncrementKg(unit: WeightUnit): number {
+  return unit === 'lb' ? toKg(5, 'lb') : 2.5;
+}
+
+/**
+ * Snap a converted increment onto the unit's own step.
+ *
+ * A kilogram step is never a round number of pounds: 4.5 kg is 9.92 lb, 9.1 kg
+ * is 20.06. Offering 9.92 in an editable field is both ugly and an invitation
+ * to "correct" it to something slightly different, which is how the stored
+ * weights drifted in the first place (EZ-11, and the 2026-08-29 snap).
+ *
+ * Lives here rather than in the plate calculator, which is where it used to be
+ * — one screen rounding the display while every other screen showed the raw
+ * conversion is how 5.07 lb stayed visible for a year.
+ */
+export function snapIncrement(display: number, unit: WeightUnit): number {
+  const step = unit === 'lb' ? 1 : 0.5;
+  return Math.max(step, Math.round(display / step) * step);
+}
+
+/**
  * Parse user input in `unit` into kilograms for storage.
  * Returns 0 for anything unparseable, matching the previous behaviour — the
  * forms rely on it rather than handling NaN themselves.

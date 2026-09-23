@@ -7,9 +7,12 @@ import { Exercise } from '../types/exercise';
 import { useAuth } from '../contexts/AuthContext';
 import { useExerciseData } from '../hooks/useExerciseData';
 import ExerciseFormV2 from '../components/exercises/ExerciseFormV2';
+import { useWeightUnit } from '../hooks/useWeightUnit';
+import { defaultIncrementKg } from '../lib/weight';
 
 const ExerciseAdd: React.FC = () => {
   const { user } = useAuth();
+  const { unit } = useWeightUnit();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {
@@ -33,7 +36,7 @@ const ExerciseAdd: React.FC = () => {
       sets: 3,
       reps: 10,
       weight: 0,
-      weight_increment: 2.3, // Changed from 2.5 to 2.3
+      weight_increment: defaultIncrementKg(unit),
     },
   });
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<Array<{ id: string; is_primary: boolean }>>([]);
@@ -89,7 +92,7 @@ const ExerciseAdd: React.FC = () => {
           sets: editForm.defaults?.sets || 3,
           reps: editForm.defaults?.reps || 10,
           weight: editForm.defaults?.weight || 0,
-          weight_increment: editForm.defaults?.weight_increment || 2.3, // Changed from 2.5 to 2.3
+          weight_increment: editForm.defaults?.weight_increment || defaultIncrementKg(unit),
         });
 
       if (defaultsError) throw defaultsError;

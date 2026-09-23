@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllPages, type Page } from '../lib/paging';
 import { useAuth } from '../contexts/AuthContext';
 import {
   summariseEffectiveSets,
@@ -48,35 +49,47 @@ export function useMuscleBalance(timeRange: '30' | '90' | '180' | 'all') {
       const days = DAYS[timeRange] ?? 180;
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
-        .from('exercise_logs')
-        .select(
-          `weight, reps, failed_reps, extra_reps,
-           workout_exercise:workout_exercise_id(
-             exercise:exercise_id(
-               name,
-               muscle_groups:exercise_muscle_groups(
-                 is_primary,
-                 muscle_group:muscle_group_id(name)
-               )
-             ),
-             workout:workout_id(user_id, start_time, end_time)
-           )`,
-        )
-        .gte('created_at', since);
-
-      if (cancelled) return;
-      if (error || !data) {
+      // Paged. Both the default 180-day range and "all" are past the 1,000-row
+      // cap on this table, so an unpaged select would build the whole balance
+      // reading from the oldest slice of the window — and this is the screen
+      // that says which muscles are under-trained (EZ-35).
+      let data: Row[];
+      try {
+        data = await fetchAllPages<Row>((from, to) =>
+          supabase
+            .from('exercise_logs')
+            .select(
+              `id, weight, reps, failed_reps, extra_reps,
+               workout_exercise:workout_exercise_id(
+                 exercise:exercise_id(
+                   name,
+                   muscle_groups:exercise_muscle_groups(
+                     is_primary,
+                     muscle_group:muscle_group_id(name)
+                   )
+                 ),
+                 workout:workout_id(user_id, start_time, end_time)
+               )`,
+            )
+            .gte('created_at', since)
+            .order('created_at', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to) as unknown as PromiseLike<Page<Row>>,
+        );
+      } catch (error) {
+        if (cancelled) return;
         console.error('Could not load muscle balance:', error);
         setLoading(false);
         return;
       }
 
+      if (cancelled) return;
+
       const sets: CountableSet[] = [];
       let earliest: string | null = null;
       let latest: string | null = null;
 
-      for (const row of data as unknown as Row[]) {
+      for (const row of data) {
         const exercise = row.workout_exercise?.exercise;
         const workout = row.workout_exercise?.workout;
 

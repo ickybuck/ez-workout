@@ -137,19 +137,32 @@ intact rather than deleting it.
 No other value is accepted.
 
 **5. \`template_type\` must be one of:** ${TEMPLATE_TYPES.map((t) => `\`${t}\``).join(', ')}.
-Use \`superset\` only when the exercises are genuinely meant to be alternated
-without rest between them.
+It describes the template as a whole. Which exercises are actually paired is
+said per exercise, in \`superset_group\` — see the next rule.
 
-**6. \`order_index\` runs 0, 1, 2, …** in the order the exercises should be
+**6. \`superset_group\` says what is performed together.**
+Exercises carrying the same number are one superset; \`null\` is a straight set
+with its own rest. Two rules, both enforced on import:
+
+- Members of a group must be **consecutive** in \`order_index\`. A group split
+  by another exercise cannot be performed as written, so it gets broken up.
+- A group needs **at least two** members. A group of one is a straight set and
+  is stored as \`null\`.
+
+Number the groups 0, 1, 2, … down the template. Leave \`superset_group\` as
+\`null\` — or leave it out — when an exercise is done on its own.
+
+**7. \`order_index\` runs 0, 1, 2, …** in the order the exercises should be
 performed. Order matters for real reasons: pairing complementary movements, and
 the physical layout of the gym — putting exercises that share a machine or a
-corner next to each other saves crossing the floor mid-workout.
+corner next to each other saves crossing the floor mid-workout. It is also what
+makes a superset legible: the pair sits together in the list.
 
-**7. \`default_sets\` and \`default_reps\` are whole numbers of 1 or more.**
+**8. \`default_sets\` and \`default_reps\` are whole numbers of 1 or more.**
 \`default_weight\` is 0 or more; 0 is correct for bodyweight movements and
 planks.
 
-**8. Keep \`schema_version\` as \`"${BUNDLE_SCHEMA_VERSION}"\`.**
+**9. Keep \`schema_version\` as \`"${BUNDLE_SCHEMA_VERSION}"\`.**
 
 If the app rejects the file it produces a list of problems that can be pasted
 straight back here. Fix all of them and return the whole corrected file, not a
@@ -175,7 +188,24 @@ patch.
           "exercise_name": "Bench Press",
           "default_sets": 3,
           "default_reps": 10,
-          "default_weight": ${unit === 'lb' ? '185' : '84'}
+          "default_weight": ${unit === 'lb' ? '185' : '84'},
+          "superset_group": null
+        },
+        {
+          "order_index": 1,
+          "exercise_name": "Lateral Raises",
+          "default_sets": 3,
+          "default_reps": 12,
+          "default_weight": ${unit === 'lb' ? '60' : '27'},
+          "superset_group": 0
+        },
+        {
+          "order_index": 2,
+          "exercise_name": "Face Pulls",
+          "default_sets": 3,
+          "default_reps": 12,
+          "default_weight": ${unit === 'lb' ? '65' : '30'},
+          "superset_group": 0
         }
       ]
     }

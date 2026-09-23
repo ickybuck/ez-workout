@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Minus } from 'lucide-react';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { defaultIncrementKg, snapIncrement } from '../../lib/weight';
 import { PlateConfiguration } from '../../types/exercise';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
@@ -24,20 +25,6 @@ const defaultBarWeight = (exerciseName: string | undefined, unit: 'kg' | 'lb'): 
   const smith = exerciseName?.toLowerCase().includes('smith') ?? false;
   if (smith) return unit === 'kg' ? 11.34 : 25;
   return unit === 'kg' ? 20 : 45;
-};
-
-/**
- * Snap a converted increment onto the unit's own step.
- *
- * Increments are stored in kilograms and a kilogram step is never a round
- * number of pounds: 4.5 kg is 9.92 lb. This is the same rounding the set
- * stepper already does — without it the field offers 9.92 for editing, which
- * is both ugly and an invitation to "correct" it into a slightly different
- * number that then drifts the stored weights.
- */
-const snapIncrement = (display: number, unit: 'kg' | 'lb'): number => {
-  const step = unit === 'lb' ? 1 : 0.5;
-  return Math.max(step, Math.round(display / step) * step);
 };
 
 interface PlateCalculatorProps {
@@ -100,7 +87,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         const fallbackBar = getDefaultBarWeight();
         setBarWeight(fallbackBar);
         setInitialBarWeight(fallbackBar);
-        const defaultIncrement = snapIncrement(convertWeight(2.3), unit);
+        const defaultIncrement = snapIncrement(convertWeight(defaultIncrementKg(unit)), unit);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
         setDefaultsLoaded(true);
@@ -130,7 +117,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         if (data && data.weight_increment !== null) {
           displayWeightIncrement = snapIncrement(convertWeight(data.weight_increment), unit);
         } else {
-          displayWeightIncrement = snapIncrement(convertWeight(2.3), unit);
+          displayWeightIncrement = snapIncrement(convertWeight(defaultIncrementKg(unit)), unit);
         }
 
         setBarWeight(displayBarWeight);
@@ -143,7 +130,7 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
         const fallbackBar = getDefaultBarWeight();
         setBarWeight(fallbackBar);
         setInitialBarWeight(fallbackBar);
-        const defaultIncrement = snapIncrement(convertWeight(2.3), unit);
+        const defaultIncrement = snapIncrement(convertWeight(defaultIncrementKg(unit)), unit);
         setLocalWeightIncrement(defaultIncrement);
         setInitialWeightIncrement(defaultIncrement);
         setDefaultsLoaded(true);

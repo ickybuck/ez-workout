@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { convert, parseInput, format, formatVolume, toKg, fromKg , type WeightUnit } from './weight';
+import {
+  convert,
+  parseInput,
+  format,
+  formatVolume,
+  toKg,
+  fromKg,
+  defaultIncrementKg,
+  snapIncrement,
+  type WeightUnit,
+} from './weight';
 
 /**
  * The cases that matter here are round-trips, not conversions in isolation.
@@ -155,5 +165,39 @@ describe('stepping a weight in the unit the user sees', () => {
 
   it('uses a half-kilo grain for metric, since 0.25 kg plates are rare', () => {
     expect(fromKg(step(100, 2.5, 'kg'), 'kg')).toBeCloseTo(102.5, 6);
+  });
+});
+
+describe('defaultIncrementKg', () => {
+  it('is exactly five pounds for a pounds user', () => {
+    // The bug: 2.3 kg was the default everywhere, chosen in 2025 as "about
+    // five pounds". It shows as 5.07 lb, which is not a step anyone takes.
+    expect(fromKg(defaultIncrementKg('lb'), 'lb')).toBeCloseTo(5, 6);
+  });
+
+  it('is a plate step for a kilogram user', () => {
+    expect(defaultIncrementKg('kg')).toBe(2.5);
+  });
+
+  it('still reads as 2.3 kg, so the kilogram display does not move', () => {
+    expect(Number(fromKg(defaultIncrementKg('lb'), 'kg').toFixed(1))).toBe(2.3);
+  });
+});
+
+describe('snapIncrement', () => {
+  it('rounds a converted kilogram step onto a whole pound', () => {
+    expect(snapIncrement(fromKg(2.3, 'lb'), 'lb')).toBe(5); // 5.07
+    expect(snapIncrement(fromKg(4.5, 'lb'), 'lb')).toBe(10); // 9.92
+    expect(snapIncrement(fromKg(9.1, 'lb'), 'lb')).toBe(20); // 20.06
+  });
+
+  it('rounds to half a kilogram for a kilogram user', () => {
+    expect(snapIncrement(2.3, 'kg')).toBe(2.5);
+    expect(snapIncrement(4.4, 'kg')).toBe(4.5);
+  });
+
+  it('never snaps to zero, which would make the stepper do nothing', () => {
+    expect(snapIncrement(0, 'lb')).toBe(1);
+    expect(snapIncrement(0.1, 'kg')).toBe(0.5);
   });
 });

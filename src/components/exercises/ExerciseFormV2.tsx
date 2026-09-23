@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scale } from 'lucide-react';
 import { EquipmentType, BodyPart, MuscleGroup } from '../../types/exercise';
 import { useWeightUnit } from '../../hooks/useWeightUnit';
+import { defaultIncrementKg, snapIncrement } from '../../lib/weight';
 import PlateCalculator from './PlateCalculator';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
@@ -52,7 +53,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
   const [saving, setSaving] = useState(false);
   const [showPlateCalculator, setShowPlateCalculator] = useState(false);
   const [displayWeight, setDisplayWeight] = useState(convertWeight(editForm.defaults?.weight || 0));
-  const [displayIncrement, setDisplayIncrement] = useState(convertWeight(editForm.defaults?.weight_increment || 2.3));
+  const [displayIncrement, setDisplayIncrement] = useState(snapIncrement(convertWeight(editForm.defaults?.weight_increment ?? defaultIncrementKg(unit)), unit));
   const [displayRepIncrement, setDisplayRepIncrement] = useState(editForm.defaults?.rep_increment || 1);
   const [displayBarWeight, setDisplayBarWeight] = useState(convertWeight(editForm.defaults?.bar_weight || 20, undefined, true));
 
@@ -89,7 +90,9 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
           },
         });
         setDisplayWeight(convertWeight(data.weight));
-        setDisplayIncrement(convertWeight(data.weight_increment));
+        setDisplayIncrement(
+          snapIncrement(convertWeight(data.weight_increment ?? defaultIncrementKg(unit)), unit),
+        );
         setDisplayRepIncrement(data.rep_increment || 1);
         setDisplayBarWeight(convertWeight(data.bar_weight || 20, undefined, true));
       }
@@ -102,7 +105,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
   // Update display values when unit changes or form data changes
   useEffect(() => {
     setDisplayWeight(convertWeight(editForm.defaults?.weight || 0));
-    setDisplayIncrement(convertWeight(editForm.defaults?.weight_increment || 2.3));
+    setDisplayIncrement(snapIncrement(convertWeight(editForm.defaults?.weight_increment ?? defaultIncrementKg(unit)), unit));
     setDisplayRepIncrement(editForm.defaults?.rep_increment || 1);
     setDisplayBarWeight(convertWeight(editForm.defaults?.bar_weight || 20, undefined, true));
   }, [editForm.defaults?.weight, editForm.defaults?.weight_increment, editForm.defaults?.rep_increment, editForm.defaults?.bar_weight, unit]);
@@ -468,7 +471,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
           <PlateCalculator
             weight={editForm.defaults?.weight || 0}
             onWeightChange={handleWeightChange}
-            weightIncrement={editForm.defaults?.weight_increment || 2.3}
+            weightIncrement={editForm.defaults?.weight_increment || defaultIncrementKg(unit)}
             isOpen={showPlateCalculator}
             onClose={handlePlateCalculatorClose}
             exerciseId={exerciseId}

@@ -7,6 +7,7 @@ import { Exercise } from '../types/exercise';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdminStatus } from '../hooks/useAdminStatus';
 import { useWeightUnit } from '../hooks/useWeightUnit';
+import { defaultIncrementKg } from '../lib/weight';
 import { useExerciseData } from '../hooks/useExerciseData';
 import AddToTemplateDialog from '../components/exercises/AddToTemplateDialog';
 
@@ -30,7 +31,7 @@ const ExerciseLibraryV2: React.FC = () => {
   const navigate = useNavigate();
   const { isAdmin } = useAdminStatus();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { formatWeight } = useWeightUnit();
+  const { formatWeight, unit } = useWeightUnit();
   const {
     exercises,
     equipmentTypes,
@@ -146,7 +147,7 @@ const ExerciseLibraryV2: React.FC = () => {
             sets: 3,
             reps: 10,
             weight: 0,
-            weight_increment: 2.3,
+            weight_increment: defaultIncrementKg(unit),
           });
 
         if (insertError) throw insertError;

@@ -334,3 +334,80 @@ describe('the instruction document round trip', () => {
     expect(errorsOf(reply)[0].message).toContain('Not valid JSON');
   });
 });
+
+describe('superset groups', () => {
+  const grouped = (groups: Array<number | null>) =>
+    validBundle({
+      templates: [
+        {
+          ...validTemplate,
+          exercises: groups.map((group, i) => ({
+            order_index: i,
+            exercise_name: `Exercise ${i}`,
+            default_sets: 3,
+            default_reps: 10,
+            default_weight: 100,
+            superset_group: group,
+          })),
+        },
+      ],
+    });
+
+  const groupsOf = (text: string) =>
+    parseBundle(text).bundle?.templates[0].exercises.map((e) => e.superset_group);
+
+  it('keeps a declared pair', () => {
+    expect(groupsOf(grouped([null, 0, 0, null]))).toEqual([null, 0, 0, null]);
+  });
+
+  it('renumbers groups so they run 0, 1, 2 down the template', () => {
+    // The model is free to label them 7 and 4; storage is not.
+    expect(groupsOf(grouped([7, 7, null, 4, 4]))).toEqual([0, 0, null, 1, 1]);
+  });
+
+  it('treats a group of one as the straight set it is, and says so', () => {
+    const text = grouped([0, null, null]);
+    expect(groupsOf(text)).toEqual([null, null, null]);
+
+    const warning = parseBundle(text).issues.find((i) => i.severity === 'warning');
+    expect(warning?.message).toContain('only one exercise');
+  });
+
+  it('breaks up a group split by another exercise, and says so', () => {
+    // Pairing 0 with 2 cannot be performed as written — you would have to walk
+    // away mid-superset. Silently keeping the number would store a state the
+    // editor cannot draw.
+    const text = grouped([0, null, 0]);
+    expect(groupsOf(text)).toEqual([null, null, null]);
+
+    const warning = parseBundle(text).issues.find((i) => i.severity === 'warning');
+    expect(warning?.message).toContain('split by other exercises');
+  });
+
+  it('rejects a group id that is not a whole number of 0 or more', () => {
+    const errors = errorsOf(grouped([-1, -1, null]));
+    expect(errors.some((e) => e.path.endsWith('.superset_group'))).toBe(true);
+  });
+
+  it('reads a 2.0 file with no groups as all straight sets', () => {
+    // Backward compatibility is the whole reason 2.0 stays supported: those
+    // files had no way to say it, so all straight sets is what they meant.
+    const text = validBundle({ schema_version: '2.0' });
+    const { bundle, issues } = parseBundle(text);
+    expect(bundle?.templates[0].exercises.every((e) => e.superset_group === null)).toBe(true);
+    expect(issues.filter((i) => i.severity === 'error')).toHaveLength(0);
+  });
+
+  it('survives the round trip through the instruction document', async () => {
+    // The bug: pairing went out, came back as straight sets, and the only
+    // surviving signal was template_type.
+    const { buildInstructionDocument } = await import('./templateInstructions');
+    const text = grouped([null, 0, 0, 1, 1]);
+    const { bundle } = parseBundle(text);
+    const reparsed = parseBundle(buildInstructionDocument(bundle!));
+
+    expect(reparsed.bundle?.templates[0].exercises.map((e) => e.superset_group)).toEqual([
+      null, 0, 0, 1, 1,
+    ]);
+  });
+});

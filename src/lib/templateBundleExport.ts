@@ -7,6 +7,8 @@
  */
 
 import { supabase } from './supabase';
+import { fetchAllPages, type Page } from './paging';
+import { normalise } from './supersets';
 import { fromKg, type WeightUnit } from './weight';
 import {
   BUNDLE_SCHEMA_VERSION,
@@ -76,6 +78,7 @@ interface TemplateRow {
     default_sets: number | null;
     default_reps: number | null;
     default_weight: number | null;
+    superset_group: number | null;
     exercise: { name: string } | null;
   }> | null;
 }
@@ -99,7 +102,7 @@ export async function fetchTemplatesForBundle(
     .select(
       `name, description, template_type, category, is_hidden,
        exercises:template_exercises(
-         order_index, default_sets, default_reps, default_weight,
+         order_index, default_sets, default_reps, default_weight, superset_group,
          exercise:exercise_id(name)
        )`,
     )
@@ -115,20 +118,27 @@ export async function fetchTemplatesForBundle(
       description: row.description,
       template_type: (row.template_type === 'superset' ? 'superset' : 'regular') as TemplateType,
       category: (row.category ?? 'Whole Body') as TemplateCategory,
-      exercises: (row.exercises ?? [])
-        .filter((ex) => !!ex.exercise?.name)
-        .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
-        .map((ex, index) => ({
-          order_index: index,
-          exercise_name: ex.exercise!.name,
-          default_sets: ex.default_sets ?? 3,
-          default_reps: ex.default_reps ?? 10,
-          default_weight: round(fromKg(ex.default_weight ?? 0, unit)),
-        })),
+      // Pairing travels with the exercises, and travels through `normalise`
+      // on the way out. A row dropped for a missing exercise name could
+      // otherwise leave a group with one member or a gap in the middle of it,
+      // and the file would describe a superset that cannot be performed.
+      exercises: normalise(
+        (row.exercises ?? [])
+          .filter((ex) => !!ex.exercise?.name)
+          .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+          .map((ex, index) => ({
+            order_index: index,
+            exercise_name: ex.exercise!.name,
+            default_sets: ex.default_sets ?? 3,
+            default_reps: ex.default_reps ?? 10,
+            default_weight: round(fromKg(ex.default_weight ?? 0, unit)),
+            superset_group: ex.superset_group ?? null,
+          })),
+      ),
     }));
 }
 
-interface LogRow {
+export interface LogRow {
   weight: number | null;
   reps: number | null;
   failed_reps: number | null;
@@ -140,39 +150,43 @@ interface LogRow {
 }
 
 /**
- * A per-exercise performance summary, so a model can programme from real
- * numbers rather than guessing at starting loads.
+ * Every log row since a date, in order, however many pages that takes.
  *
- * Only finished workouts count. `end_time IS NULL` marks a session that was
- * started and abandoned, and every aggregate in this app has always excluded
- * them — including one so it could be handed to an AI as fact would be a new
- * mistake, not a continuation of an old one.
- *
- * This is training data about a person, and it only leaves the app when
- * explicitly asked for. It carries no identifiers: exercise names and numbers,
- * nothing that says whose they are.
+ * Ordering is by `created_at` and then `id`, not `created_at` alone: rows
+ * logged in the same second are common — a set finished and the next started —
+ * and an unstable sort across a page boundary would return one row twice and
+ * miss another. `fetchAllPages` explains why the paging is needed at all.
  */
-export async function fetchPerformanceSummary(
+function fetchLogsSince(since: string): Promise<LogRow[]> {
+  return fetchAllPages<LogRow>((from, to) =>
+    supabase
+      .from('exercise_logs')
+      .select(
+        `id, weight, reps, failed_reps, created_at,
+         workout_exercise:workout_exercise_id(
+           exercise:exercise_id(name),
+           workout:workout_id(user_id, end_time)
+         )`,
+      )
+      .gte('created_at', since)
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true })
+      .range(from, to) as unknown as PromiseLike<Page<LogRow>>,
+  );
+}
+
+/**
+ * Turn log rows into one summary per exercise.
+ *
+ * Pure, and separated from the fetching so the part that can be wrong can be
+ * tested without a database — including the case that caused EZ-35, where the
+ * newest set is beyond the first page.
+ */
+export function summarisePerformance(
+  rows: LogRow[],
   userId: string,
   unit: WeightUnit,
-  { days = 180 } = {},
-): Promise<PerformanceSummary[]> {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-
-  const { data, error } = await supabase
-    .from('exercise_logs')
-    .select(
-      `weight, reps, failed_reps, created_at,
-       workout_exercise:workout_exercise_id(
-         exercise:exercise_id(name),
-         workout:workout_id(user_id, end_time)
-       )`,
-    )
-    .gte('created_at', since)
-    .order('created_at', { ascending: true });
-
-  if (error) throw error;
-
+): PerformanceSummary[] {
   const byExercise = new Map<
     string,
     {
@@ -186,7 +200,7 @@ export async function fetchPerformanceSummary(
     }
   >();
 
-  for (const row of (data ?? []) as unknown as LogRow[]) {
+  for (const row of rows) {
     const name = row.workout_exercise?.exercise?.name;
     const workout = row.workout_exercise?.workout;
 
@@ -211,7 +225,9 @@ export async function fetchPerformanceSummary(
 
     if (day) entry.sessions.add(day);
     entry.bestWeight = Math.max(entry.bestWeight, weight);
-    // Rows arrive oldest first, so the last one seen is the most recent.
+    // Rows arrive oldest first, so the last one seen is the most recent. That
+    // is only true because the fetch pages through every row — the whole of
+    // EZ-35 was this line drawing its "recent" from a truncated list.
     entry.recentWeight = weight;
     entry.recentReps = reps;
     entry.lastPerformed = row.created_at;
@@ -232,6 +248,28 @@ export async function fetchPerformanceSummary(
       failed_rep_rate: e.prescribed > 0 ? e.failed / e.prescribed : 0,
     }))
     .sort((a, b) => b.sessions - a.sessions);
+}
+
+/**
+ * A per-exercise performance summary, so a model can programme from real
+ * numbers rather than guessing at starting loads.
+ *
+ * Only finished workouts count. `end_time IS NULL` marks a session that was
+ * started and abandoned, and every aggregate in this app has always excluded
+ * them — including one so it could be handed to an AI as fact would be a new
+ * mistake, not a continuation of an old one.
+ *
+ * This is training data about a person, and it only leaves the app when
+ * explicitly asked for. It carries no identifiers: exercise names and numbers,
+ * nothing that says whose they are.
+ */
+export async function fetchPerformanceSummary(
+  userId: string,
+  unit: WeightUnit,
+  { days = 180 } = {},
+): Promise<PerformanceSummary[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  return summarisePerformance(await fetchLogsSince(since), userId, unit);
 }
 
 export interface BuildBundleOptions {
