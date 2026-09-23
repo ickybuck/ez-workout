@@ -29,11 +29,12 @@
  */
 
 import { convert, type WeightUnit } from './weight';
+import { normalise } from './supersets';
 
-export const BUNDLE_SCHEMA_VERSION = '2.0';
+export const BUNDLE_SCHEMA_VERSION = '2.1';
 
 /** Versions this app can read. Anything else is refused by name. */
-export const SUPPORTED_SCHEMA_VERSIONS = ['1.0', '2.0'] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = ['1.0', '2.0', '2.1'] as const;
 
 export const TEMPLATE_CATEGORIES = [
   'Upper Body',
@@ -61,6 +62,15 @@ export interface BundleTemplateExercise {
   default_reps: number;
   /** In the bundle's `weight_unit`, not in storage units. */
   default_weight: number;
+  /**
+   * Which exercises are performed together: same number = one superset, null =
+   * a straight set with its own rest.
+   *
+   * Absent in schema 1.0 and 2.0, which had no way to say it — so a file from
+   * either reads as all straight sets, which is what those files meant as far
+   * as anything could tell. Version 2.1 exists for this field.
+   */
+  superset_group?: number | null;
 }
 
 export interface BundleTemplate {
@@ -304,6 +314,26 @@ function validateExercise(
     );
   }
 
+  // A group id is a label, not a quantity: any two exercises carrying the same
+  // one are performed together. Absent and null both mean a straight set, so
+  // only a value that is present and unusable is worth reporting — read as a
+  // straight set rather than guessed at, because guessing here silently pairs
+  // exercises the model did not pair.
+  let supersetGroup: number | null = null;
+  if (raw.superset_group !== undefined && raw.superset_group !== null) {
+    const group = readNumber(raw.superset_group);
+    if (group === null || group < 0 || !Number.isInteger(group)) {
+      issues.push(
+        error(
+          `${path}.superset_group`,
+          'Must be a whole number of 0 or more, or null for a straight set. Exercises sharing a number are performed together.',
+        ),
+      );
+    } else {
+      supersetGroup = group;
+    }
+  }
+
   if (sets === null || reps === null || weight === null || weight < 0) return null;
 
   return {
@@ -312,6 +342,7 @@ function validateExercise(
     default_sets: Math.trunc(sets),
     default_reps: Math.trunc(reps),
     default_weight: weight,
+    superset_group: supersetGroup,
   };
 }
 
@@ -383,13 +414,58 @@ function validateTemplate(
   // string would put a value in the database that nothing else can read.
   if (!name || !categoryValid) return null;
 
+  const ordered = exercises.sort((a, b) => a.order_index - b.order_index);
+
   return {
     name,
     description: readOptionalString(raw.description),
     template_type: (TEMPLATE_TYPES.includes(type as TemplateType) ? type : 'regular') as TemplateType,
     category: category as TemplateCategory,
-    exercises: exercises.sort((a, b) => a.order_index - b.order_index),
+    exercises: normaliseGroups(ordered, `${path}.exercises`, issues),
   };
+}
+
+/**
+ * Put the declared groups through the same rules the editor enforces, and say
+ * so when that changes what was asked for.
+ *
+ * `normalise` would fix both problems silently. It should not: a model that
+ * wrote a group of one, or paired two exercises with a third between them,
+ * meant something by it, and the file it gets back should say which of its
+ * pairings did not survive rather than leaving the user to notice in the
+ * editor. The warnings are phrased for the model, like every other issue here.
+ */
+function normaliseGroups(
+  exercises: BundleTemplateExercise[],
+  path: string,
+  issues: ValidationIssue[],
+): BundleTemplateExercise[] {
+  const positions = new Map<number, number[]>();
+  exercises.forEach((exercise, index) => {
+    const group = exercise.superset_group ?? null;
+    if (group === null) return;
+    positions.set(group, [...(positions.get(group) ?? []), index]);
+  });
+
+  for (const [group, at] of positions) {
+    if (at.length === 1) {
+      issues.push(
+        warn(
+          path,
+          `superset_group ${group} has only one exercise, so it is a straight set. A group needs at least two members.`,
+        ),
+      );
+    } else if (at[at.length - 1] - at[0] !== at.length - 1) {
+      issues.push(
+        warn(
+          path,
+          `superset_group ${group} is split by other exercises, so it cannot be performed as written. Members of a group must be consecutive in order_index; the group has been broken up.`,
+        ),
+      );
+    }
+  }
+
+  return normalise(exercises);
 }
 
 function validateProposed(raw: unknown, path: string, issues: ValidationIssue[]): ProposedExercise | null {
@@ -601,7 +677,7 @@ export function formatIssueReport(issues: ValidationIssue[]): string {
 
   lines.push(
     '',
-    `Reminder: schema_version must be "${BUNDLE_SCHEMA_VERSION}", weight_unit must be "kg" or "lb" and must match the numbers you wrote, category must be exactly one of ${TEMPLATE_CATEGORIES.join(', ')}, and every exercise_name must appear in the exercise catalogue from the original file. Anything not in the catalogue belongs in proposed_exercises.`,
+    `Reminder: schema_version must be "${BUNDLE_SCHEMA_VERSION}", weight_unit must be "kg" or "lb" and must match the numbers you wrote, category must be exactly one of ${TEMPLATE_CATEGORIES.join(', ')}, superset_group pairs must be consecutive and at least two strong, and every exercise_name must appear in the exercise catalogue from the original file. Anything not in the catalogue belongs in proposed_exercises.`,
   );
 
   return lines.join('\n');

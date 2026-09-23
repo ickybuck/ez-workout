@@ -30,3 +30,6 @@ dist-ssr
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Local Claude Code settings
+.claude/settings.local.json

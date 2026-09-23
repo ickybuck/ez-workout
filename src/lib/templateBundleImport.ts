@@ -15,6 +15,7 @@
  */
 
 import { supabase } from './supabase';
+import { normalise } from './supersets';
 import { toKg, type WeightUnit } from './weight';
 import type { BundleTemplate, TemplateBundle } from './templateBundle';
 
@@ -140,6 +141,64 @@ export async function planImport(userId: string, bundle: TemplateBundle): Promis
   };
 }
 
+export interface TemplateExerciseRow {
+  template_id: string;
+  exercise_id: string;
+  order_index: number;
+  default_sets: number;
+  default_reps: number;
+  default_weight: number;
+  superset_group: number | null;
+}
+
+/**
+ * The rows one template turns into, and how many of its exercises were lost.
+ *
+ * Pulled out of the commit so the interesting part can be tested without a
+ * database. The interesting part is the interaction: an exercise that resolved
+ * to nothing is skipped, and skipping it can strand its partner or open a gap
+ * in the middle of a group. Grouping is therefore decided AFTER the skips,
+ * never before — otherwise a bundle pairing 4 with 5 would import a superset
+ * with one member when 5 is the name that did not resolve.
+ */
+export function buildTemplateExerciseRows(
+  templateId: string,
+  template: BundleTemplate,
+  resolved: Map<string, string | null>,
+  unit: WeightUnit,
+): { rows: TemplateExerciseRow[]; skipped: number } {
+  let skipped = 0;
+
+  const kept = template.exercises.flatMap((exercise) => {
+    const exerciseId = resolved.get(exercise.exercise_name.toLowerCase()) ?? null;
+    if (!exerciseId) {
+      skipped++;
+      return [];
+    }
+    return [
+      {
+        exercise_id: exerciseId,
+        default_sets: exercise.default_sets,
+        default_reps: exercise.default_reps,
+        // The one conversion that matters. Storage is kilograms; the bundle is
+        // in whatever unit it declared. Getting this wrong is EZ-11.
+        default_weight: toKg(exercise.default_weight, unit),
+        superset_group: exercise.superset_group ?? null,
+      },
+    ];
+  });
+
+  return {
+    rows: normalise(kept).map((row, index) => ({
+      template_id: templateId,
+      order_index: index,
+      ...row,
+      superset_group: row.superset_group ?? null,
+    })),
+    skipped,
+  };
+}
+
 /**
  * Apply the plan.
  *
@@ -186,25 +245,8 @@ export async function commitBundleImport({
     if (templateError) throw templateError;
     templatesCreated++;
 
-    const rows = [];
-    for (const [index, exercise] of template.exercises.entries()) {
-      const exerciseId = resolved.get(exercise.exercise_name.toLowerCase()) ?? null;
-      if (!exerciseId) {
-        exercisesSkipped++;
-        continue;
-      }
-
-      rows.push({
-        template_id: created.id,
-        exercise_id: exerciseId,
-        order_index: index,
-        default_sets: exercise.default_sets,
-        default_reps: exercise.default_reps,
-        // The one conversion that matters. Storage is kilograms; the bundle is
-        // in whatever unit it declared. Getting this wrong is EZ-11.
-        default_weight: toKg(exercise.default_weight, unit),
-      });
-    }
+    const { rows, skipped } = buildTemplateExerciseRows(created.id, template, resolved, unit);
+    exercisesSkipped += skipped;
 
     if (rows.length > 0) {
       const { error: exerciseError } = await supabase.from('template_exercises').insert(rows);
