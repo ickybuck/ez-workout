@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { buildTemplateExerciseRows, normaliseName } from './templateBundleImport';
+import { describe, it, expect, vi } from 'vitest';
 import type { BundleTemplate } from './templateBundle';
+
+// This module reaches Supabase, and supabase.ts throws at import time when the
+// environment has no keys — which is every CI run, since .env is not committed.
+// Nothing under test here touches the client, so it is stubbed rather than
+// configured.
+vi.mock('./supabase', () => ({ supabase: {} }));
+
+const { buildTemplateExerciseRows, normaliseName } = await import('./templateBundleImport');
 
 describe('normaliseName', () => {
   it('matches the same movement spelled two ways', () => {
