@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllPages, type Page } from '../lib/paging';
 import { detectCleanStall, type CleanStall, type ExerciseSession } from '../lib/cleanStall';
 
 /** Enough history to see a stall, without dragging seventeen months into memory. */
@@ -40,21 +41,32 @@ export function useCleanStalls(exerciseIds: string[], userId: string | undefined
     const load = async () => {
       const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
-        .from('exercise_logs')
-        .select(
-          `weight, reps, failed_reps, extra_reps, set_rir,
-           workout_exercise:workout_exercise_id(
-             exercise_id,
-             workout:workout_id(user_id, start_time, end_time)
-           )`,
-        )
-        .gte('created_at', since);
-
-      if (cancelled || error || !data) {
-        if (error) console.error('Could not load history for stall detection:', error);
+      // Paged. 200 days is past the 1,000-row cap on this table, and an
+      // unpaged select would detect stalls from the oldest slice of the
+      // window — the exact shape of EZ-35.
+      let data: LogRow[];
+      try {
+        data = await fetchAllPages<LogRow>((from, to) =>
+          supabase
+            .from('exercise_logs')
+            .select(
+              `id, weight, reps, failed_reps, extra_reps, set_rir,
+               workout_exercise:workout_exercise_id(
+                 exercise_id,
+                 workout:workout_id(user_id, start_time, end_time)
+               )`,
+            )
+            .gte('created_at', since)
+            .order('created_at', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to) as unknown as PromiseLike<Page<LogRow>>,
+        );
+      } catch (error) {
+        console.error('Could not load history for stall detection:', error);
         return;
       }
+
+      if (cancelled) return;
 
       // Group into one entry per exercise per session. Filtering in JS rather
       // than in the query because the ownership and finished-workout tests live
@@ -62,7 +74,7 @@ export function useCleanStalls(exerciseIds: string[], userId: string | undefined
       // silently stops filtering.
       const byExercise = new Map<string, Map<string, ExerciseSession>>();
 
-      for (const row of data as unknown as LogRow[]) {
+      for (const row of data) {
         const exerciseId = row.workout_exercise?.exercise_id;
         const workout = row.workout_exercise?.workout;
 

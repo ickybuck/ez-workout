@@ -7,6 +7,7 @@
  */
 
 import { supabase } from './supabase';
+import { fetchAllPages, type Page } from './paging';
 import { normalise } from './supersets';
 import { fromKg, type WeightUnit } from './weight';
 import {
@@ -149,29 +150,16 @@ export interface LogRow {
 }
 
 /**
- * How many rows one request can return.
- *
- * PostgREST answers with at most its `max-rows` and says nothing about it — no
- * error, no flag, just a short array that looks like the whole answer. A query
- * with no `.range()` therefore returns the first page and silently drops the
- * rest, which is EZ-35: the export read the oldest 1,000 sets of a 1,650-row
- * window and called the last of them "recent". Every load here pages instead.
- */
-const PAGE_SIZE = 1000;
-
-/**
  * Every log row since a date, in order, however many pages that takes.
  *
- * The loop ends on a short page. Ordering is by `created_at` and then `id`,
- * not `created_at` alone: rows logged in the same second are common — a set
- * finished and the next started — and an unstable sort across a page boundary
- * would return one row twice and miss another.
+ * Ordering is by `created_at` and then `id`, not `created_at` alone: rows
+ * logged in the same second are common — a set finished and the next started —
+ * and an unstable sort across a page boundary would return one row twice and
+ * miss another. `fetchAllPages` explains why the paging is needed at all.
  */
-async function fetchLogsSince(since: string): Promise<LogRow[]> {
-  const rows: LogRow[] = [];
-
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await supabase
+function fetchLogsSince(since: string): Promise<LogRow[]> {
+  return fetchAllPages<LogRow>((from, to) =>
+    supabase
       .from('exercise_logs')
       .select(
         `id, weight, reps, failed_reps, created_at,
@@ -183,15 +171,8 @@ async function fetchLogsSince(since: string): Promise<LogRow[]> {
       .gte('created_at', since)
       .order('created_at', { ascending: true })
       .order('id', { ascending: true })
-      .range(from, from + PAGE_SIZE - 1);
-
-    if (error) throw error;
-
-    const page = (data ?? []) as unknown as LogRow[];
-    rows.push(...page);
-
-    if (page.length < PAGE_SIZE) return rows;
-  }
+      .range(from, to) as unknown as PromiseLike<Page<LogRow>>,
+  );
 }
 
 /**
