@@ -5,6 +5,11 @@ on:
     branches: ['**']
   pull_request:
   workflow_dispatch:
+  # Callable, so the container publish can require this to pass before it
+  # ships an image rather than running alongside it. Same job, one definition:
+  # a copy of these steps in the other workflow would drift, and the copy that
+  # drifts is the one standing between a broken build and the NAS.
+  workflow_call:
 
 jobs:
   verify:

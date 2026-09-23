@@ -14,8 +14,19 @@ env:
   IMAGE_NAME: ghcr.io/ickybuck/ez-workout
 
 jobs:
+  # The gate. Until 2026-09-23 this workflow and CI ran side by side on the
+  # same push, independent of each other, so a commit with a failing test
+  # suite still produced an image and still moved the :main tag — and the
+  # suite had in fact been failing since 2026-08-29 without stopping a single
+  # release. Calling CI rather than copying its steps keeps one definition of
+  # what "passing" means.
+  verify:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
   build-and-publish:
     name: Build and publish
+    needs: verify
     runs-on: ubuntu-latest
 
     steps:
