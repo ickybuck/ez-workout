@@ -4,9 +4,12 @@ import { ArrowLeft } from 'lucide-react';
 import { Exercise } from '../types/exercise';
 import { useExerciseData } from '../hooks/useExerciseData';
 import ExerciseFormV2 from '../components/exercises/ExerciseFormV2';
+import { useWeightUnit } from '../hooks/useWeightUnit';
+import { defaultIncrementKg } from '../lib/weight';
 
 const ExerciseEdit: React.FC = () => {
   const { id } = useParams();
+  const { unit } = useWeightUnit();
   const navigate = useNavigate();
   const {
     exercises,
@@ -40,7 +43,7 @@ const ExerciseEdit: React.FC = () => {
             sets: exercise.defaults?.sets || 3,
             reps: exercise.defaults?.reps || 10,
             weight: exercise.defaults?.weight || 0,
-            weight_increment: exercise.defaults?.weight_increment || 2.3,
+            weight_increment: exercise.defaults?.weight_increment || defaultIncrementKg(unit),
             rep_increment: exercise.defaults?.rep_increment || 1,
             bar_weight: exercise.defaults?.bar_weight,
           },
