@@ -39,7 +39,8 @@ export const useExerciseData = () => {
               weight_increment,
               rep_increment,
               bar_weight,
-              hidden
+              hidden,
+              extended_rest
             )
           `)
           .eq('defaults.user_id', user.id)
@@ -109,6 +110,7 @@ export const useExerciseData = () => {
               weight_increment: updates.defaults.weight_increment,
               rep_increment: updates.defaults.rep_increment,
               bar_weight: updates.defaults.bar_weight ?? defaultBarWeight,
+              extended_rest: updates.defaults.extended_rest ?? false,
               updated_at: new Date().toISOString(),
             }, {
               onConflict: 'exercise_id,user_id',
@@ -176,7 +178,8 @@ export const useExerciseData = () => {
             weight,
             weight_increment,
             rep_increment,
-            bar_weight
+            bar_weight,
+            extended_rest
           )
         `)
         .eq('id', exerciseId)

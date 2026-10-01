@@ -18,6 +18,7 @@ import AdminSettingsSection from '../components/settings/AdminSettingsSection';
 interface UserSettings {
   use_metric: boolean;
   rest_timer_duration: number;
+  rest_timer_duration_extended: number;
   auto_start_timer: boolean;
   weight_unit: 'kg' | 'lb';
   show_workout_timer: boolean;
@@ -39,6 +40,7 @@ interface UserSettings {
 const DEFAULT_SETTINGS: UserSettings = {
   use_metric: false,
   rest_timer_duration: 90,
+  rest_timer_duration_extended: 120,
   auto_start_timer: true,
   weight_unit: 'kg',
   show_workout_timer: true,
@@ -202,6 +204,7 @@ const Settings: React.FC = () => {
             expanded={workoutExpanded}
             onToggle={() => setWorkoutExpanded(!workoutExpanded)}
             restTimerDuration={settings.rest_timer_duration}
+            restTimerDurationExtended={settings.rest_timer_duration_extended}
             autoStartTimer={settings.auto_start_timer}
             weeklyWorkoutGoal={settings.weekly_workout_goal}
             goalWeekdayStart={settings.goal_weekday_start}

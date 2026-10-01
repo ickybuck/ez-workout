@@ -76,6 +76,7 @@ export type Database = {
           bar_weight: number | null
           created_at: string | null
           exercise_id: string | null
+          extended_rest: boolean
           hidden: boolean
           id: string
           rep_increment: number | null
@@ -90,6 +91,7 @@ export type Database = {
           bar_weight?: number | null
           created_at?: string | null
           exercise_id?: string | null
+          extended_rest?: boolean
           hidden?: boolean
           id?: string
           rep_increment?: number | null
@@ -104,6 +106,7 @@ export type Database = {
           bar_weight?: number | null
           created_at?: string | null
           exercise_id?: string | null
+          extended_rest?: boolean
           hidden?: boolean
           id?: string
           rep_increment?: number | null
@@ -128,8 +131,8 @@ export type Database = {
         Row: {
           completed: boolean | null
           created_at: string | null
-          failed_reps: number | null
           extra_reps: number | null
+          failed_reps: number | null
           id: string
           recommend_increase: boolean | null
           reps: number | null
@@ -144,8 +147,8 @@ export type Database = {
         Insert: {
           completed?: boolean | null
           created_at?: string | null
-          failed_reps?: number | null
           extra_reps?: number | null
+          failed_reps?: number | null
           id?: string
           recommend_increase?: boolean | null
           reps?: number | null
@@ -160,8 +163,8 @@ export type Database = {
         Update: {
           completed?: boolean | null
           created_at?: string | null
-          failed_reps?: number | null
           extra_reps?: number | null
+          failed_reps?: number | null
           id?: string
           recommend_increase?: boolean | null
           reps?: number | null
@@ -373,14 +376,15 @@ export type Database = {
           available_plates_lb: Json | null
           created_at: string | null
           dark_mode: boolean | null
-          onboarded_at: string | null
           first_name: string | null
           goal_weekday_start: number | null
           height: number | null
           id: string
           last_name: string | null
+          onboarded_at: string | null
           recent_workouts_count: number | null
           rest_timer_duration: number | null
+          rest_timer_duration_extended: number | null
           show_consistency_tracker: boolean | null
           show_exercise_timer: boolean | null
           show_volume_graph: boolean | null
@@ -399,14 +403,15 @@ export type Database = {
           available_plates_lb?: Json | null
           created_at?: string | null
           dark_mode?: boolean | null
-          onboarded_at?: string | null
           first_name?: string | null
           goal_weekday_start?: number | null
           height?: number | null
           id?: string
           last_name?: string | null
+          onboarded_at?: string | null
           recent_workouts_count?: number | null
           rest_timer_duration?: number | null
+          rest_timer_duration_extended?: number | null
           show_consistency_tracker?: boolean | null
           show_exercise_timer?: boolean | null
           show_volume_graph?: boolean | null
@@ -425,14 +430,15 @@ export type Database = {
           available_plates_lb?: Json | null
           created_at?: string | null
           dark_mode?: boolean | null
-          onboarded_at?: string | null
           first_name?: string | null
           goal_weekday_start?: number | null
           height?: number | null
           id?: string
           last_name?: string | null
+          onboarded_at?: string | null
           recent_workouts_count?: number | null
           rest_timer_duration?: number | null
+          rest_timer_duration_extended?: number | null
           show_consistency_tracker?: boolean | null
           show_exercise_timer?: boolean | null
           show_volume_graph?: boolean | null
@@ -631,12 +637,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -660,11 +666,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -685,11 +691,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -710,11 +716,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -727,11 +733,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
