@@ -22,6 +22,7 @@ interface ExerciseFormV2Props {
       weight_increment?: number;
       rep_increment?: number;
       bar_weight?: number;
+      extended_rest?: boolean;
     };
   };
   setEditForm: (form: any) => void;
@@ -87,6 +88,7 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
             weight_increment: data.weight_increment,
             rep_increment: data.rep_increment,
             bar_weight: data.bar_weight,
+            extended_rest: data.extended_rest ?? false,
           },
         });
         setDisplayWeight(convertWeight(data.weight));
@@ -385,6 +387,31 @@ const ExerciseFormV2: React.FC<ExerciseFormV2Props> = ({
               />
               <span className="text-sm text-content-muted">Compound Exercise</span>
             </label>
+          </div>
+
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={editForm.defaults?.extended_rest || false}
+                onChange={e =>
+                  setEditForm({
+                    ...editForm,
+                    defaults: { ...editForm.defaults, extended_rest: e.target.checked },
+                  })
+                }
+                className="rounded border-edge-strong text-accent focus:ring-accent"
+              />
+              <span className="text-sm text-content-muted">Extended rest</span>
+            </label>
+            {/* Separate from Compound on purpose. Compound describes the
+                movement; this says what the timer should do, which is a
+                different question with a different answer often enough —
+                Leg Press wants it, Dips in a superset does not. */}
+            <p className="mt-1 text-xs text-content-subtle ml-6">
+              Use the longer rest timer after this exercise. Both durations are set in Settings →
+              Workout Preferences.
+            </p>
           </div>
 
           <div>

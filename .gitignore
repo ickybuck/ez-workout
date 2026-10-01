@@ -33,3 +33,6 @@ dist-ssr
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Supabase CLI scratch (written by types:generate)
+supabase/.temp/

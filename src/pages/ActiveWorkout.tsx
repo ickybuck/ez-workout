@@ -9,6 +9,7 @@ import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { usePendingSync } from '../hooks/usePendingSync';
 import type { SetOutcomeInput } from '../lib/stopReason';
 import { runIndexes, normalise } from '../lib/supersets';
+import { restDurationFor, DEFAULT_REST, DEFAULT_EXTENDED_REST } from '../lib/restTimer';
 import { useCleanStalls } from '../hooks/useCleanStalls';
 import { ActiveWorkout as ActiveWorkoutType } from '../types/workout';
 import WorkoutTimer from '../components/workout/WorkoutTimer';
@@ -57,9 +58,15 @@ const ActiveWorkout: React.FC = () => {
   const [settings, setSettings] = useState({
     show_workout_timer: true,
     show_exercise_timer: true,
-    rest_timer_duration: 90,
+    rest_timer_duration: DEFAULT_REST as number | null,
+    rest_timer_duration_extended: DEFAULT_EXTENDED_REST as number | null,
     auto_start_timer: true,
   });
+  // Which exercises this user has asked for the longer rest on. Loaded as its
+  // own query rather than embedded in the template select: the filter is on
+  // user_id, and a filter on an embedded resource does not error when it
+  // fails — it silently stops filtering, which is EZ-09.
+  const [extendedRestIds, setExtendedRestIds] = useState<ReadonlySet<string>>(new Set());
   const restTimerRef = useRef<RestTimerRef>(null);
   const pendingSync = usePendingSync();
 
@@ -81,11 +88,20 @@ const ActiveWorkout: React.FC = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('show_workout_timer, show_exercise_timer, rest_timer_duration, auto_start_timer')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const [{ data, error }, { data: extended, error: extendedError }] = await Promise.all([
+        supabase
+          .from('user_settings')
+          .select(
+            'show_workout_timer, show_exercise_timer, rest_timer_duration, rest_timer_duration_extended, auto_start_timer',
+          )
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('exercise_defaults')
+          .select('exercise_id')
+          .eq('user_id', user.id)
+          .eq('extended_rest', true),
+      ]);
 
       if (error) {
         console.error('Error loading settings:', error);
@@ -94,6 +110,17 @@ const ActiveWorkout: React.FC = () => {
 
       if (data) {
         setSettings(data);
+      }
+
+      // A failure here is not worth abandoning the workout over. Everything
+      // falls back to the normal rest, which is what the app did before this
+      // existed at all.
+      if (extendedError) {
+        console.error('Could not load extended-rest exercises:', extendedError);
+      } else {
+        setExtendedRestIds(
+          new Set((extended ?? []).map((row) => row.exercise_id).filter((id): id is string => !!id)),
+        );
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -640,6 +667,15 @@ const ActiveWorkout: React.FC = () => {
     return runs.reduce<number[]>((acc, r, i) => (r === run ? [...acc, i] : acc), []);
   })();
 
+  // The rest that follows the block being performed right now. A superset is
+  // one rest at the end of the pair, so the whole block takes the longer
+  // duration if any member asks for it.
+  const restDuration = restDurationFor(
+    currentBlock.map((index) => workout?.exercises[index]?.exercise?.id),
+    extendedRestIds,
+    { normal: settings.rest_timer_duration, extended: settings.rest_timer_duration_extended },
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -710,7 +746,7 @@ const ActiveWorkout: React.FC = () => {
           <div className="mt-2">
             <RestTimer 
               ref={restTimerRef}
-              defaultDuration={settings.rest_timer_duration} 
+              defaultDuration={restDuration}
               autoStart={settings.auto_start_timer}
             />
           </div>

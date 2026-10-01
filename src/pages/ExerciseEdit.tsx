@@ -46,6 +46,7 @@ const ExerciseEdit: React.FC = () => {
             weight_increment: exercise.defaults?.weight_increment || defaultIncrementKg(unit),
             rep_increment: exercise.defaults?.rep_increment || 1,
             bar_weight: exercise.defaults?.bar_weight,
+            extended_rest: exercise.defaults?.extended_rest ?? false,
           },
         });
         setSelectedMuscleGroups(

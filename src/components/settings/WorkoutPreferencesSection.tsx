@@ -7,12 +7,14 @@ interface WorkoutPreferencesSectionProps {
   expanded: boolean;
   onToggle: () => void;
   restTimerDuration: number;
+  restTimerDurationExtended: number;
   autoStartTimer: boolean;
   weeklyWorkoutGoal: number;
   goalWeekdayStart: number;
   recentWorkoutsCount: number;
   onChange: (fields: Partial<{
     rest_timer_duration: number;
+    rest_timer_duration_extended: number;
     auto_start_timer: boolean;
     weekly_workout_goal: number;
     goal_weekday_start: number;
@@ -24,6 +26,7 @@ const WorkoutPreferencesSection: React.FC<WorkoutPreferencesSectionProps> = ({
   expanded,
   onToggle,
   restTimerDuration,
+  restTimerDurationExtended,
   autoStartTimer,
   weeklyWorkoutGoal,
   goalWeekdayStart,
@@ -48,7 +51,7 @@ const WorkoutPreferencesSection: React.FC<WorkoutPreferencesSectionProps> = ({
         <div className="mt-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-content-muted">
-              Rest Timer Duration (seconds)
+              Rest after most exercises (seconds)
             </label>
             <input
               type="number"
@@ -58,6 +61,24 @@ const WorkoutPreferencesSection: React.FC<WorkoutPreferencesSectionProps> = ({
               max="600"
               className="mt-1 block w-full border-edge-strong rounded-md shadow-sm focus:ring-accent focus:border-accent sm:text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-content-muted">
+              Rest after extended-rest exercises (seconds)
+            </label>
+            <input
+              type="number"
+              value={restTimerDurationExtended}
+              onChange={(e) => onChange({ rest_timer_duration_extended: parseInt(e.target.value) })}
+              min="0"
+              max="600"
+              className="mt-1 block w-full border-edge-strong rounded-md shadow-sm focus:ring-accent focus:border-accent sm:text-sm"
+            />
+            <p className="mt-1 text-sm text-content-subtle">
+              Used for the exercises you have ticked “Extended rest” on — the heavy lifts. Tick it
+              in an exercise’s own settings.
+            </p>
           </div>
 
           <label className="flex items-center space-x-3">
