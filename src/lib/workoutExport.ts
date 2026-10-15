@@ -7,7 +7,6 @@ export interface ExportSet {
   reps: number | null;
   completed: boolean;
   failed_reps: number;
-  status: string;
 }
 
 export interface ExportExercise {
@@ -91,8 +90,7 @@ export async function fetchWorkoutsForExport(
           weight,
           reps,
           completed,
-          failed_reps,
-          status
+          failed_reps
         )
       )
     `)
@@ -126,7 +124,6 @@ export async function fetchWorkoutsForExport(
             reps: log.reps,
             completed: log.completed,
             failed_reps: log.failed_reps ?? 0,
-            status: log.status,
           }));
 
         return {
@@ -170,7 +167,6 @@ export function exportAsJSON(workouts: ExportWorkout[], unit: 'kg' | 'lb'): void
           reps: s.reps,
           completed: s.completed,
           failed_reps: s.failed_reps,
-          status: s.status,
         })),
       })),
     })),
@@ -191,7 +187,6 @@ export function exportAsCSV(workouts: ExportWorkout[], unit: 'kg' | 'lb'): void 
     'Reps',
     'Completed',
     'Failed Reps',
-    'Status',
     'Notes',
   ];
 
@@ -227,7 +222,6 @@ export function exportAsCSV(workouts: ExportWorkout[], unit: 'kg' | 'lb'): void 
           set.reps?.toString() ?? '',
           set.completed ? 'true' : 'false',
           set.failed_reps.toString(),
-          set.status,
           csvEscape(workout.notes ?? ''),
         ]);
       }
