@@ -8,7 +8,9 @@ import { useActiveWorkout } from '../../hooks/useActiveWorkout';
 import PlateCalculator from '../exercises/PlateCalculator';
 import StopReasonChips from './StopReasonChips';
 import type { SetOutcomeInput, StopReason } from '../../lib/stopReason';
-import { fromKg, toKg } from '../../lib/weight';
+import { convert, fromKg, toKg } from '../../lib/weight';
+import { planWeightEdit, type WeightEditScope } from '../../lib/setWeightEdit';
+import { workoutQueue } from '../../lib/workoutSync';
 
 interface SetProgressProps {
   logs: ExerciseLog[];
@@ -37,6 +39,8 @@ const SetProgress: React.FC<SetProgressProps> = ({
   const [pendingShortfall, setPendingShortfall] = useState<number | null>(null);
   const [adjustingWeight, setAdjustingWeight] = useState(false);
   const [showPlateCalculator, setShowPlateCalculator] = useState(false);
+  const [showWeightEntry, setShowWeightEntry] = useState(false);
+  const [weightInput, setWeightInput] = useState('');
   const [weightIncrement, setWeightIncrement] = useState(2.3); // in kg
   const [availablePlatesKg, setAvailablePlatesKg] = useState<number[]>([25, 20, 15, 10, 5, 2.5, 1.25]);
   const [availablePlatesLb, setAvailablePlatesLb] = useState<number[]>([45, 35, 25, 10, 5, 2.5]);
@@ -110,100 +114,161 @@ const SetProgress: React.FC<SetProgressProps> = ({
     setShowExtraReps(false);
   };
 
-  const adjustWeight = async (increment: boolean, newWeight?: number) => {
+  /**
+   * Apply a weight to the current set, and optionally to the ones after it.
+   *
+   * Scope is the whole point. Until 2026-10-15 every weight change wrote this
+   * set, every later set, the exercise default AND every template row using
+   * the exercise — right for "I started at the wrong weight", wrong for a drop
+   * set, which is ordinary here. `planWeightEdit` decides what may be touched
+   * and is tested separately; this executes the plan.
+   *
+   * The log writes go through the queue rather than straight to Supabase, the
+   * way completing a set already does. A weight typed in a gym basement has to
+   * survive the same dead signal the set does — this used to await a direct
+   * write and lose the change outright.
+   */
+  const applyWeightEdit = async (weightKg: number, scope: WeightEditScope) => {
     if (!currentSet || adjustingWeight || !workout) return;
 
+    let plan;
     try {
-      setAdjustingWeight(true);
+      plan = planWeightEdit({
+        workoutExerciseId: logs[0].workout_exercise_id,
+        exerciseId,
+        setNumber: currentSet.set_number,
+        weightKg,
+        scope,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'That weight is not valid');
+      return;
+    }
 
-      // Step in the unit the user actually sees, then round, then convert back.
-      //
-      // Increments are stored in kilograms while the plates are in pounds:
-      // squats step by 9.1 kg, which is 20.06 lb, and bench by 4.5 kg, which is
-      // 9.92 lb. Adding those to a converted weight drifts a little further off
-      // a round number every time — 275 lb became 295.06 lb in one press. The
-      // arithmetic was never wrong, it was just being done in the wrong unit.
-      //
-      // Rounding to whole pounds matches how plates are actually loaded; half a
-      // kilo is the equivalent for metric, since 0.25 kg plates are rare.
-      const step = unit === 'lb' ? 1 : 0.5;
-      const currentDisplay = fromKg(currentSet.weight, unit);
-      const incrementDisplay = fromKg(weightIncrement, unit);
-      const steppedDisplay =
-        Math.round((currentDisplay + (increment ? incrementDisplay : -incrementDisplay)) / step) *
-        step;
+    setAdjustingWeight(true);
+    try {
+      // One mutation per affected row: the queue is keyed by row id, which is
+      // also what makes it idempotent on retry.
+      const affected = logs.filter((log) =>
+        plan.logs.toSetNumber === null
+          ? log.set_number >= plan.logs.fromSetNumber
+          : log.set_number === plan.logs.fromSetNumber,
+      );
 
-      const weightToSet = newWeight ?? toKg(Math.max(steppedDisplay, 0), unit);
-
-      if (weightToSet < 0) {
-        toast.error('Weight cannot be negative');
-        return;
+      for (const log of affected) {
+        workoutQueue.enqueue({
+          table: 'exercise_logs',
+          rowId: log.id,
+          values: { weight: plan.weightKg, updated_at: new Date().toISOString() },
+        });
       }
 
-      // Update all remaining sets in this workout
-      const { error: updateError } = await supabase
-        .from('exercise_logs')
-        .update({ weight: weightToSet })
-        .eq('workout_exercise_id', logs[0].workout_exercise_id)
-        .gte('set_number', currentSet.set_number);
-
-      if (updateError) throw updateError;
-
-      // Update exercise defaults
-      const { error: defaultUpdateError } = await supabase
-        .from('exercise_defaults')
-        .update({ 
-          weight: weightToSet,
-          updated_at: new Date().toISOString()
-        })
-        .eq('exercise_id', exerciseId);
-
-      if (defaultUpdateError) throw defaultUpdateError;
-
-      // Update all template exercises that use this exercise
-      const { error: templateError } = await supabase
-        .from('template_exercises')
-        .update({ 
-          default_weight: weightToSet,
-          updated_at: new Date().toISOString()
-        })
-        .eq('exercise_id', exerciseId);
-
-      if (templateError) throw templateError;
-
-      // Update local state
-      const updatedWorkout = {
+      // Local state first, like set completion: the queue has taken
+      // responsibility for the write, so the screen should not wait for it.
+      setWorkout({
         ...workout,
-        exercises: workout.exercises.map(ex => {
-          if (ex.id === logs[0].workout_exercise_id) {
-            return {
-              ...ex,
-              logs: ex.logs.map(log => {
-                if (log.set_number >= currentSet.set_number) {
-                  return { ...log, weight: weightToSet };
-                }
-                return log;
-              }),
-            };
-          }
-          return ex;
-        }),
-      };
-      setWorkout(updatedWorkout);
+        exercises: workout.exercises.map((ex) =>
+          ex.id === plan.logs.workoutExerciseId
+            ? {
+                ...ex,
+                logs: ex.logs.map((log) =>
+                  affected.some((a) => a.id === log.id) ? { ...log, weight: plan.weightKg } : log,
+                ),
+              }
+            : ex,
+        ),
+      });
 
-      toast.success(`Weight ${increment ? 'increased' : 'decreased'} to ${formatWeight(weightToSet)}`);
+      // Only a change of plan reaches the prescription. A single-set drop is
+      // not a decision about the programme and must not rewrite it.
+      if (plan.updatesDefaults || plan.updatesTemplates) {
+        const [{ error: defaultsError }, { error: templateError }] = await Promise.all([
+          supabase
+            .from('exercise_defaults')
+            .update({ weight: plan.weightKg, updated_at: new Date().toISOString() })
+            .eq('exercise_id', plan.exerciseId),
+          supabase
+            .from('template_exercises')
+            .update({ default_weight: plan.weightKg, updated_at: new Date().toISOString() })
+            .eq('exercise_id', plan.exerciseId),
+        ]);
+
+        // Not fatal, and deliberately not rolled back: the sets are already
+        // recorded, and losing the logged weight to save the prescription
+        // would be the wrong way round.
+        if (defaultsError || templateError) {
+          console.error('Could not update defaults/templates:', defaultsError ?? templateError);
+          toast.warning('Weight saved for this workout, but the template was not updated');
+          return;
+        }
+      }
+
+      toast.success(`${formatWeight(plan.weightKg)} — ${plan.affects}`);
     } catch (error) {
       console.error('Error adjusting weight:', error);
       toast.error('Failed to adjust weight');
     } finally {
       setAdjustingWeight(false);
+      setShowWeightEntry(false);
     }
   };
 
+  /**
+   * The +/- stepper. Unchanged in meaning: stepping is the "I started this
+   * exercise at the wrong weight" case, so it still applies to this set and
+   * the ones after it, and still updates the prescription. Typing a weight is
+   * where a single-set change lives now.
+   */
+  const adjustWeight = async (increment: boolean, newWeight?: number) => {
+    if (!currentSet || adjustingWeight || !workout) return;
+
+    // Step in the unit the user actually sees, then round, then convert back.
+    //
+    // Increments are stored in kilograms while the plates are in pounds:
+    // squats step by 9.1 kg, which is 20.06 lb, and bench by 4.5 kg, which is
+    // 9.92 lb. Adding those to a converted weight drifts a little further off
+    // a round number every time — 275 lb became 295.06 lb in one press. The
+    // arithmetic was never wrong, it was just being done in the wrong unit.
+    //
+    // Rounding to whole pounds matches how plates are actually loaded; half a
+    // kilo is the equivalent for metric, since 0.25 kg plates are rare.
+    const step = unit === 'lb' ? 1 : 0.5;
+    const currentDisplay = fromKg(currentSet.weight, unit);
+    const incrementDisplay = fromKg(weightIncrement, unit);
+    const steppedDisplay =
+      Math.round((currentDisplay + (increment ? incrementDisplay : -incrementDisplay)) / step) *
+      step;
+
+    await applyWeightEdit(newWeight ?? toKg(Math.max(steppedDisplay, 0), unit), 'rest');
+  };
+
+  // Plate-loaded keeps the calculator — it answers a different question, which
+  // is which plates to hang on the bar. Everything else now opens a keypad
+  // instead of doing nothing, which is what it did before 2026-10-15: on a
+  // machine the only way to change the weight was the stepper, so a first-run
+  // guess of 30 lb against a real 70 was eight taps, and only before the set
+  // was logged.
   const handleWeightClick = () => {
-    if (isPlateLoaded && currentSet && !disabled) {
+    if (disabled || !currentSet) return;
+    if (isPlateLoaded) {
       setShowPlateCalculator(true);
+      return;
     }
+    // `convert`, not `fromKg`. fromKg is deliberately unrounded, so prefilling
+    // with it showed the storage round-trip: 31.751 kg is 69.99897… lb, and the
+    // field opened on 69.99897286635935. convert rounds to display precision,
+    // which is what every other weight on the screen already uses.
+    setWeightInput(String(convert(currentSet.weight, 'kg', unit)));
+    setShowWeightEntry(true);
+  };
+
+  const submitWeightEntry = (scope: WeightEditScope) => {
+    const typed = Number(weightInput);
+    if (!Number.isFinite(typed) || typed < 0) {
+      toast.error('Enter a weight of 0 or more');
+      return;
+    }
+    void applyWeightEdit(toKg(typed, unit), scope);
   };
 
   return (
@@ -233,12 +298,10 @@ const SetProgress: React.FC<SetProgressProps> = ({
               <button
                 onClick={handleWeightClick}
                 className={`px-2 min-h-[44px] rounded ${
-                  isPlateLoaded
-                    ? 'bg-surface-sunken hover:bg-accent-soft text-content hover:text-accent-content cursor-pointer transition-colors duration-150'
-                    : 'text-content-subtle'
+                  'bg-surface-sunken hover:bg-accent-soft text-content hover:text-accent-content cursor-pointer transition-colors duration-150'
                 }`}
-                disabled={!isPlateLoaded || disabled}
-                title={isPlateLoaded ? "Click to calculate plates" : undefined}
+                disabled={disabled}
+                title={isPlateLoaded ? 'Click to calculate plates' : 'Tap to set the weight'}
               >
                 {formatWeight(currentSet.weight)}
               </button>
@@ -384,6 +447,56 @@ const SetProgress: React.FC<SetProgressProps> = ({
           availablePlatesKg={availablePlatesKg}
           availablePlatesLb={availablePlatesLb}
         />
+      )}
+
+      {/* Typing a weight. The two buttons ARE the scope — a checkbox would be
+          one more thing to read mid-set, and the choice is never implicit:
+          "This set" leaves the programme alone, "This + rest" is a change of
+          plan and updates the default and the templates with it. */}
+      {showWeightEntry && currentSet && (
+        <div className="rounded-lg border border-edge bg-surface p-3 space-y-3">
+          <label className="block text-sm font-medium text-content-muted" htmlFor="set-weight">
+            Weight for set {currentSet.set_number} ({unit})
+          </label>
+          <input
+            id="set-weight"
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="any"
+            autoFocus
+            value={weightInput}
+            onChange={(e) => setWeightInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submitWeightEntry('set')}
+            className="block w-full min-h-[44px] border-edge-strong rounded-md shadow-sm focus:ring-accent focus:border-accent"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => submitWeightEntry('set')}
+              disabled={adjustingWeight}
+              className="flex-1 min-h-[44px] px-2 bg-accent text-content-inverse text-sm rounded hover:bg-accent-hover transition-colors disabled:opacity-50"
+            >
+              This set
+            </button>
+            <button
+              onClick={() => submitWeightEntry('rest')}
+              disabled={adjustingWeight}
+              className="flex-1 min-h-[44px] px-2 border border-edge text-content-muted text-sm rounded hover:bg-surface-sunken transition-colors disabled:opacity-50"
+            >
+              This + template
+            </button>
+            <button
+              onClick={() => setShowWeightEntry(false)}
+              className="min-h-[44px] px-3 text-content-subtle text-sm rounded hover:bg-surface-sunken transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+          <p className="text-xs text-content-subtle">
+            “This set” changes this set alone — the next set keeps its own weight. “This +
+            template” carries it forward and updates the exercise default and your templates.
+          </p>
+        </div>
       )}
     </div>
   );
