@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
+import { isRecoveryHash, recoveryLinkError } from './recoveryLink';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -25,6 +26,16 @@ const cleanUrl = supabaseUrl.trim().replace(/\/+$/, '').replace(/^http:/, 'https
 if (!cleanUrl.startsWith('https://')) {
   throw new Error('Supabase URL must use HTTPS protocol');
 }
+
+/*
+ * Read the reset-link outcome BEFORE createClient below. The client consumes
+ * the URL fragment during start-up and wipes it, and announces
+ * PASSWORD_RECOVERY from a setTimeout that a React effect can miss — so this
+ * is the only reliable moment to see it. See src/lib/recoveryLink.ts (EZ-48).
+ */
+const landingHash = typeof window === 'undefined' ? '' : window.location.hash;
+export const arrivedFromRecoveryLink = isRecoveryHash(landingHash);
+export const recoveryLinkFailure = recoveryLinkError(landingHash);
 
 // Initialize Supabase client with enhanced error handling
 export const supabase = createClient<Database>(cleanUrl, supabaseAnonKey, {

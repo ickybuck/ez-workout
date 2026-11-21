@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '../lib/supabase';
+import { recoveryLinkFailure, supabase } from '../lib/supabase';
 import { LogIn } from 'lucide-react';
 import { SIGNUPS_ENABLED } from '../config';
 
@@ -10,7 +10,10 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  // A reset link that failed lands here with the reason in the URL. Open the
+  // request form straight away and say why, rather than showing a sign-in
+  // form that asks for the password they came here because they forgot.
+  const [showForgotPassword, setShowForgotPassword] = useState(Boolean(recoveryLinkFailure));
   const [resetEmail, setResetEmail] = useState('');
   const [sendingReset, setSendingReset] = useState(false);
 
@@ -142,6 +145,11 @@ const Login: React.FC = () => {
           </>
         ) : (
           <>
+            {recoveryLinkFailure && (
+              <p role="alert" className="mt-6 text-sm text-content bg-surface border border-edge-strong rounded-md p-3">
+                {recoveryLinkFailure}
+              </p>
+            )}
             <form className="mt-8 space-y-4" onSubmit={handleForgotPassword}>
               <div>
                 <label htmlFor="reset-email" className="block text-sm font-medium text-content-muted">
