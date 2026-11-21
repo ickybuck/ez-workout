@@ -1,0 +1,70 @@
+name: Build and publish MCP container image
+
+on:
+  push:
+    branches:
+      - main
+    # The MCP server shares src/lib with the app but nothing else, so a change
+    # to a page should not rebuild and republish it.
+    paths:
+      - 'mcp-server/**'
+      - 'src/lib/**'
+      - 'Dockerfile.mcp'
+      - 'vite.mcp.config.ts'
+      - 'tsconfig.mcp.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/publish-mcp-container.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/ickybuck/ez-workout-mcp
+
+jobs:
+  # Same gate as the app image, and for the same reason: between 2026-08-29
+  # and 2026-09-23 the app published from a red build for weeks because the
+  # publish workflow did not depend on CI. This one depends on it from the
+  # start.
+  verify:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  build-and-publish:
+    name: Build and publish
+    needs: verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish immutable image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.mcp
+          push: true
+          # No build args. Unlike the app, nothing is baked in at build time:
+          # this image reads its Supabase key and its Access audience from the
+          # environment at startup, so the same image is safe to publish
+          # publicly and safe to roll back to.
+          tags: |
+            ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:main
+          labels: |
+            org.opencontainers.image.source=https://github.com/ickybuck/ez-workout
+            org.opencontainers.image.revision=${{ github.sha }}

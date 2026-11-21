@@ -14,20 +14,28 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "icons:generate": "node scripts/generate-icons.mjs"
+    "icons:generate": "node scripts/generate-icons.mjs",
+    "build:mcp": "vite build --config vite.mcp.config.ts",
+    "mcp:stdio": "node dist-mcp/stdio.js",
+    "mcp:http": "node dist-mcp/http.js",
+    "typecheck:mcp": "tsc -p tsconfig.mcp.json --noEmit"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0",
     "@supabase/supabase-js": "^2.39.7",
     "date-fns": "^3.3.1",
+    "jose": "^5.9.6",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.2",
     "sonner": "^1.4.3",
+    "zod": "^3.25.76",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/node": "^22.10.2",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
