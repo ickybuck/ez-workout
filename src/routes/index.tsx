@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Login from '../pages/Login';
 import SetNewPassword from '../pages/SetNewPassword';
+import ResetPassword from '../pages/ResetPassword';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Settings from '../pages/Settings';
@@ -43,6 +44,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* Registration is closed (see src/config.ts). Redirecting rather
           than rendering a form the API will refuse — EZ-29. */}
       <Route
