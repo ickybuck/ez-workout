@@ -5,7 +5,7 @@
 # browser must never see.
 
 # ---- build ----
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -24,7 +24,10 @@ COPY mcp-server ./mcp-server
 RUN npm run build:mcp
 
 # ---- runtime ----
-FROM node:20-alpine AS runtime
+# Node 22, not 20: @supabase/supabase-js reaches for a native WebSocket, which
+# Node gained in 22, and refuses to start without one. It matches the app image
+# and CI, both of which were already on 22.
+FROM node:22-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production \
