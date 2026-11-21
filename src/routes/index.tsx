@@ -75,6 +75,9 @@ const AppRoutes: React.FC = () => {
         <Route path="admin" element={<Admin />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Never a blank page for an address this build does not know (EZ-50).
+          Before this, an unmatched path rendered nothing at all. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
