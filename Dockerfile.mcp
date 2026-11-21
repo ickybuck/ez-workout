@@ -13,7 +13,11 @@ RUN npm ci
 
 # Only what the server build reads. The React app, its assets and its config
 # are not copied, so a change to a page cannot invalidate this layer.
-COPY tsconfig.json tsconfig.mcp.json vite.mcp.config.ts ./
+# tsconfig.json is a references-only root: Vite's esbuild plugin follows those
+# references, so tsconfig.app.json and tsconfig.node.json have to come too even
+# though the server build compiles neither. Leaving them out built fine locally
+# and failed in the image with ENOENT on tsconfig.app.json.
+COPY tsconfig.json tsconfig.app.json tsconfig.node.json tsconfig.mcp.json vite.mcp.config.ts ./
 COPY src/lib ./src/lib
 COPY mcp-server ./mcp-server
 
