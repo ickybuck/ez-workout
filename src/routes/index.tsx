@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Login from '../pages/Login';
+import SetNewPassword from '../pages/SetNewPassword';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Settings from '../pages/Settings';
@@ -21,7 +22,7 @@ import ProtectedRoute from './ProtectedRoute';
 import { SIGNUPS_ENABLED } from '../config';
 
 const AppRoutes: React.FC = () => {
-  const { loading } = useAuth();
+  const { loading, user, recovering } = useAuth();
 
   if (loading) {
     return (
@@ -29,6 +30,14 @@ const AppRoutes: React.FC = () => {
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
+  }
+
+  // Arrived from a password-reset link: ask for the new password before
+  // anything else, whatever path the redirect landed on (EZ-48). Needs the
+  // user as well as the flag — a recovery fragment whose token failed to
+  // verify leaves no session, and the sign-in page is the right place then.
+  if (recovering && user) {
+    return <SetNewPassword />;
   }
 
   return (
