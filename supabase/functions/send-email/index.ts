@@ -41,6 +41,27 @@ function verifyUrl(tokenHash: string, type: string, redirectTo: string): string 
   return u.toString();
 }
 
+// A reset link must not spend its token on a plain GET (EZ-49). On
+// 2026-11-21 a mail scanner opened Marilyn's /auth/v1/verify link eight
+// seconds after it was sent and used the one-time token, so her own click
+// three seconds later failed. This link goes to the app instead, carrying the
+// token_hash; the app spends it only when a person presses Continue
+// (src/pages/ResetPassword.tsx). The origin comes from redirect_to, which
+// Supabase has already checked against the redirect allow-list, falling back
+// to the Site URL.
+function resetPageUrl(tokenHash: string, redirectTo: string, siteUrl: string): string {
+  let origin = siteUrl;
+  try {
+    if (redirectTo) origin = new URL(redirectTo).origin;
+  } catch {
+    // keep the Site URL
+  }
+  const u = new URL("/reset-password", origin);
+  u.searchParams.set("token_hash", tokenHash);
+  u.searchParams.set("type", "recovery");
+  return u.toString();
+}
+
 function linkMail(subject: string, heading: string, lead: string, button: string, url: string) {
   const html = `<h2>${esc(heading)}</h2>\n<p>${esc(lead)}</p>\n<p><a href="${esc(url)}">${esc(button)}</a></p>\n` +
     `<p style="color:#666;font-size:12px">If you didn't ask for this, you can ignore this email.</p>`;
@@ -54,7 +75,7 @@ function build(d: EmailData, newEmail?: string) {
     case "signup":
       return linkMail("Confirm your signup", "Confirm your signup", "Follow this link to confirm your account:", "Confirm your email", verifyUrl(d.token_hash, "signup", d.redirect_to));
     case "recovery":
-      return linkMail("Reset your password", "Reset your password", "Follow this link to reset the password for your account:", "Reset password", verifyUrl(d.token_hash, "recovery", d.redirect_to));
+      return linkMail("Reset your password", "Reset your password", "Follow this link to reset the password for your account:", "Reset password", resetPageUrl(d.token_hash, d.redirect_to, d.site_url));
     case "magiclink":
       return linkMail("Your sign-in link", "Your sign-in link", "Follow this link to sign in:", "Sign in", verifyUrl(d.token_hash, "magiclink", d.redirect_to));
     case "invite":
