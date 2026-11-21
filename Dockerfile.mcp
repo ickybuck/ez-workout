@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+
+# The MCP server, not the app. The app is a static bundle served elsewhere;
+# this is a long-running Node process that talks to Supabase with a key the
+# browser must never see.
+
+# ---- build ----
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Only what the server build reads. The React app, its assets and its config
+# are not copied, so a change to a page cannot invalidate this layer.
+COPY tsconfig.json tsconfig.mcp.json vite.mcp.config.ts ./
+COPY src/lib ./src/lib
+COPY mcp-server ./mcp-server
+
+RUN npm run build:mcp
+
+# ---- runtime ----
+FROM node:20-alpine AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    PORT=3000
+
+# Two bundled files and nothing else: no node_modules, no source, no
+# package.json to drift from the lockfile it was built against.
+COPY --from=build /app/dist-mcp ./dist-mcp
+
+# Unprivileged. node:alpine ships a "node" user at uid 1000.
+USER node
+
+EXPOSE 3000
+
+# Checks the plain health route rather than /mcp, which answers an unauthorised
+# POST with a 401 by design and would make a healthy container look broken.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get({host:'127.0.0.1',port:process.env.PORT||3000,path:'/healthz',timeout:4000},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+
+CMD ["node", "dist-mcp/http.js"]

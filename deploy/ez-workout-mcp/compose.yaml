@@ -1,0 +1,49 @@
+# The MCP server on wtr-max.
+#
+# Copied to /mnt/apps-ssd/appdata/ez-workout-mcp/ and run with
+#   sudo docker compose -f /mnt/apps-ssd/appdata/ez-workout-mcp/compose.yaml up -d
+#
+# A compose project rather than a TrueNAS app, matching bdsmdiy, gotmountains
+# and prosperityengine. truenas_admin has NOPASSWD sudo scoped to
+# /usr/bin/docker, so this can be redeployed over SSH without a password,
+# which a TrueNAS custom app (midclt) cannot.
+#
+# Note what is NOT here: a ports: section. The container is reachable only on
+# the Docker network cloudflared sits on, by the name ez-workout-mcp, exactly
+# as siyuan-mcp and aiquila-mcp are. It holds a service_role key that bypasses
+# every RLS policy, so the only route to it runs through Cloudflare Access.
+
+services:
+  ez-workout-mcp:
+    image: ghcr.io/ickybuck/ez-workout-mcp:main
+    container_name: ez-workout-mcp
+    restart: unless-stopped
+    env_file:
+      # Not in git. See mcp-server/README.md for what it holds.
+      - .env
+    environment:
+      PORT: '3000'
+    networks:
+      - cloudflared
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get({host:'127.0.0.1',port:3000,path:'/healthz',timeout:4000},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+networks:
+  cloudflared:
+    external: true
+    # Created by the TrueNAS cloudflared-tunnel app. Joining it rather than
+    # making our own is what lets the tunnel resolve this container by name.
+    name: ix-cloudflared-tunnel_default
