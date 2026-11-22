@@ -1,9 +1,10 @@
 /*
  * The tools.
  *
- * Nine of them, and the count is deliberate. This is driven from a phone
- * between sets, so the surface has to be small enough that the right tool is
- * obvious and every argument is something a person would say out loud. Names,
+ * Ten here for training, and nine more in editTools.ts for changing the
+ * library and templates. This is driven from a phone between sets, so each
+ * tool does one thing a person would say out loud and every argument is
+ * something they would say. Names,
  * never ids. Weights in whatever unit the person thinks in. Set numbers
  * optional, because "log ten at eighty" is the whole sentence.
  *
@@ -27,15 +28,14 @@
 
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { format as formatWeight, type WeightUnit } from '../src/lib/weight';
+import { format as formatWeight, formatVolume, type WeightUnit } from '../src/lib/weight';
 import { normalise } from '../src/lib/supersets';
 import { planWeightEdit } from '../src/lib/setWeightEdit';
 import { restDurationFor } from '../src/lib/restTimer';
 import { planSet, performedFrom } from './planSet';
 import { planLogWrite } from './planLogWrite';
-import { AmbiguousExerciseError, UnknownExerciseError } from './matchExercise';
-import { NotYoursError } from './userScope';
+import { fail, guard, renderTemplate, text } from './toolResult';
+import { registerEditTools } from './editTools';
 import type { Ctx } from './context';
 import {
   exerciseHistory,
@@ -49,37 +49,6 @@ const unitArg = z
   .enum(['kg', 'lb'])
   .optional()
   .describe('Unit of the weight given. Defaults to the unit set on the account.');
-
-/*
- * These three are annotated with CallToolResult rather than letting TypeScript
- * infer them. Inferred, the handler return type has to be reconciled against
- * registerTool's generics for every tool, and the compiler gives up with
- * TS2589 ("type instantiation is excessively deep"). Naming the type costs
- * nothing and keeps the whole file inferring in reasonable time.
- */
-function text(body: string): CallToolResult {
-  return { content: [{ type: 'text', text: body }] };
-}
-
-function fail(body: string): CallToolResult {
-  return { content: [{ type: 'text', text: body }], isError: true };
-}
-
-/** Turns the expected refusals into something a person can act on. */
-async function guard(run: () => Promise<CallToolResult>): Promise<CallToolResult> {
-  try {
-    return await run();
-  } catch (error) {
-    if (
-      error instanceof AmbiguousExerciseError ||
-      error instanceof UnknownExerciseError ||
-      error instanceof NotYoursError
-    ) {
-      return fail(error.message);
-    }
-    throw error;
-  }
-}
 
 const describeSets = (
   sets: Array<{ weightKg: number | null; performed: number; prescribed: number }>,
@@ -143,27 +112,7 @@ export function registerTools(server: McpServer, ctx: Ctx): void {
         const [unit, templates] = await Promise.all([ctx.unit(), templateDetails(ctx, !!include_hidden)]);
         if (!templates.length) return text('No templates.');
 
-        const body = templates
-          .map((t) => {
-            const marks = [t.isFavorite ? 'favourite' : null, t.isHidden ? 'hidden' : null]
-              .filter(Boolean)
-              .join(', ');
-            const head = `${t.name}${marks ? ` (${marks})` : ''} - ${t.category}`;
-
-            const lines = t.blocks.map((block) => {
-              const parts = block.map((row) => {
-                const sets = row.default_sets ?? '?';
-                const reps = row.default_reps ?? '?';
-                const weight =
-                  row.default_weight != null ? ` at ${formatWeight(row.default_weight, unit)}` : '';
-                return `${row.exerciseName} ${sets}x${reps}${weight}`;
-              });
-              return block.length > 1 ? `  superset: ${parts.join(' + ')}` : `  ${parts[0]}`;
-            });
-
-            return [head, ...lines].join('\n');
-          })
-          .join('\n\n');
+        const body = templates.map((t) => renderTemplate(t, unit)).join('\n\n');
 
         return text(body);
       }),
@@ -215,11 +164,7 @@ export function registerTools(server: McpServer, ctx: Ctx): void {
         let workouts = (await listWorkouts(ctx)).filter((w) => w.end_time);
 
         if (template) {
-          const templates = await templateDetails(ctx, true);
-          const wanted = templates.find(
-            (t) => t.name.toLowerCase().trim() === template.toLowerCase().trim(),
-          );
-          if (!wanted) return fail(`No template called "${template}".`);
+          const wanted = await ctx.resolveTemplate(template);
           workouts = workouts.filter((w) => w.template_id === wanted.id);
         }
 
@@ -304,12 +249,12 @@ export function registerTools(server: McpServer, ctx: Ctx): void {
         const top = [...byExercise.entries()]
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
-          .map(([name, volume]) => `  ${name}: ${formatWeight(volume, unit)}`);
+          .map(([name, volume]) => `  ${name}: ${formatVolume(volume, unit)}`);
 
         return text(
           [
             `Last ${window} days: ${workouts.length} workouts, ${sets} completed sets.`,
-            `Total volume ${formatWeight(volumeKg, unit)}.`,
+            `Total volume ${formatVolume(volumeKg, unit)}.`,
             ...(top.length ? ['Most volume:', ...top] : []),
           ].join('\n'),
         );
@@ -336,13 +281,11 @@ export function registerTools(server: McpServer, ctx: Ctx): void {
           return fail('A workout is already in progress. Finish it first with ez_finish_workout.');
         }
 
-        const templates = await templateDetails(ctx, true);
-        const wanted =
-          templates.find((t) => t.name.toLowerCase().trim() === template.toLowerCase().trim()) ??
-          templates.find((t) => t.name.toLowerCase().includes(template.toLowerCase().trim()));
-        if (!wanted) {
-          return fail(`No template matches "${template}". Templates: ${templates.map((t) => t.name).join(', ')}.`);
-        }
+        // Same matching as every other tool, preferring the visible template
+        // when a hidden one shares its name.
+        const proven = await ctx.resolveTemplate(template);
+        const wanted = (await templateDetails(ctx, true)).find((t) => t.id === proven.id);
+        if (!wanted) return fail(`No template matches "${template}".`);
 
         const [created] = await ctx.scope.insertOwn('workouts', [
           {
@@ -629,10 +572,15 @@ export function createServer(ctx: Ctx): McpServer {
       instructions:
         'Workout tracking for ez-workout. Weights are stored in kilograms but spoken in the unit on the account; ' +
         'a dumbbell weight is the pair, not one hand. Reps given to these tools are reps actually performed. ' +
-        'Start a workout before logging sets, and correct a mistake with ez_edit_set rather than logging it twice.',
+        'Start a workout before logging sets, and correct a mistake with ez_edit_set rather than logging it twice. ' +
+        'The exercise library is shared by everyone: changing what an exercise is (its name, equipment, muscles) ' +
+        'changes it for every user, so ez_edit_exercise needs explicit confirmation after you have told the person that. ' +
+        'Their own sets, reps and weight are private: use ez_update_my_exercise_settings for those. ' +
+        'Search before adding an exercise, so the library does not collect near-duplicates.',
     },
   );
 
   registerTools(server, ctx);
+  registerEditTools(server, ctx);
   return server;
 }
