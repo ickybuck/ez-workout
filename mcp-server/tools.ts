@@ -28,7 +28,7 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { format as formatWeight, type WeightUnit } from '../src/lib/weight';
+import { format as formatWeight, formatVolume, type WeightUnit } from '../src/lib/weight';
 import { normalise } from '../src/lib/supersets';
 import { planWeightEdit } from '../src/lib/setWeightEdit';
 import { restDurationFor } from '../src/lib/restTimer';
@@ -304,12 +304,12 @@ export function registerTools(server: McpServer, ctx: Ctx): void {
         const top = [...byExercise.entries()]
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
-          .map(([name, volume]) => `  ${name}: ${formatWeight(volume, unit)}`);
+          .map(([name, volume]) => `  ${name}: ${formatVolume(volume, unit)}`);
 
         return text(
           [
             `Last ${window} days: ${workouts.length} workouts, ${sets} completed sets.`,
-            `Total volume ${formatWeight(volumeKg, unit)}.`,
+            `Total volume ${formatVolume(volumeKg, unit)}.`,
             ...(top.length ? ['Most volume:', ...top] : []),
           ].join('\n'),
         );
