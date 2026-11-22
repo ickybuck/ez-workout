@@ -496,10 +496,13 @@ export type Database = {
         Row: {
           category: string
           created_at: string | null
+          created_via: string
           description: string | null
           id: string
           is_favorite: boolean | null
           is_hidden: boolean | null
+          last_edited_at: string | null
+          last_edited_via: string | null
           name: string
           template_type: string
           updated_at: string | null
@@ -508,10 +511,13 @@ export type Database = {
         Insert: {
           category?: string
           created_at?: string | null
+          created_via?: string
           description?: string | null
           id?: string
           is_favorite?: boolean | null
           is_hidden?: boolean | null
+          last_edited_at?: string | null
+          last_edited_via?: string | null
           name: string
           template_type?: string
           updated_at?: string | null
@@ -520,10 +526,13 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string | null
+          created_via?: string
           description?: string | null
           id?: string
           is_favorite?: boolean | null
           is_hidden?: boolean | null
+          last_edited_at?: string | null
+          last_edited_via?: string | null
           name?: string
           template_type?: string
           updated_at?: string | null
@@ -616,6 +625,7 @@ export type Database = {
         }[]
       }
       set_user_data_as_default: { Args: never; Returns: undefined }
+      template_edit_source: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

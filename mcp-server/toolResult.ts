@@ -15,6 +15,7 @@ import { AmbiguousExerciseError, UnknownExerciseError } from './matchExercise';
 import { NotAdminError, NotYoursError } from './userScope';
 import { LayoutError } from './templateLayout';
 import type { TemplateDetail } from './queries';
+import { provenanceNote } from '../src/lib/templateProvenance';
 
 export function text(body: string): CallToolResult {
   return { content: [{ type: 'text', text: body }] };
@@ -59,5 +60,7 @@ export function renderTemplate(t: TemplateDetail, unit: WeightUnit): string {
     return block.length > 1 ? `  superset: ${parts.join(' + ')}` : `  ${parts[0]}`;
   });
 
-  return [head, ...lines].join('\n');
+  // "the person" rather than "you": the reader is the model, relaying it.
+  const note = provenanceNote(t, { self: 'the person' });
+  return [head, `  (${note})`, ...lines].join('\n');
 }

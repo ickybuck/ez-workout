@@ -39,6 +39,11 @@ export function createServiceClient(env: NodeJS.ProcessEnv = process.env): Clien
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      // Marks this server's writes as Claude's. The database stamps template
+      // provenance from it, together with the service_role key (EZ-53).
+      headers: { 'x-ez-client': 'claude-mcp' },
+    },
   });
 }
 

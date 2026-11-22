@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
 import ExportConfirmDialog from '../components/templates/ExportConfirmDialog';
 import { isPairedWithNext } from '../lib/supersets';
+import { provenanceNote } from '../lib/templateProvenance';
 
 interface ExportTarget {
   templates: WorkoutTemplate[];
@@ -330,6 +331,12 @@ const Templates: React.FC = () => {
                         </span>
                       </div>
                     </div>
+
+                    {/* Who added it and who last changed it -- you or Claude
+                        (EZ-53). Only when expanded, so the list stays dense. */}
+                    {expandedTemplates.has(template.id) && (
+                      <p className="mt-1 text-xs text-content-subtle">{provenanceNote(template)}</p>
+                    )}
 
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2 text-sm text-content-subtle">
