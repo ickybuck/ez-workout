@@ -1,7 +1,9 @@
 # ez-workout MCP server
 
 Lets Claude read and log workouts — list templates, see what you last lifted,
-start a session, log sets between them, and finish.
+start a session, log sets between them, and finish — and change the plan:
+add exercises to the shared library, set your own targets, and build and edit
+your templates.
 
 It lives in this repo rather than its own because the parts worth getting
 right already exist in `src/lib`: kilogram storage against pound plates
@@ -39,6 +41,20 @@ ez_log_set leg press, 10 reps  →  Leg Press set 2: 847 lb x 10. Rest 120s.
 | `ez_edit_set` | Corrects one set |
 | `ez_finish_workout` | Stamps the end time |
 
+Changing the plan (`editTools.ts`, EZ-51):
+
+| Tool | What it does |
+| --- | --- |
+| `ez_search_exercises` | Finds library exercises by words in the name |
+| `ez_create_exercise` | Adds an exercise to the shared library (admins), with your starting targets |
+| `ez_update_my_exercise_settings` | Your own sets, reps, weight, step, bar weight, rest, hidden — private to you |
+| `ez_edit_exercise` | Changes a shared exercise for everyone (admins, confirmed) |
+| `ez_create_template` | A new template, optionally with its exercises and supersets |
+| `ez_update_template` | Rename, describe, recategorise, favourite or hide a template |
+| `ez_template_add_exercise` | Adds an exercise at a position, optionally as a superset |
+| `ez_template_remove_exercise` | Takes an exercise out of a template |
+| `ez_template_edit_exercise` | Targets in this template, move, pair, unpair, or swap the exercise |
+
 Everything takes exercise **names**, not ids — the caller is holding a phone
 between sets. Matching is exact, then unique prefix, then all-words, and stops
 at the first layer with exactly one hit. Several hits is a question, never a
@@ -62,6 +78,20 @@ breaking one corrupts history that is never rewritten afterwards.
   with scope `'set'` and throws if that ever widens (EZ-46).
 - **Every list is paged** through `fetchAllPages` with a tie-broken order
   (EZ-35, EZ-39), and **no query filters on an embedded resource** (EZ-09).
+- **The exercise library is shared.** Renaming an exercise renames it in
+  everyone's templates and history. Adding or changing one is for admins
+  (the `admin_users` table, the same rule RLS applies in the app), and
+  `ez_edit_exercise` saves nothing until it is called again with
+  `confirm_affects_everyone` after the person has been told. A personal
+  variation is a new exercise swapped into your templates, not an edit.
+  New names are checked for near-duplicates (`newExercise.ts`): "Hip
+  Abduction" stops at "Hip Abductor" until confirmed distinct.
+- **Template order is written in two passes.** `template_exercises` has a
+  unique index on `(template_id, order_index)`, so a swap written directly
+  collides with itself. `src/lib/templateOrder.ts` parks moving rows clear
+  of every real index first; the app's template editor uses the same plan.
+- **Templates are hidden, never deleted**, so past workouts keep their link.
+  A name reaches the visible template when a hidden one shares it.
 
 ## How a request is authorised
 
@@ -87,11 +117,14 @@ only module that puts a user id into a query:
 
 - owned tables (`workouts`, `workout_templates`, `exercise_defaults`,
   `user_settings`) are filtered on read and stamped on insert;
-- `exercises` and the other reference tables are shared and never written;
+- `exercises` and the other reference tables are shared: readable by anyone,
+  written only with an admin proof from `proveAdmin`, which checks
+  `admin_users` for this user and cannot be reused by another scope;
 - `workout_exercises`, `exercise_logs` and `template_exercises` have no
   `user_id` at all, so reaching one requires either a proof handle carrying a
   symbol this module does not export, or a child read confined to parent ids
-  by a **required** argument.
+  by a **required** argument. Template row writes filter on the proven
+  template as well as the row id.
 
 Ownership is proven with two plain queries rather than one with a nested
 filter, because a filter on an embedded resource fails open.

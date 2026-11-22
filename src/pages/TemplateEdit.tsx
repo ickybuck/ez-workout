@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
 import { normalise } from '../lib/supersets';
+import { planReorder } from '../lib/templateOrder';
 import { Exercise } from '../types/exercise';
 import TemplateForm from '../components/templates/TemplateForm';
 import ExerciseList from '../components/templates/ExerciseList';
@@ -237,14 +238,42 @@ const TemplateEdit: React.FC = () => {
         [...template.exercises].sort((a, b) => a.order_index - b.order_index),
       );
 
-      for (const [index, exercise] of ordered.entries()) {
+      //
+      // Written in two passes against what is stored, not what the editor
+      // holds: moveExercise rewrites order_index in local state, and a swap
+      // written straight through collides with the unique index on
+      // (template_id, order_index) (EZ-51). See src/lib/templateOrder.ts.
+      const { data: stored, error: storedError } = await supabase
+        .from('template_exercises')
+        .select('id, order_index, superset_group')
+        .eq('template_id', templateId!)
+        .order('order_index')
+        .order('id');
+
+      if (storedError) throw storedError;
+
+      const plan = planReorder(
+        stored ?? [],
+        ordered.map((exercise) => ({ id: exercise.id, superset_group: exercise.superset_group ?? null })),
+      );
+
+      for (const write of plan.park) {
+        const { error: parkError } = await supabase
+          .from('template_exercises')
+          .update({ order_index: write.order_index })
+          .eq('id', write.id);
+
+        if (parkError) throw parkError;
+      }
+
+      for (const write of plan.place) {
         const { error: exerciseError } = await supabase
           .from('template_exercises')
           .update({
-            order_index: index,
-            superset_group: exercise.superset_group ?? null,
+            order_index: write.order_index,
+            superset_group: write.superset_group,
           })
-          .eq('id', exercise.id);
+          .eq('id', write.id);
 
         if (exerciseError) throw exerciseError;
       }

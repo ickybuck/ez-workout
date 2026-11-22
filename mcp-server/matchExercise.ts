@@ -36,9 +36,9 @@ export interface ExerciseMatch<T extends MatchableExercise> {
 export class AmbiguousExerciseError extends Error {
   readonly candidates: string[];
 
-  constructor(query: string, candidates: string[]) {
+  constructor(query: string, candidates: string[], noun = 'exercise') {
     super(
-      `"${query}" matches ${candidates.length} exercises: ${candidates.join(', ')}. ` +
+      `"${query}" matches ${candidates.length} ${noun}s: ${candidates.join(', ')}. ` +
         'Name one of them exactly.',
     );
     this.name = 'AmbiguousExerciseError';
@@ -47,8 +47,10 @@ export class AmbiguousExerciseError extends Error {
 }
 
 export class UnknownExerciseError extends Error {
-  constructor(query: string) {
-    super(`No exercise matches "${query}".`);
+  constructor(query: string, noun = 'exercise', known?: string[]) {
+    super(
+      `No ${noun} matches "${query}".` + (known?.length ? ` Known ${noun}s: ${known.join(', ')}.` : ''),
+    );
     this.name = 'UnknownExerciseError';
   }
 }
@@ -66,9 +68,21 @@ function squashed(name: string): string {
   return canonical(name).replace(/ /g, '');
 }
 
-export function matchExercise<T extends MatchableExercise>(query: string, pool: T[]): ExerciseMatch<T> {
+/**
+ * Also used for templates, equipment, body parts and muscle groups: the same
+ * strictness applies to any name a person says. `noun` only changes the
+ * wording of a refusal, and `listKnown` adds the full list to "no match" when
+ * the pool is short enough to be worth reading.
+ */
+export function matchExercise<T extends MatchableExercise>(
+  query: string,
+  pool: T[],
+  { noun = 'exercise', listKnown = false }: { noun?: string; listKnown?: boolean } = {},
+): ExerciseMatch<T> {
+  const unknown = () =>
+    new UnknownExerciseError(query, noun, listKnown ? [...new Set(pool.map((p) => p.name))] : undefined);
   const wanted = canonical(query);
-  if (!wanted) throw new UnknownExerciseError(query);
+  if (!wanted) throw unknown();
 
   const indexed = pool.map((exercise) => ({
     exercise,
@@ -83,7 +97,7 @@ export function matchExercise<T extends MatchableExercise>(query: string, pool: 
       // a data problem to report elsewhere, not a question for the user.
       const names = [...new Set(hits.map((h) => h.exercise.name))];
       if (names.length === 1) return { exercise: hits[0].exercise, kind };
-      throw new AmbiguousExerciseError(query, names);
+      throw new AmbiguousExerciseError(query, names, noun);
     }
     return null;
   };
@@ -114,5 +128,5 @@ export function matchExercise<T extends MatchableExercise>(query: string, pool: 
   );
   if (byWords) return byWords;
 
-  throw new UnknownExerciseError(query);
+  throw unknown();
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scopeFor, NotYoursError } from './userScope';
+import { scopeFor, NotAdminError, NotYoursError } from './userScope';
 import type { Client } from './supabase';
 
 /*
@@ -207,5 +207,85 @@ describe('reading a workout', () => {
     const children = calls.filter((c) => c.table === 'workout_exercises')[0];
     expect(children.ops).toContain('range');
     expect(children.args.filter((_, i) => children.ops[i] === 'order')).toEqual([['order_index'], ['id']]);
+  });
+});
+
+describe('the shared library (EZ-51)', () => {
+  it('refuses to prove admin for someone not in admin_users', async () => {
+    const { client } = makeClient({ admin_users: [{ data: null, error: null }] });
+    await expect(scopeFor(client, 'u-1').proveAdmin()).rejects.toBeInstanceOf(NotAdminError);
+  });
+
+  it('checks admin_users for this user, not any user', async () => {
+    const { client, calls } = makeClient({ admin_users: [{ data: { user_id: 'u-1' }, error: null }] });
+    await scopeFor(client, 'u-1').proveAdmin();
+    expect(argsFor(calls[0], 'eq')).toEqual(['user_id', 'u-1']);
+  });
+
+  it('stamps created_by on a new exercise, whatever the caller passed', async () => {
+    const { client, calls } = makeClient({
+      admin_users: [{ data: { user_id: 'u-1' }, error: null }],
+      exercises: [{ data: { id: 'e-1', name: 'X' }, error: null }],
+    });
+    const scope = scopeFor(client, 'u-1');
+    const admin = await scope.proveAdmin();
+    await scope.insertExercise(admin, { name: 'X', created_by: 'u-2' });
+    const insert = calls.find((c) => c.table === 'exercises')!;
+    expect(argsFor(insert, 'insert')).toEqual([{ name: 'X', created_by: 'u-1' }]);
+  });
+
+  it('will not accept an admin proof minted for another user', async () => {
+    const other = makeClient({ admin_users: [{ data: { user_id: 'u-2' }, error: null }] });
+    const proof = await scopeFor(other.client, 'u-2').proveAdmin();
+    const { client, calls } = makeClient();
+    await expect(scopeFor(client, 'u-1').updateExercise(proof, 'e-1', { name: 'Y' })).rejects.toBeInstanceOf(NotAdminError);
+    expect(calls).toHaveLength(0);
+  });
+});
+
+describe('template rows', () => {
+  async function provenTemplate() {
+    const made = makeClient({
+      workout_templates: [{ data: { id: 't-1', name: 'Legs' }, error: null }],
+      template_exercises: [
+        {
+          data: [
+            { id: 'r-1', template_id: 't-1', exercise_id: 'e-1', order_index: 0, superset_group: null },
+            { id: 'r-2', template_id: 't-1', exercise_id: 'e-2', order_index: 1, superset_group: null },
+          ],
+          error: null,
+        },
+      ],
+    });
+    const scope = scopeFor(made.client, 'u-1');
+    const template = await scope.proveTemplate('t-1');
+    return { ...made, scope, template };
+  }
+
+  it('confines updates and deletes to the proven template as well as the row', async () => {
+    const { scope, template, calls } = await provenTemplate();
+    const [row] = await scope.templateExercisesOf(template);
+    await scope.updateTemplateExercise(row, { default_sets: 4 });
+    await scope.deleteTemplateExercise(row);
+    const writes = calls.filter((c) => c.table === 'template_exercises' && (c.ops.includes('update') || c.ops.includes('delete')));
+    for (const w of writes) {
+      expect(w.args.filter((_, i) => w.ops[i] === 'eq')).toEqual([
+        ['id', 'r-1'],
+        ['template_id', 't-1'],
+      ]);
+    }
+    expect(writes).toHaveLength(2);
+  });
+
+  it('writes a swap in two passes so the unique order index is never held twice', async () => {
+    const { scope, template, calls } = await provenTemplate();
+    await scope.writeTemplateLayout(template, [
+      { id: 'r-2', superset_group: null },
+      { id: 'r-1', superset_group: null },
+    ]);
+    const updates = calls
+      .filter((c) => c.table === 'template_exercises' && c.ops.includes('update'))
+      .map((c) => argsFor(c, 'update')[0] as { order_index: number });
+    expect(updates.map((u) => u.order_index)).toEqual([1_000_000, 1_000_001, 0, 1]);
   });
 });
