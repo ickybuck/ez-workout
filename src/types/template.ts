@@ -9,6 +9,10 @@ export interface WorkoutTemplate {
   category: 'Upper Body' | 'Lower Body' | 'Core Focused' | 'Whole Body';
   created_at: string;
   updated_at: string;
+  /** Who added it and who last changed it, stamped by the database (EZ-53). */
+  created_via?: string | null;
+  last_edited_via?: string | null;
+  last_edited_at?: string | null;
   exercises: TemplateExercise[];
 }
 

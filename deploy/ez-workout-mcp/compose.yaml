@@ -23,6 +23,8 @@ services:
       - .env
     environment:
       PORT: '3000'
+      # Times the tools say out loud ("last edited ... 10:38 PM") are local times.
+      TZ: America/Edmonton
     networks:
       - cloudflared
     healthcheck:

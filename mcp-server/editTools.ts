@@ -17,7 +17,10 @@
  *   later spoken name ambiguous.
  *
  *   A person's own targets (exercise_defaults) and templates are theirs. Any
- *   change is allowed and none of it is visible to anyone else.
+ *   change is allowed and none of it is visible to anyone else. Deleting a
+ *   template is the one irreversible edit, so like a shared exercise edit it
+ *   answers with what will happen first and acts only on confirm_delete
+ *   (EZ-52).
  *
  * Template layout goes through templateLayout.ts, which reuses the app's own
  * superset rules, and is written through scope.writeTemplateLayout, which
@@ -32,7 +35,7 @@ import { hasAnySuperset } from '../src/lib/supersets';
 import { PARKING_OFFSET } from '../src/lib/templateOrder';
 import { canonical, matchExercise } from './matchExercise';
 import { checkNewName } from './newExercise';
-import { templateDetails } from './queries';
+import { listWorkouts, templateDetails } from './queries';
 import {
   insertItem,
   LayoutError,
@@ -468,7 +471,7 @@ export function registerEditTools(server: McpServer, ctx: Ctx): void {
     {
       title: 'Rename or file a template',
       description:
-        'Changes a template\'s name, description or category, marks it a favourite, or hides it from the start screen. Templates are not deleted here: hiding keeps the link from past workouts to the template they came from. Hidden templates can be found by name and shown again.',
+        'Changes a template\'s name, description or category, marks it a favourite, or hides it from the start screen. Hiding keeps everything, including the link from past workouts; to remove a template for good use ez_delete_template. A name reaches the visible template when a hidden one shares it; set hidden_copy true to reach the hidden one instead.',
       inputSchema: {
         template: z.string().describe('Template name, as spoken.'),
         name: z.string().min(1).max(80).optional(),
@@ -476,12 +479,16 @@ export function registerEditTools(server: McpServer, ctx: Ctx): void {
         category: z.enum(CATEGORIES).optional(),
         favourite: z.boolean().optional(),
         hidden: z.boolean().optional(),
+        hidden_copy: z
+          .boolean()
+          .optional()
+          .describe('True to pick the hidden template when a visible one has the same name.'),
       },
       annotations: { destructiveHint: false, idempotentHint: true },
     },
     async (args) =>
       guard(async () => {
-        const template = await ctx.resolveTemplate(args.template);
+        const template = await ctx.resolveTemplate(args.template, args.hidden_copy ? { hidden: true } : {});
         const patch: Record<string, unknown> = {};
         if (args.name != null) {
           const name = args.name.trim().replace(/\s+/g, ' ');
@@ -498,6 +505,66 @@ export function registerEditTools(server: McpServer, ctx: Ctx): void {
         await ctx.scope.updateOwn('workout_templates', template.id, { ...patch, updated_at: new Date().toISOString() });
         ctx.forget();
         return text(`Updated.\n${await showTemplate(ctx, template, await ctx.unit())}`);
+      }),
+  );
+
+  server.registerTool(
+    'ez_delete_template',
+    {
+      title: 'Delete a template',
+      description:
+        'Permanently deletes one of the caller\'s templates and its exercise list. The first call without confirm_delete deletes nothing and says what would happen, including how many past workouts were started from it: those keep their name and every logged set but stop being linked to the template, so they leave its progress chart. Tell the person that, and that it cannot be undone; call again with confirm_delete true only if they still want it. Hiding (ez_update_template hidden true) keeps everything. When a hidden and a visible template share a name, set hidden_copy true to delete the hidden one.',
+      inputSchema: {
+        template: z.string().describe('Template name, as spoken.'),
+        hidden_copy: z
+          .boolean()
+          .optional()
+          .describe('True to pick the hidden template when a visible one has the same name.'),
+        confirm_delete: z
+          .boolean()
+          .optional()
+          .describe('Set true only after the person has been told what will happen and still wants it deleted.'),
+      },
+      annotations: { destructiveHint: true, idempotentHint: false },
+    },
+    async (args) =>
+      guard(async () => {
+        const template = await ctx.resolveTemplate(args.template, args.hidden_copy ? { hidden: true } : {});
+        // A partial name is fine for finding a template to edit, not for deleting one.
+        if (canonical(template.name) !== canonical(args.template)) {
+          return fail(`Not deleted. "${args.template}" is not the full name; did you mean "${template.name}"? Call again with the full name.`);
+        }
+        const summary = (await ctx.templates()).find((t) => t.id === template.id);
+        const where = summary?.is_hidden ? 'hidden template' : 'template';
+        const [rows, workouts] = await Promise.all([
+          ctx.scope.templateExercisesOf(template),
+          listWorkouts(ctx),
+        ]);
+        const started = workouts.filter((w) => w.template_id === template.id);
+        const running = started.some((w) => !w.end_time);
+
+        const twin = (await ctx.templates()).find(
+          (t) => t.id !== template.id && canonical(t.name) === canonical(template.name),
+        );
+        const which = twin ? ` (the ${where}; another ${twin.is_hidden ? 'hidden' : 'visible'} template has the same name)` : '';
+        const history = started.length
+          ? `${started.length} past workout${started.length === 1 ? ' was' : 's were'} started from it; ${started.length === 1 ? 'it keeps its' : 'they keep their'} name and every logged set, but will no longer be linked to this template, so ${started.length === 1 ? 'it leaves' : 'they leave'} its progress chart and PR comparison.`
+          : 'No workouts were started from it.';
+
+        if (!args.confirm_delete) {
+          return text(
+            `Not deleted yet. This would permanently delete "${template.name}"${which} and its ${rows.length} exercise${rows.length === 1 ? '' : 's'}. ${history}` +
+              (running ? ' A workout from it is running now; it carries on, unlinked.' : '') +
+              ' It cannot be undone. Hiding it instead keeps everything. Tell the person; if they still want it gone, call ez_delete_template again with confirm_delete true.',
+          );
+        }
+
+        await ctx.scope.deleteTemplate(template);
+        ctx.forget();
+        const after = started.length
+          ? ` ${started.length} past workout${started.length === 1 ? '' : 's'} kept, no longer linked to it.`
+          : '';
+        return text(`Deleted "${template.name}"${which}.${after}`);
       }),
   );
 

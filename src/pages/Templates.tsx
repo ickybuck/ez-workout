@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
 import ExportConfirmDialog from '../components/templates/ExportConfirmDialog';
 import { isPairedWithNext } from '../lib/supersets';
+import { provenanceNote } from '../lib/templateProvenance';
 
 interface ExportTarget {
   templates: WorkoutTemplate[];
@@ -134,7 +135,9 @@ const Templates: React.FC = () => {
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    // Past workouts are detached, not deleted: workouts.template_id is ON DELETE
+    // SET NULL since EZ-52. Before that this failed for any template ever used.
+    if (!confirm('Delete this template? Past workouts from it keep every set but are no longer linked to it, so they leave its progress chart. This cannot be undone. (Hiding it keeps everything.)')) return;
 
     try {
       const { error } = await supabase
@@ -328,6 +331,12 @@ const Templates: React.FC = () => {
                         </span>
                       </div>
                     </div>
+
+                    {/* Who added it and who last changed it -- you or Claude
+                        (EZ-53). Only when expanded, so the list stays dense. */}
+                    {expandedTemplates.has(template.id) && (
+                      <p className="mt-1 text-xs text-content-subtle">{provenanceNote(template)}</p>
+                    )}
 
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2 text-sm text-content-subtle">

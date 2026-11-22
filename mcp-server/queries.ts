@@ -18,6 +18,7 @@ import { fetchAllPages } from '../src/lib/paging';
 import { groupRuns, normalise } from '../src/lib/supersets';
 import { performedFrom } from './planSet';
 import type { Ctx } from './context';
+import type { TemplateProvenance } from '../src/lib/templateProvenance';
 
 /** PostgREST builds the filter into the URL, so `in` lists are chunked. */
 const IN_CHUNK = 400;
@@ -182,7 +183,7 @@ export async function exerciseHistory(ctx: Ctx, exerciseId: string, sessions: nu
   return ordered;
 }
 
-export interface TemplateDetail {
+export interface TemplateDetail extends TemplateProvenance {
   id: string;
   name: string;
   category: string;
@@ -201,9 +202,15 @@ export async function templateDetails(ctx: Ctx, includeHidden: boolean): Promise
     template_type: string;
     is_hidden: boolean | null;
     is_favorite: boolean | null;
+    created_via: string | null;
+    last_edited_via: string | null;
+    last_edited_at: string | null;
   }>((from, to) =>
     ctx.scope
-      .own('workout_templates', 'id, name, category, template_type, is_hidden, is_favorite')
+      .own(
+        'workout_templates',
+        'id, name, category, template_type, is_hidden, is_favorite, created_via, last_edited_via, last_edited_at',
+      )
       .order('name')
       .order('id')
       .range(from, to),
@@ -244,6 +251,9 @@ export async function templateDetails(ctx: Ctx, includeHidden: boolean): Promise
       templateType: template.template_type,
       isHidden: !!template.is_hidden,
       isFavorite: !!template.is_favorite,
+      created_via: template.created_via,
+      last_edited_via: template.last_edited_via,
+      last_edited_at: template.last_edited_at,
       blocks: groupRuns(ordered).map((run) =>
         run.map((row) => ({ ...row, exerciseName: library.get(row.exercise_id ?? '') ?? 'unknown exercise' })),
       ),

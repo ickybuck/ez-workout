@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { WorkoutTemplate } from '../types/template';
 import { normalise } from '../lib/supersets';
 import { planReorder } from '../lib/templateOrder';
+import { provenanceNote } from '../lib/templateProvenance';
 import { Exercise } from '../types/exercise';
 import TemplateForm from '../components/templates/TemplateForm';
 import ExerciseList from '../components/templates/ExerciseList';
@@ -448,9 +449,13 @@ const TemplateEdit: React.FC = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-2xl font-bold text-content">
-              {id ? 'Edit Template' : 'New Template'}
-            </h2>
+            <div>
+              <h2 className="text-2xl font-bold text-content">
+                {id ? 'Edit Template' : 'New Template'}
+              </h2>
+              {/* Who added it and who last changed it -- you or Claude (EZ-53). */}
+              {id && <p className="text-xs text-content-subtle">{provenanceNote(template)}</p>}
+            </div>
           </div>
           <div className="flex gap-2">
             <button

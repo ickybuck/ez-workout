@@ -1,7 +1,7 @@
 /*
  * The tools.
  *
- * Ten here for training, and nine more in editTools.ts for changing the
+ * Ten here for training, and ten more in editTools.ts for changing the
  * library and templates. This is driven from a phone between sets, so each
  * tool does one thing a person would say out loud and every argument is
  * something they would say. Names,

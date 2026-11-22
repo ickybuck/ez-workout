@@ -71,8 +71,12 @@ export interface Ctx {
   resolveExercise(name: string): Promise<ExerciseMatch<LibraryExercise>>;
   /** This user's templates, hidden ones included. */
   templates(): Promise<TemplateSummary[]>;
-  /** Name in, proven template out -- hidden templates included, so they can be shown again. */
-  resolveTemplate(name: string): Promise<OwnedTemplate>;
+  /**
+   * Name in, proven template out -- hidden templates included, so they can be
+   * shown again. `hidden` narrows to hidden or visible templates only, which
+   * is how a hidden copy that shares a visible template's name is reached.
+   */
+  resolveTemplate(name: string, options?: { hidden?: boolean }): Promise<OwnedTemplate>;
   /** Equipment, body parts or muscle groups, for matching names against. */
   reference(table: ReferenceTable): Promise<Reference[]>;
   /** The workout with no end_time, if one is running. */
@@ -174,12 +178,21 @@ export function createContext(client: Client, identity: Identity): Ctx {
     templates,
     reference,
 
-    async resolveTemplate(name) {
+    async resolveTemplate(name, options = {}) {
+      const all = await templates();
+      if (options.hidden != null) {
+        const pool = all.filter((t) => !!t.is_hidden === options.hidden);
+        const match = matchExercise(name, pool, {
+          noun: options.hidden ? 'hidden template' : 'visible template',
+          listKnown: true,
+        });
+        return scope.proveTemplate(match.exercise.id);
+      }
+
       // Visible templates first. An old version is often kept hidden under
       // the same name as its replacement, and a name must reach the one on
       // the start screen; a hidden template is only reached when nothing
       // visible matches, which is how one is found to be shown again.
-      const all = await templates();
       const visible = all.filter((t) => !t.is_hidden);
       let match;
       try {
