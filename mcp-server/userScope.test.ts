@@ -289,3 +289,22 @@ describe('template rows', () => {
     expect(updates.map((u) => u.order_index)).toEqual([1_000_000, 1_000_001, 0, 1]);
   });
 });
+
+describe('deleting a template (EZ-52)', () => {
+  it('filters the delete to this user and refuses when nothing was deleted', async () => {
+    const { client, calls } = makeClient({
+      workout_templates: [
+        { data: { id: 't-1', name: 'Legs' }, error: null },
+        { data: [], error: null },
+      ],
+    });
+    const scope = scopeFor(client, 'u-1');
+    const template = await scope.proveTemplate('t-1');
+    await expect(scope.deleteTemplate(template)).rejects.toBeInstanceOf(NotYoursError);
+    const del = calls.find((c) => c.ops.includes('delete'))!;
+    expect(del.args.filter((_, i) => del.ops[i] === 'eq')).toEqual([
+      ['id', 't-1'],
+      ['user_id', 'u-1'],
+    ]);
+  });
+});

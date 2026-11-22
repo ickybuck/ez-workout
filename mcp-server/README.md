@@ -51,6 +51,7 @@ Changing the plan (`editTools.ts`, EZ-51):
 | `ez_edit_exercise` | Changes a shared exercise for everyone (admins, confirmed) |
 | `ez_create_template` | A new template, optionally with its exercises and supersets |
 | `ez_update_template` | Rename, describe, recategorise, favourite or hide a template |
+| `ez_delete_template` | Deletes a template after a confirmed warning; past workouts are detached, not deleted (EZ-52) |
 | `ez_template_add_exercise` | Adds an exercise at a position, optionally as a superset |
 | `ez_template_remove_exercise` | Takes an exercise out of a template |
 | `ez_template_edit_exercise` | Targets in this template, move, pair, unpair, or swap the exercise |
@@ -90,8 +91,12 @@ breaking one corrupts history that is never rewritten afterwards.
   unique index on `(template_id, order_index)`, so a swap written directly
   collides with itself. `src/lib/templateOrder.ts` parks moving rows clear
   of every real index first; the app's template editor uses the same plan.
-- **Templates are hidden, never deleted**, so past workouts keep their link.
-  A name reaches the visible template when a hidden one shares it.
+- **Deleting a template detaches its workouts.** `workouts.template_id` is
+  `ON DELETE SET NULL` since EZ-52, so past workouts keep their name and every
+  set and only lose the link (and with it the template's progress chart).
+  `ez_delete_template` deletes nothing until it is called again with
+  `confirm_delete`; hiding keeps everything. A name reaches the visible
+  template when a hidden one shares it; `hidden_copy` reaches the hidden one.
 
 ## How a request is authorised
 

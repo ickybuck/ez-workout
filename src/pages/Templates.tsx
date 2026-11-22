@@ -134,7 +134,9 @@ const Templates: React.FC = () => {
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    // Past workouts are detached, not deleted: workouts.template_id is ON DELETE
+    // SET NULL since EZ-52. Before that this failed for any template ever used.
+    if (!confirm('Delete this template? Past workouts from it keep every set but are no longer linked to it, so they leave its progress chart. This cannot be undone. (Hiding it keeps everything.)')) return;
 
     try {
       const { error } = await supabase

@@ -141,6 +141,8 @@ export interface UserScope {
   insertOwn(table: OwnedTable, rows: Record<string, unknown>[]): Promise<Record<string, unknown>[]>;
   /** Update rows of an owned table, filtered to this user. */
   updateOwn(table: OwnedTable, id: string, patch: Record<string, unknown>): Promise<Record<string, unknown>>;
+  /** Delete one of this user's templates. Its rows cascade; workouts started from it are detached (EZ-52). */
+  deleteTemplate(template: OwnedTemplate): Promise<void>;
 
   proveWorkout(id: string): Promise<OwnedWorkout>;
   proveTemplate(id: string): Promise<OwnedTemplate>;
@@ -291,6 +293,16 @@ export function scopeFor(client: Client, userId: string): UserScope {
       if (error) throw error;
       if (!data) throw new NotYoursError(table + ' row', id);
       return data as Record<string, unknown>;
+    },
+
+    async deleteTemplate(template) {
+      const { data, error } = await (client.from('workout_templates') as any)
+        .delete()
+        .eq('id', template.id)
+        .eq('user_id', userId)
+        .select('id');
+      if (error) throw error;
+      if (!data?.length) throw new NotYoursError('template', template.id);
     },
 
     async proveWorkout(id) {
