@@ -11,6 +11,7 @@ import type { SetOutcomeInput, StopReason } from '../../lib/stopReason';
 import { convert, fromKg, toKg } from '../../lib/weight';
 import { planWeightEdit, type WeightEditScope } from '../../lib/setWeightEdit';
 import { workoutQueue } from '../../lib/workoutSync';
+import { saveMyExerciseDefaults } from '../../lib/exerciseDefaults';
 
 interface SetProgressProps {
   logs: ExerciseLog[];
@@ -182,11 +183,11 @@ const SetProgress: React.FC<SetProgressProps> = ({
       // Only a change of plan reaches the prescription. A single-set drop is
       // not a decision about the programme and must not rewrite it.
       if (plan.updatesDefaults || plan.updatesTemplates) {
-        const [{ error: defaultsError }, { error: templateError }] = await Promise.all([
-          supabase
-            .from('exercise_defaults')
-            .update({ weight: plan.weightKg, updated_at: new Date().toISOString() })
-            .eq('exercise_id', plan.exerciseId),
+        const [defaultsError, { error: templateError }] = await Promise.all([
+          saveMyExerciseDefaults(supabase, plan.exerciseId, { weight: plan.weightKg }).then(
+            () => null,
+            (e: unknown) => e,
+          ),
           supabase
             .from('template_exercises')
             .update({ default_weight: plan.weightKg, updated_at: new Date().toISOString() })
