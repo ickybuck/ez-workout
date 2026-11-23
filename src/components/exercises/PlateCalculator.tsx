@@ -4,6 +4,7 @@ import { useWeightUnit } from '../../hooks/useWeightUnit';
 import { defaultIncrementKg, snapIncrement } from '../../lib/weight';
 import { PlateConfiguration } from '../../types/exercise';
 import { supabase } from '../../lib/supabase';
+import { saveMyExerciseDefaults } from '../../lib/exerciseDefaults';
 import { toast } from 'sonner';
 
 /**
@@ -221,17 +222,13 @@ const PlateCalculator: React.FC<PlateCalculatorProps> = ({
       
       // Update exercise defaults with all values
       if (exerciseId) {
-        const { error } = await supabase
-          .from('exercise_defaults')
-          .update({ 
-            weight: kgWeight,
-            bar_weight: kgBarWeight,
-            weight_increment: kgWeightIncrement,
-            updated_at: new Date().toISOString()
-          })
-          .eq('exercise_id', exerciseId);
-
-        if (error) throw error;
+        // Creates the row when there is none yet; a plain update did nothing
+        // then and still reported success.
+        await saveMyExerciseDefaults(supabase, exerciseId, {
+          weight: kgWeight,
+          bar_weight: kgBarWeight,
+          weight_increment: kgWeightIncrement,
+        });
 
         // Update all template exercises that use this exercise
         const { error: templateError } = await supabase
