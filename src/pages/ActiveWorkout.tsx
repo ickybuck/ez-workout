@@ -408,7 +408,7 @@ const ActiveWorkout: React.FC = () => {
       };
       setWorkout(updatedWorkout);
 
-      // Reset and start the rest timer
+      // Reset the rest timer; it starts only if auto-start is on
       if (restTimerRef.current) {
         restTimerRef.current.resetTimer();
       }
