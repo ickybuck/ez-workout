@@ -8,6 +8,7 @@ interface RestTimerProps {
 }
 
 export interface RestTimerRef {
+  /** Back to the full rest after a set. Runs only when auto-start is on. */
   resetTimer: () => void;
 }
 
@@ -24,6 +25,14 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
   useEffect(() => {
     setTimeLeft(defaultDuration);
   }, [defaultDuration]);
+
+  // The workout screen mounts this with a built-in default of "on" and loads
+  // the person's real setting a moment later. useState only reads its initial
+  // value once, so without this the timer ran for someone who had turned
+  // auto-start off.
+  useEffect(() => {
+    setIsPaused(!autoStart);
+  }, [autoStart]);
 
   useEffect(() => {
     // Create audio element for beep sound
@@ -116,14 +125,16 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
     setTimeLeft(prev => Math.max(0, prev - 10));
   };
 
-  const resetTimer = () => {
+  // The Reset button restarts the countdown -- the person asked for it.
+  const resetTimer = (run = true) => {
     setTimeLeft(defaultDuration);
-    setIsPaused(false);
+    setIsPaused(!run);
   };
 
-  // Expose resetTimer method to parent component
+  // A completed set resets the rest, but starts it only when auto-start is on.
+  // It used to start it regardless, so the setting did nothing.
   useImperativeHandle(ref, () => ({
-    resetTimer,
+    resetTimer: () => resetTimer(autoStart),
   }));
 
   // Calculate progress percentage (0% = full time, 100% = time expired)
@@ -148,7 +159,7 @@ const RestTimer = forwardRef<RestTimerRef, RestTimerProps>(({
       </div>
       <div className="relative flex items-center gap-2">
         <button
-          onClick={resetTimer}
+          onClick={() => resetTimer()}
           className="p-2.5 text-content-subtle hover:text-accent-content hover:bg-accent-soft rounded-full"
           title="Reset timer"
         >
