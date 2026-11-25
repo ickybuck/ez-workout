@@ -2,12 +2,12 @@
 
 ## Eric's task list
 
-https://claude.ai/artifact/S6zqCoAw35cRa9VusyGhax — the Master Task List opening on the
+https://wtr-max.tail438853.ts.net:8453/tasks?scope=ez-workout — the Master Task List opening on the
 `ez-workout` scope. Rules: the "✅ Master Task List — Protocol" page in personal SiYuan.
 Read the open rows for this scope at session start; a row whose **Who** is `Claude` is work
 any session may do without asking.
 
-Browser page for this scope (since 2026-11-25; any browser on the tailnet, served by siyuan-mcp on wtr-max; ticks and edits go straight to SiYuan): https://wtr-max.tail438853.ts.net:8453/tasks?scope=ez-workout . Sessions in the claude-agent container can also read and write rows through its JSON API (`/tasks/api/rows`, `/tasks/api/add`, `/tasks/api/update`; see the protocol page). The artifact link stays until Eric retires it.
+Browser page for this scope (since 2026-11-25; any browser on the tailnet, served by siyuan-mcp on wtr-max; ticks and edits go straight to SiYuan): https://wtr-max.tail438853.ts.net:8453/tasks?scope=ez-workout . Sessions in the claude-agent container can also read and write rows through its JSON API (`/tasks/api/rows`, `/tasks/api/add`, `/tasks/api/update`; see the protocol page).
 
 ## Findings and decisions
 
